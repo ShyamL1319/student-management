@@ -17,6 +17,7 @@ import { SectionsModule } from './sections/sections.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { StaffModule } from './staff/staff.module';
 import { ParentsModule } from './parents/parents.module';
+import { StudentsModule } from './students/students.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { ParentsModule } from './parents/parents.module';
     TeachersModule,
     StaffModule,
     ParentsModule,
+    StudentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
