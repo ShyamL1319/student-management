@@ -5,7 +5,10 @@ import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { Class, ClassDocument } from './schemas/class.schema';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { Department, DepartmentDocument } from '../departments/schemas/department.schema';
+import {
+  Department,
+  DepartmentDocument,
+} from '../departments/schemas/department.schema';
 
 @Injectable()
 export class ClassesService {

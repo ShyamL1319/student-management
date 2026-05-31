@@ -6,49 +6,52 @@ export type StudentDocument = Student & Document;
 @Schema({ timestamps: true })
 export class Student {
   @Prop({ required: true, unique: true })
-  admissionNumber: string;
+  admissionNumber!: string;
 
   @Prop({ required: false })
-  rollNumber: string;
+  rollNumber!: string;
 
   @Prop({ required: true })
-  firstName: string;
+  firstName!: string;
 
   @Prop()
-  lastName: string;
+  lastName!: string;
 
   @Prop()
   dob: Date;
 
   @Prop()
-  gender: string;
+  gender!: string;
 
   @Prop()
-  bloodGroup: string;
+  bloodGroup!: string;
 
   @Prop()
-  address: string;
+  address!: string;
 
   @Prop()
-  email: string;
+  email!: string;
 
   @Prop()
-  phone: string;
+  phone!: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Parent' })
-  parent: Types.ObjectId;
+  parent!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Class' })
-  class: Types.ObjectId;
+  class!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Section' })
-  section: Types.ObjectId;
+  section!: Types.ObjectId;
 
   @Prop({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
-  @Prop({ type: [{ class: Types.ObjectId, section: Types.ObjectId, at: Date }], default: [] })
-  history: { class: Types.ObjectId; section: Types.ObjectId; at: Date }[];
+  @Prop({
+    type: [{ class: Types.ObjectId, section: Types.ObjectId, at: Date }],
+    default: [],
+  })
+  history!: { class: Types.ObjectId; section: Types.ObjectId; at: Date }[];
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);
