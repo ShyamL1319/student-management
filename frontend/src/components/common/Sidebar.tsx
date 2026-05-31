@@ -5,9 +5,12 @@ import PeopleIcon from '@mui/icons-material/People';
 import SchoolIcon from '@mui/icons-material/School';
 import ClassIcon from '@mui/icons-material/Class';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import BookIcon from '@mui/icons-material/Book';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import BusinessIcon from '@mui/icons-material/Business';
 import SettingsIcon from '@mui/icons-material/Settings';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -31,8 +34,11 @@ export const Sidebar: FC = () => {
     { text: 'Schools', icon: <BusinessIcon />, path: '/schools', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Academic Years', icon: <CalendarMonthIcon />, path: '/academic-years', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Departments', icon: <AccountTreeIcon />, path: '/departments', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Courses', icon: <MenuBookIcon />, path: '/courses', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Subjects', icon: <BookIcon />, path: '/subjects', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Classes', icon: <ClassIcon />, path: '/classes', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Sections', icon: <ClassIcon />, path: '/sections', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Timetables', icon: <ScheduleIcon />, path: '/timetables', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
 

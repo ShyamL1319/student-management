@@ -4,3 +4,4 @@
 | Auth | Completed | Completed | Completed | Completed |
 | Student | Pending | Pending | Pending | Pending |
 | Teacher | Pending | Pending | Pending | Pending |
+| Timetable | Completed | Completed | Completed | Completed |

@@ -18,6 +18,9 @@ import { SchoolsPage } from './features/schools/pages/SchoolsPage';
 import { AcademicYearsPage } from './features/academic-years/pages/AcademicYearsPage';
 import { DepartmentsPage } from './features/departments/pages/DepartmentsPage';
 import { SectionsPage } from './features/sections/pages/SectionsPage';
+import { CoursesPage } from './features/courses/pages/CoursesPage';
+import { SubjectsPage } from './features/subjects/pages/SubjectsPage';
+import TimetablePage from './features/timetables/pages/TimetablePage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -42,8 +45,11 @@ function AppRoutes() {
         <Route path="/schools" element={<ProtectedRoute><SchoolsPage /></ProtectedRoute>} />
         <Route path="/academic-years" element={<ProtectedRoute><AcademicYearsPage /></ProtectedRoute>} />
         <Route path="/departments" element={<ProtectedRoute><DepartmentsPage /></ProtectedRoute>} />
+        <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
+        <Route path="/subjects" element={<ProtectedRoute><SubjectsPage /></ProtectedRoute>} />
         <Route path="/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
         <Route path="/sections" element={<ProtectedRoute><SectionsPage /></ProtectedRoute>} />
+        <Route path="/timetables" element={<ProtectedRoute><TimetablePage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         
         <Route path="*" element={<Typography variant="h5">404 - Not Found</Typography>} />
