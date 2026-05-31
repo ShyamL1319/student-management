@@ -14,6 +14,9 @@ import { AcademicYearsModule } from './academic-years/academic-years.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { ClassesModule } from './classes/classes.module';
 import { SectionsModule } from './sections/sections.module';
+import { TeachersModule } from './teachers/teachers.module';
+import { StaffModule } from './staff/staff.module';
+import { ParentsModule } from './parents/parents.module';
 
 @Module({
   imports: [
@@ -38,6 +41,9 @@ import { SectionsModule } from './sections/sections.module';
     DepartmentsModule,
     ClassesModule,
     SectionsModule,
+    TeachersModule,
+    StaffModule,
+    ParentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

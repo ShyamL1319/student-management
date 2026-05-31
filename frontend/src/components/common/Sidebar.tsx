@@ -25,6 +25,8 @@ export const Sidebar: FC = () => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'Students', icon: <PeopleIcon />, path: '/students' },
     { text: 'Teachers', icon: <SchoolIcon />, path: '/teachers' },
+    { text: 'Staff', icon: <PeopleIcon />, path: '/staff', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Parents', icon: <PeopleIcon />, path: '/parents', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     // Admin pages - show to SUPER_ADMIN and roles listed in `restricted`
     { text: 'Schools', icon: <BusinessIcon />, path: '/schools', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Academic Years', icon: <CalendarMonthIcon />, path: '/academic-years', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
