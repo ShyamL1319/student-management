@@ -2,10 +2,7 @@
 
 You are a Senior Staff Engineer.
 
-Reference Project:
-https://github.com/ShyamL1319/linkshortner
-
-Your job is to analyze the entire repository and replicate:
+Your job is to to create a new School Management System:
 
 * Architecture
 * Folder Structure
