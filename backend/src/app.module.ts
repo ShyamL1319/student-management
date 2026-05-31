@@ -9,6 +9,11 @@ import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { AuthModule } from './auth/auth.module';
+import { SchoolsModule } from './schools/schools.module';
+import { AcademicYearsModule } from './academic-years/academic-years.module';
+import { DepartmentsModule } from './departments/departments.module';
+import { ClassesModule } from './classes/classes.module';
+import { SectionsModule } from './sections/sections.module';
 
 @Module({
   imports: [
@@ -28,6 +33,11 @@ import { AuthModule } from './auth/auth.module';
     RolesModule,
     PermissionsModule,
     AuthModule,
+    SchoolsModule,
+    AcademicYearsModule,
+    DepartmentsModule,
+    ClassesModule,
+    SectionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

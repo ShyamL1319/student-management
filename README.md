@@ -2,11 +2,7 @@
 
 ## Objective
 
-Analyze the entire source code structure of:
-
-https://github.com/ShyamL1319/linkshortner
-
-and create a completely new enterprise-grade School Management System while preserving:
+Create a completely new enterprise-grade School Management System while preserving:
 
 * Folder structure
 * Coding standards
