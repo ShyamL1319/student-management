@@ -10,6 +10,8 @@ import { ProfilePage } from './features/users/pages/ProfilePage';
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 import { StudentsPage } from './features/students/pages/StudentsPage';
 import { TeachersPage } from './features/teachers/pages/TeachersPage';
+import { StaffPage } from './features/staff/pages/StaffPage';
+import { ParentsPage } from './features/parents/pages/ParentsPage';
 import { ClassesPage } from './features/classes/pages/ClassesPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { SchoolsPage } from './features/schools/pages/SchoolsPage';
@@ -35,6 +37,8 @@ function AppRoutes() {
         <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/students" element={<ProtectedRoute><StudentsPage /></ProtectedRoute>} />
         <Route path="/teachers" element={<ProtectedRoute><TeachersPage /></ProtectedRoute>} />
+        <Route path="/staff" element={<ProtectedRoute><StaffPage /></ProtectedRoute>} />
+        <Route path="/parents" element={<ProtectedRoute><ParentsPage /></ProtectedRoute>} />
         <Route path="/schools" element={<ProtectedRoute><SchoolsPage /></ProtectedRoute>} />
         <Route path="/academic-years" element={<ProtectedRoute><AcademicYearsPage /></ProtectedRoute>} />
         <Route path="/departments" element={<ProtectedRoute><DepartmentsPage /></ProtectedRoute>} />
