@@ -15,6 +15,8 @@ import { DepartmentsModule } from './departments/departments.module';
 import { ClassesModule } from './classes/classes.module';
 import { SectionsModule } from './sections/sections.module';
 import { TeachersModule } from './teachers/teachers.module';
+import { CoursesModule } from './courses/courses.module';
+import { SubjectsModule } from './subjects/subjects.module';
 import { StaffModule } from './staff/staff.module';
 import { ParentsModule } from './parents/parents.module';
 import { StudentsModule } from './students/students.module';
@@ -40,6 +42,8 @@ import { StudentsModule } from './students/students.module';
     SchoolsModule,
     AcademicYearsModule,
     DepartmentsModule,
+    CoursesModule,
+    SubjectsModule,
     ClassesModule,
     SectionsModule,
     TeachersModule,

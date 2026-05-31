@@ -35,18 +35,34 @@ describe('DepartmentsService', () => {
   });
 
   it('should throw when school does not exist', async () => {
-    schoolModel.findById.mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
+    schoolModel.findById.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    });
 
     await expect(
-      service.create({ school: 'invalid', name: 'History', isActive: true } as any),
+      service.create({
+        school: 'invalid',
+        name: 'History',
+        isActive: true,
+      } as any),
     ).rejects.toThrow('School not found');
   });
 
   it('should create a department when school exists', async () => {
-    schoolModel.findById.mockReturnValue({ exec: jest.fn().mockResolvedValue({ id: '1' }) });
-    departmentModel.create.mockResolvedValue({ school: '1', name: 'History', isActive: true });
+    schoolModel.findById.mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ id: '1' }),
+    });
+    departmentModel.create.mockResolvedValue({
+      school: '1',
+      name: 'History',
+      isActive: true,
+    });
 
-    const result = await service.create({ school: '1', name: 'History', isActive: true } as any);
+    const result = await service.create({
+      school: '1',
+      name: 'History',
+      isActive: true,
+    });
 
     expect(result).toEqual({ school: '1', name: 'History', isActive: true });
     expect(schoolModel.findById).toHaveBeenCalledWith('1');

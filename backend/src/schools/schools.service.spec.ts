@@ -30,10 +30,16 @@ describe('SchoolsService', () => {
   });
 
   it('should create a school', async () => {
-    const dto = { name: 'Test School', address: '123 Main', phone: '555-1234', email: 'test@example.com', isActive: true };
+    const dto = {
+      name: 'Test School',
+      address: '123 Main',
+      phone: '555-1234',
+      email: 'test@example.com',
+      isActive: true,
+    };
     schoolModel.create.mockResolvedValue(dto);
 
-    const result = await service.create(dto as any);
+    const result = await service.create(dto);
 
     expect(result).toEqual(dto);
     expect(schoolModel.create).toHaveBeenCalledWith(dto);
@@ -48,9 +54,15 @@ describe('SchoolsService', () => {
       exec: jest.fn().mockResolvedValue(response),
     };
     schoolModel.find.mockReturnValue(query);
-    schoolModel.countDocuments.mockReturnValue({ exec: jest.fn().mockResolvedValue(1) });
+    schoolModel.countDocuments.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(1),
+    });
 
-    const result = await service.findAll({ page: 1, limit: 10, search: 'Test' } as any);
+    const result = await service.findAll({
+      page: 1,
+      limit: 10,
+      search: 'Test',
+    });
 
     expect(result.data).toEqual(response);
     expect(result.total).toBe(1);
@@ -59,7 +71,9 @@ describe('SchoolsService', () => {
 
   it('should return a school by id', async () => {
     const item = { id: '1', name: 'Test School' };
-    schoolModel.findById.mockReturnValue({ exec: jest.fn().mockResolvedValue(item) });
+    schoolModel.findById.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(item),
+    });
 
     const result = await service.findOne('1');
     expect(result).toEqual(item);
