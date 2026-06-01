@@ -1,7 +1,8 @@
 import type { FC } from 'react';
 import { useState } from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, Badge } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -37,6 +38,16 @@ export const Header: FC<{ drawerWidth: number }> = () => {
         </Typography>
         {isAuthenticated && (
           <div>
+            <IconButton
+              size="large"
+              aria-label="show new notifications"
+              color="inherit"
+              onClick={() => navigate('/notifications')}
+            >
+              <Badge color="error">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
             <IconButton
               size="large"
               aria-label="account of current user"

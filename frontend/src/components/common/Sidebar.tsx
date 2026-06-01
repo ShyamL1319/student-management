@@ -15,6 +15,7 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import GradeIcon from '@mui/icons-material/Grade';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -51,6 +52,7 @@ export const Sidebar: FC = () => {
     { text: 'Pending Fees', icon: <AttachMoneyIcon />, path: '/pending-fees', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Receipts', icon: <ReceiptIcon />, path: '/receipts', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Invoices', icon: <AttachMoneyIcon />, path: '/invoices', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
 

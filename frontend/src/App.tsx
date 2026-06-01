@@ -29,6 +29,8 @@ import PendingFeesPage from './features/fees/pages/PendingFeesPage';
 import ReceiptsPage from './features/fees/pages/ReceiptsPage';
 import InvoiceGenerationPage from './features/fees/pages/InvoiceGenerationPage';
 import MarksPage from './features/marks/MarksPage';
+import { NotificationCenter } from './features/notifications/pages/NotificationCenter';
+import { NotificationPreferences } from './features/notifications/pages/NotificationPreferences';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -64,7 +66,10 @@ function AppRoutes() {
         <Route path="/fee-collections" element={<ProtectedRoute><FeeCollectionPage /></ProtectedRoute>} />
         <Route path="/pending-fees" element={<ProtectedRoute><PendingFeesPage /></ProtectedRoute>} />
         <Route path="/receipts" element={<ProtectedRoute><ReceiptsPage /></ProtectedRoute>} />
-        <Route path="/invoices" element={<ProtectedRoute><InvoiceGenerationPage /></ProtectedRoute>} />        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/invoices" element={<ProtectedRoute><InvoiceGenerationPage /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><NotificationCenter /></ProtectedRoute>} />
+        <Route path="/notifications/preferences" element={<ProtectedRoute><NotificationPreferences /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         
         <Route path="*" element={<Typography variant="h5">404 - Not Found</Typography>} />
       </Routes>
