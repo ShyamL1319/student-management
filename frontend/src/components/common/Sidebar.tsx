@@ -11,6 +11,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import BusinessIcon from '@mui/icons-material/Business';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -38,6 +39,7 @@ export const Sidebar: FC = () => {
     { text: 'Subjects', icon: <BookIcon />, path: '/subjects', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Classes', icon: <ClassIcon />, path: '/classes', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Sections', icon: <ClassIcon />, path: '/sections', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Attendance', icon: <EventAvailableIcon />, path: '/attendances', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Timetables', icon: <ScheduleIcon />, path: '/timetables', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];

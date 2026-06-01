@@ -211,6 +211,7 @@ Features:
 * Daily attendance
 * Monthly attendance
 * Attendance reports
+* Student, teacher, and staff attendance types
 
 Teacher Attendance
 
