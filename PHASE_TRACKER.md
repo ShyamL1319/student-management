@@ -14,7 +14,7 @@
 | 10 | Class Management | Pending |
 | 11 | Attendance | Completed |
 | 12 | Examination | Completed |
-| 13 | Marks | Pending |
+| 13 | Marks | Completed |
 | 14 | Timetable Module | Completed |
 | 15 | Fees | Pending |
 | 16 | Notifications | Pending |

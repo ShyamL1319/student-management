@@ -34,7 +34,9 @@ export class ExaminationsService {
   }
 
   async update(id: string, dto: UpdateExamDto) {
-    const updated = await this.examModel.findByIdAndUpdate(id, dto as any, { new: true }).exec();
+    const updated = await this.examModel
+      .findByIdAndUpdate(id, dto as any, { new: true })
+      .exec();
     if (!updated) throw new NotFoundException('Exam not found');
     return updated;
   }

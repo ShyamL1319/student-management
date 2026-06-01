@@ -1,4 +1,10 @@
-import { IsDateString, IsOptional, IsMongoId, IsNumber, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsOptional,
+  IsMongoId,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ExamScheduleDto {

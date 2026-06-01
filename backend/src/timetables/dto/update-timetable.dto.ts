@@ -1,9 +1,19 @@
-import { IsString, IsEnum, IsMongoId, IsOptional, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsMongoId,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
 import { DayOfWeek } from '../schemas/timetable.schema';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateTimetableDto {
-  @ApiProperty({ example: '507f1f77bcf86cd799439011', description: 'Class ID', required: false })
+  @ApiProperty({
+    example: '507f1f77bcf86cd799439011',
+    description: 'Class ID',
+    required: false,
+  })
   @IsMongoId()
   @IsOptional()
   class?: string;

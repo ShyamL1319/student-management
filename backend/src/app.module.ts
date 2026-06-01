@@ -23,6 +23,7 @@ import { StudentsModule } from './students/students.module';
 import { TimetablesModule } from './timetables/timetables.module';
 import { AttendancesModule } from './attendances/attendance.module';
 import { ExaminationsModule } from './examinations/examinations.module';
+import { MarksModule } from './marks/marks.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ExaminationsModule } from './examinations/examinations.module';
     ClassesModule,
     SectionsModule,
     ExaminationsModule,
+    MarksModule,
     TeachersModule,
     StaffModule,
     ParentsModule,

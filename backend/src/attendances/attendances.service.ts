@@ -82,7 +82,9 @@ export class AttendancesService {
     });
   }
 
-  async findAll(query: any): Promise<{ data: AttendanceDocument[]; total: number }> {
+  async findAll(
+    query: any,
+  ): Promise<{ data: AttendanceDocument[]; total: number }> {
     const {
       page = 1,
       limit = 10,
@@ -99,12 +101,14 @@ export class AttendancesService {
 
     const filter: any = {};
     if (attendeeType) filter.attendeeType = attendeeType;
-    if (attendeeId && Types.ObjectId.isValid(attendeeId)) filter.attendeeId = attendeeId;
+    if (attendeeId && Types.ObjectId.isValid(attendeeId))
+      filter.attendeeId = attendeeId;
     if (status) filter.status = status;
     if (school && Types.ObjectId.isValid(school)) filter.school = school;
     if (classId && Types.ObjectId.isValid(classId)) filter.class = classId;
     if (section && Types.ObjectId.isValid(section)) filter.section = section;
-    if (academicYear && Types.ObjectId.isValid(academicYear)) filter.academicYear = academicYear;
+    if (academicYear && Types.ObjectId.isValid(academicYear))
+      filter.academicYear = academicYear;
     if (typeof isActive !== 'undefined') {
       filter.isActive = isActive === 'true' || isActive === true;
     }
