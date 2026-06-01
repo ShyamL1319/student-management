@@ -21,6 +21,7 @@ import { StaffModule } from './staff/staff.module';
 import { ParentsModule } from './parents/parents.module';
 import { StudentsModule } from './students/students.module';
 import { TimetablesModule } from './timetables/timetables.module';
+import { AttendancesModule } from './attendances/attendance.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { TimetablesModule } from './timetables/timetables.module';
     ParentsModule,
     StudentsModule,
     TimetablesModule,
+    AttendancesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

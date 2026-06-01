@@ -10,6 +10,7 @@ const stats = [
   { title: 'Total Students', value: '1,250', icon: <PeopleIcon fontSize="large" color="primary" />, link: '/students' },
   { title: 'Total Teachers', value: '85', icon: <SchoolIcon fontSize="large" color="secondary" />, link: '/teachers' },
   { title: 'Active Classes', value: '42', icon: <ClassIcon fontSize="large" color="success" />, link: '/classes' },
+  { title: 'Attendance Rate', value: '92%', icon: <EventIcon fontSize="large" color="warning" />, link: '/attendances' },
   { title: 'Upcoming Events', value: '3', icon: <EventIcon fontSize="large" color="warning" />, link: '#' },
 ];
 
