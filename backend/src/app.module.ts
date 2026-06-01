@@ -25,6 +25,7 @@ import { AttendancesModule } from './attendances/attendance.module';
 import { ExaminationsModule } from './examinations/examinations.module';
 import { MarksModule } from './marks/marks.module';
 import { FeesModule } from './fees/fees.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { FeesModule } from './fees/fees.module';
     TimetablesModule,
     AttendancesModule,
     FeesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
