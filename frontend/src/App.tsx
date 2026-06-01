@@ -23,6 +23,11 @@ import { SubjectsPage } from './features/subjects/pages/SubjectsPage';
 import TimetablePage from './features/timetables/pages/TimetablePage';
 import { AttendancePage } from './features/attendance/pages/AttendancePage';
 import { ExamsPage } from './features/examinations/pages/ExamsPage';
+import FeeStructurePage from './features/fees/pages/FeeStructurePage';
+import FeeCollectionPage from './features/fees/pages/FeeCollectionPage';
+import PendingFeesPage from './features/fees/pages/PendingFeesPage';
+import ReceiptsPage from './features/fees/pages/ReceiptsPage';
+import InvoiceGenerationPage from './features/fees/pages/InvoiceGenerationPage';
 import MarksPage from './features/marks/MarksPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -55,8 +60,11 @@ function AppRoutes() {
         <Route path="/exams" element={<ProtectedRoute><ExamsPage /></ProtectedRoute>} />
         <Route path="/marks" element={<ProtectedRoute><MarksPage /></ProtectedRoute>} />
         <Route path="/attendances" element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} />
-        <Route path="/timetables" element={<ProtectedRoute><TimetablePage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/timetables" element={<ProtectedRoute><TimetablePage /></ProtectedRoute>} />        <Route path="/fee-structures" element={<ProtectedRoute><FeeStructurePage /></ProtectedRoute>} />
+        <Route path="/fee-collections" element={<ProtectedRoute><FeeCollectionPage /></ProtectedRoute>} />
+        <Route path="/pending-fees" element={<ProtectedRoute><PendingFeesPage /></ProtectedRoute>} />
+        <Route path="/receipts" element={<ProtectedRoute><ReceiptsPage /></ProtectedRoute>} />
+        <Route path="/invoices" element={<ProtectedRoute><InvoiceGenerationPage /></ProtectedRoute>} />        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         
         <Route path="*" element={<Typography variant="h5">404 - Not Found</Typography>} />
       </Routes>
