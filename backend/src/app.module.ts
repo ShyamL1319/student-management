@@ -20,6 +20,7 @@ import { SubjectsModule } from './subjects/subjects.module';
 import { StaffModule } from './staff/staff.module';
 import { ParentsModule } from './parents/parents.module';
 import { StudentsModule } from './students/students.module';
+import { TimetablesModule } from './timetables/timetables.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { StudentsModule } from './students/students.module';
     StaffModule,
     ParentsModule,
     StudentsModule,
+    TimetablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
