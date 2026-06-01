@@ -21,9 +21,9 @@ export const ProfilePage: React.FC = () => {
           Profile
         </Typography>
         <Box sx={{ mt: 2 }}>
-          <Typography variant="body1"><strong>Email:</strong> {user.email}</Typography>
-          <Typography variant="body1"><strong>Name:</strong> {user.firstName} {user.lastName}</Typography>
-          <Typography variant="body1"><strong>Role:</strong> {user.role?.name}</Typography>
+          <Typography variant="body1"><strong>Email:</strong> {user.email as string}</Typography>
+          <Typography variant="body1"><strong>Name:</strong> {user.firstName as string} {user.lastName as string}</Typography>
+          <Typography variant="body1"><strong>Role:</strong> {(typeof user.role === 'string' ? user.role : (user.role as any)?.name) as string}</Typography>
           <Button variant="outlined" color="secondary" onClick={handleLogout} sx={{ mt: 4 }}>
             Logout
           </Button>

@@ -31,6 +31,7 @@ import InvoiceGenerationPage from './features/fees/pages/InvoiceGenerationPage';
 import MarksPage from './features/marks/MarksPage';
 import { NotificationCenter } from './features/notifications/pages/NotificationCenter';
 import { NotificationPreferences } from './features/notifications/pages/NotificationPreferences';
+import { ReportsPage } from './features/reports/pages/ReportsPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -44,33 +45,215 @@ function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        
         {/* Protected Routes */}
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/students" element={<ProtectedRoute><StudentsPage /></ProtectedRoute>} />
-        <Route path="/teachers" element={<ProtectedRoute><TeachersPage /></ProtectedRoute>} />
-        <Route path="/staff" element={<ProtectedRoute><StaffPage /></ProtectedRoute>} />
-        <Route path="/parents" element={<ProtectedRoute><ParentsPage /></ProtectedRoute>} />
-        <Route path="/schools" element={<ProtectedRoute><SchoolsPage /></ProtectedRoute>} />
-        <Route path="/academic-years" element={<ProtectedRoute><AcademicYearsPage /></ProtectedRoute>} />
-        <Route path="/departments" element={<ProtectedRoute><DepartmentsPage /></ProtectedRoute>} />
-        <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
-        <Route path="/subjects" element={<ProtectedRoute><SubjectsPage /></ProtectedRoute>} />
-        <Route path="/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
-        <Route path="/sections" element={<ProtectedRoute><SectionsPage /></ProtectedRoute>} />
-        <Route path="/exams" element={<ProtectedRoute><ExamsPage /></ProtectedRoute>} />
-        <Route path="/marks" element={<ProtectedRoute><MarksPage /></ProtectedRoute>} />
-        <Route path="/attendances" element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} />
-        <Route path="/timetables" element={<ProtectedRoute><TimetablePage /></ProtectedRoute>} />        <Route path="/fee-structures" element={<ProtectedRoute><FeeStructurePage /></ProtectedRoute>} />
-        <Route path="/fee-collections" element={<ProtectedRoute><FeeCollectionPage /></ProtectedRoute>} />
-        <Route path="/pending-fees" element={<ProtectedRoute><PendingFeesPage /></ProtectedRoute>} />
-        <Route path="/receipts" element={<ProtectedRoute><ReceiptsPage /></ProtectedRoute>} />
-        <Route path="/invoices" element={<ProtectedRoute><InvoiceGenerationPage /></ProtectedRoute>} />
-        <Route path="/notifications" element={<ProtectedRoute><NotificationCenter /></ProtectedRoute>} />
-        <Route path="/notifications/preferences" element={<ProtectedRoute><NotificationPreferences /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-        
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/students"
+          element={
+            <ProtectedRoute>
+              <StudentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teachers"
+          element={
+            <ProtectedRoute>
+              <TeachersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute>
+              <StaffPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/parents"
+          element={
+            <ProtectedRoute>
+              <ParentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/schools"
+          element={
+            <ProtectedRoute>
+              <SchoolsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/academic-years"
+          element={
+            <ProtectedRoute>
+              <AcademicYearsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/departments"
+          element={
+            <ProtectedRoute>
+              <DepartmentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/courses"
+          element={
+            <ProtectedRoute>
+              <CoursesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subjects"
+          element={
+            <ProtectedRoute>
+              <SubjectsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/classes"
+          element={
+            <ProtectedRoute>
+              <ClassesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sections"
+          element={
+            <ProtectedRoute>
+              <SectionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/exams"
+          element={
+            <ProtectedRoute>
+              <ExamsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/marks"
+          element={
+            <ProtectedRoute>
+              <MarksPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/attendances"
+          element={
+            <ProtectedRoute>
+              <AttendancePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/timetables"
+          element={
+            <ProtectedRoute>
+              <TimetablePage />
+            </ProtectedRoute>
+          }
+        />{' '}
+        <Route
+          path="/fee-structures"
+          element={
+            <ProtectedRoute>
+              <FeeStructurePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/fee-collections"
+          element={
+            <ProtectedRoute>
+              <FeeCollectionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pending-fees"
+          element={
+            <ProtectedRoute>
+              <PendingFeesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/receipts"
+          element={
+            <ProtectedRoute>
+              <ReceiptsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices"
+          element={
+            <ProtectedRoute>
+              <InvoiceGenerationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationCenter />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications/preferences"
+          element={
+            <ProtectedRoute>
+              <NotificationPreferences />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Typography variant="h5">404 - Not Found</Typography>} />
       </Routes>
     </Layout>
