@@ -12,6 +12,8 @@ import BusinessIcon from '@mui/icons-material/Business';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import GradeIcon from '@mui/icons-material/Grade';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -44,6 +46,11 @@ export const Sidebar: FC = () => {
     { text: 'Marks', icon: <GradeIcon />, path: '/marks', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Attendance', icon: <EventAvailableIcon />, path: '/attendances', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Timetables', icon: <ScheduleIcon />, path: '/timetables', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Fee Structures', icon: <AttachMoneyIcon />, path: '/fee-structures', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Fee Collections', icon: <AttachMoneyIcon />, path: '/fee-collections', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Pending Fees', icon: <AttachMoneyIcon />, path: '/pending-fees', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Receipts', icon: <ReceiptIcon />, path: '/receipts', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Invoices', icon: <AttachMoneyIcon />, path: '/invoices', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
 
