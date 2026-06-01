@@ -22,6 +22,7 @@ import { CoursesPage } from './features/courses/pages/CoursesPage';
 import { SubjectsPage } from './features/subjects/pages/SubjectsPage';
 import TimetablePage from './features/timetables/pages/TimetablePage';
 import { AttendancePage } from './features/attendance/pages/AttendancePage';
+import { ExamsPage } from './features/examinations/pages/ExamsPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -50,6 +51,7 @@ function AppRoutes() {
         <Route path="/subjects" element={<ProtectedRoute><SubjectsPage /></ProtectedRoute>} />
         <Route path="/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
         <Route path="/sections" element={<ProtectedRoute><SectionsPage /></ProtectedRoute>} />
+        <Route path="/exams" element={<ProtectedRoute><ExamsPage /></ProtectedRoute>} />
         <Route path="/attendances" element={<ProtectedRoute><AttendancePage /></ProtectedRoute>} />
         <Route path="/timetables" element={<ProtectedRoute><TimetablePage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
