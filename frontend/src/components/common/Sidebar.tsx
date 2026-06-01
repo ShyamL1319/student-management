@@ -39,6 +39,7 @@ export const Sidebar: FC = () => {
     { text: 'Subjects', icon: <BookIcon />, path: '/subjects', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Classes', icon: <ClassIcon />, path: '/classes', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Sections', icon: <ClassIcon />, path: '/sections', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
+    { text: 'Exams', icon: <EventAvailableIcon />, path: '/exams', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Attendance', icon: <EventAvailableIcon />, path: '/attendances', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Timetables', icon: <ScheduleIcon />, path: '/timetables', restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'] },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },

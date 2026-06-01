@@ -22,6 +22,7 @@ import { ParentsModule } from './parents/parents.module';
 import { StudentsModule } from './students/students.module';
 import { TimetablesModule } from './timetables/timetables.module';
 import { AttendancesModule } from './attendances/attendance.module';
+import { ExaminationsModule } from './examinations/examinations.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AttendancesModule } from './attendances/attendance.module';
     SubjectsModule,
     ClassesModule,
     SectionsModule,
+    ExaminationsModule,
     TeachersModule,
     StaffModule,
     ParentsModule,

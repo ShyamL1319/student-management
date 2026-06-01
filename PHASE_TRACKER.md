@@ -13,7 +13,7 @@
 | 9 | Department Module | Pending |
 | 10 | Class Management | Pending |
 | 11 | Attendance | Completed |
-| 12 | Examination | Pending |
+| 12 | Examination | Completed |
 | 13 | Marks | Pending |
 | 14 | Timetable Module | Completed |
 | 15 | Fees | Pending |
