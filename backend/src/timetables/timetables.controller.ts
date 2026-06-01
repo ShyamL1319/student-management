@@ -61,10 +61,7 @@ export class TimetablesController {
     status: 200,
     description: 'Weekly timetable grouped by day',
   })
-  getWeeklyTimetable(
-    @Param('classId') classId: string,
-    @Query() query: any,
-  ) {
+  getWeeklyTimetable(@Param('classId') classId: string, @Query() query: any) {
     return this.timetablesService.getWeeklyTimetable(classId, query);
   }
 
@@ -74,10 +71,7 @@ export class TimetablesController {
     status: 200,
     description: 'Class timetable entries',
   })
-  getClassTimetable(
-    @Param('classId') classId: string,
-    @Query() query: any,
-  ) {
+  getClassTimetable(@Param('classId') classId: string, @Query() query: any) {
     return this.timetablesService.getClassTimetable(classId, query);
   }
 
