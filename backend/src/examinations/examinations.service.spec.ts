@@ -29,7 +29,10 @@ describe('ExaminationsService', () => {
 
   it('should create an exam', async () => {
     examModel.create.mockResolvedValue({ name: 'Mid Term', type: 'MID_TERM' });
-    const res = await service.create({ name: 'Mid Term', type: 'MID_TERM' } as any);
+    const res = await service.create({
+      name: 'Mid Term',
+      type: 'MID_TERM',
+    } as any);
     expect(res).toEqual({ name: 'Mid Term', type: 'MID_TERM' });
   });
 });

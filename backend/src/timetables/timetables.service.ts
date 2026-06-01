@@ -83,14 +83,17 @@ export class TimetablesService {
     const q: any = {};
 
     if (classId) q.class = Types.ObjectId.isValid(classId) ? classId : classId;
-    if (teacher) q.teacher = Types.ObjectId.isValid(teacher) ? teacher : teacher;
+    if (teacher)
+      q.teacher = Types.ObjectId.isValid(teacher) ? teacher : teacher;
     if (dayOfWeek) q.dayOfWeek = dayOfWeek;
     if (academicYear)
       q.academicYear = Types.ObjectId.isValid(academicYear)
         ? academicYear
         : academicYear;
-    if (section) q.section = Types.ObjectId.isValid(section) ? section : section;
-    if (typeof isActive !== 'undefined') q.isActive = isActive === 'true' || isActive === true;
+    if (section)
+      q.section = Types.ObjectId.isValid(section) ? section : section;
+    if (typeof isActive !== 'undefined')
+      q.isActive = isActive === 'true' || isActive === true;
 
     const skip = (page - 1) * limit;
 

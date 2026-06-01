@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsOptional, IsString, IsMongoId, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsMongoId,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ExamScheduleDto } from './schedule.dto';

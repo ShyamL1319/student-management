@@ -260,7 +260,9 @@ describe('TimetablesService', () => {
         exec: jest.fn().mockResolvedValue(mockData),
       });
 
-      const result = await service.getWeeklyTimetable('507f1f77bcf86cd799439011');
+      const result = await service.getWeeklyTimetable(
+        '507f1f77bcf86cd799439011',
+      );
 
       expect(result[DayOfWeek.MONDAY]).toBeDefined();
       expect(result[DayOfWeek.MONDAY].length).toBe(1);

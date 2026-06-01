@@ -112,8 +112,9 @@ describe('Timetables (e2e)', () => {
 
       mockTimetableService.findOne.mockResolvedValue(mockData);
 
-      const response = await request(app.getHttpServer())
-        .get('/timetables/507f1f77bcf86cd799439015');
+      const response = await request(app.getHttpServer()).get(
+        '/timetables/507f1f77bcf86cd799439015',
+      );
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(mockData);
@@ -158,8 +159,9 @@ describe('Timetables (e2e)', () => {
         _id: '507f1f77bcf86cd799439015',
       });
 
-      const response = await request(app.getHttpServer())
-        .delete('/timetables/507f1f77bcf86cd799439015');
+      const response = await request(app.getHttpServer()).delete(
+        '/timetables/507f1f77bcf86cd799439015',
+      );
 
       expect(response.status).toBe(204);
     });
@@ -174,8 +176,9 @@ describe('Timetables (e2e)', () => {
 
       mockTimetableService.getWeeklyTimetable.mockResolvedValue(mockData);
 
-      const response = await request(app.getHttpServer())
-        .get('/timetables/class/507f1f77bcf86cd799439011/weekly');
+      const response = await request(app.getHttpServer()).get(
+        '/timetables/class/507f1f77bcf86cd799439011/weekly',
+      );
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(mockData);
@@ -194,8 +197,9 @@ describe('Timetables (e2e)', () => {
 
       mockTimetableService.getClassTimetable.mockResolvedValue(mockData);
 
-      const response = await request(app.getHttpServer())
-        .get('/timetables/class/507f1f77bcf86cd799439011');
+      const response = await request(app.getHttpServer()).get(
+        '/timetables/class/507f1f77bcf86cd799439011',
+      );
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(mockData);
@@ -214,8 +218,9 @@ describe('Timetables (e2e)', () => {
 
       mockTimetableService.getTeacherTimetable.mockResolvedValue(mockData);
 
-      const response = await request(app.getHttpServer())
-        .get('/timetables/teacher/507f1f77bcf86cd799439013');
+      const response = await request(app.getHttpServer()).get(
+        '/timetables/teacher/507f1f77bcf86cd799439013',
+      );
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(mockData);
