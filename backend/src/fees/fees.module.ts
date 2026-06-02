@@ -26,6 +26,6 @@ import { FeesReportController } from './fees-report.controller';
   ],
   providers: [FeeStructureService, FeeCollectionService, ReceiptService, InvoiceService, FeesReportService],
   controllers: [FeeStructureController, FeeCollectionController, ReceiptController, InvoiceController, FeesReportController],
-  exports: [FeeStructureService, FeeCollectionService, ReceiptService, InvoiceService],
+  exports: [FeeStructureService, FeeCollectionService, ReceiptService, InvoiceService, FeesReportService],
 })
 export class FeesModule {}
