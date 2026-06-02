@@ -32,6 +32,7 @@ import MarksPage from './features/marks/MarksPage';
 import { NotificationCenter } from './features/notifications/pages/NotificationCenter';
 import { NotificationPreferences } from './features/notifications/pages/NotificationPreferences';
 import { ReportsPage } from './features/reports/pages/ReportsPage';
+import { AuditLogsPage } from './features/audit-logs';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -243,6 +244,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/audit-logs"
+          element={
+            <ProtectedRoute>
+              <AuditLogsPage />
             </ProtectedRoute>
           }
         />

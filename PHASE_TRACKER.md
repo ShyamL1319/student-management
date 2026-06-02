@@ -22,6 +22,29 @@
 | 18 | Reports | Completed |
 | 19 | Testing | Pending |
 | 20 | Deployment | Pending |
+| 21 | Audit Logging | Completed |
+
+## Phase 21 - Audit Logging Implementation Summary
+
+### Backend Implementation
+- ✅ Created `AuditLogsModule` and `AuditLogsService` for managing logs.
+- ✅ Created MongoDB Schema `AuditLog` for tracking user actions.
+- ✅ Developed `AuditInterceptor` (acting as middleware/interceptor) to track CRUD operations and user logins/logouts.
+- ✅ Added `AuditLogsController` with `GET /audit-logs` endpoint with filtering by action, status, entity, etc.
+- ✅ Registered interceptor globally in `AppModule`.
+
+### Frontend Implementation
+- ✅ Created `auditLogsApi.ts` for handling API requests.
+- ✅ Developed `AuditLogsPage.tsx` with a data table, filtering, and status chips.
+- ✅ Added Audit Logs screen to routing in `App.tsx`.
+- ✅ Included Audit Logs in the Sidebar menu under Reports.
+
+### Features Implemented
+✅ Login Logs
+✅ Activity Logs
+✅ Change Tracking
+✅ User Actions
+
 
 ## Phase 18 - Reports Implementation Summary
 
