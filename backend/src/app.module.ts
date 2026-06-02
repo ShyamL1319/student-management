@@ -28,6 +28,8 @@ import { FeesModule } from './fees/fees.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 
+import { ReportsModule } from './reports/reports.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -64,6 +66,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     FeesModule,
     NotificationsModule,
     AnalyticsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
