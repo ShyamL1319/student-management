@@ -1,16 +1,10 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import api from '../../api/api';
 
 export const reportsApi = {
   exportReport: async (type: string, format: 'pdf' | 'excel', filters: any = {}) => {
-    const token = localStorage.getItem('token');
     const params = new URLSearchParams({ type, format, ...filters });
     
-    const response = await axios.get(`${API_URL}/reports/export?${params.toString()}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    const response = await api.get(`/reports/export?${params.toString()}`, {
       responseType: 'blob',
     });
 
