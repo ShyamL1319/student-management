@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    image: student-management-backend:latest
+    container_name: student_management_backend_prod
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI}
+      - PORT=3000
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    image: student-management-frontend:latest
+    container_name: student_management_frontend_prod
+    ports:
+      - '80:80'
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    restart: always
