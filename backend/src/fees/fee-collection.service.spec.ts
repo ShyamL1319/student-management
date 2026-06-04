@@ -43,7 +43,9 @@ describe('FeeCollectionService', () => {
         dueDate: new Date(),
       };
 
-      const mockSave = jest.fn().mockResolvedValue({ _id: 'id1', status: 'PENDING', ...dto });
+      const mockSave = jest
+        .fn()
+        .mockResolvedValue({ _id: 'id1', status: 'PENDING', ...dto });
       mockModel.mockImplementation(() => ({
         save: mockSave,
       }));
@@ -95,8 +97,18 @@ describe('FeeCollectionService', () => {
   describe('getOutstandingAmount', () => {
     it('should calculate outstanding amount for a student', async () => {
       const mockFees = [
-        { studentId: 'student1', amountDue: 5000, discount: 0, amountPaid: 2000 },
-        { studentId: 'student1', amountDue: 3000, discount: 500, amountPaid: 0 },
+        {
+          studentId: 'student1',
+          amountDue: 5000,
+          discount: 0,
+          amountPaid: 2000,
+        },
+        {
+          studentId: 'student1',
+          amountDue: 3000,
+          discount: 500,
+          amountPaid: 0,
+        },
       ];
 
       mockModel.find = jest.fn().mockReturnValue({

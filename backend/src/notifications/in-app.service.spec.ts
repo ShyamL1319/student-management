@@ -14,7 +14,10 @@ describe('InAppService', () => {
 
   describe('recordInAppNotification', () => {
     it('should record in-app notification', async () => {
-      const result = await service.recordInAppNotification('user123', 'Test message');
+      const result = await service.recordInAppNotification(
+        'user123',
+        'Test message',
+      );
 
       expect(result.success).toBe(true);
       expect(result.messageId).toBeDefined();

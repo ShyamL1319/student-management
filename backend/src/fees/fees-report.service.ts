@@ -11,7 +11,8 @@ import { Invoice, InvoiceDocument } from './schemas/invoice.schema';
 @Injectable()
 export class FeesReportService {
   constructor(
-    @InjectModel(FeeCollection.name) private feeCollectionModel: Model<FeeCollectionDocument>,
+    @InjectModel(FeeCollection.name)
+    private feeCollectionModel: Model<FeeCollectionDocument>,
     @InjectModel(Receipt.name) private receiptModel: Model<ReceiptDocument>,
     @InjectModel(Invoice.name) private invoiceModel: Model<InvoiceDocument>,
   ) {}
@@ -109,7 +110,10 @@ export class FeesReportService {
 
     return {
       totalStudentsWithOutstanding: report.length,
-      totalOutstandingAmount: report.reduce((sum: number, s: any) => sum + s.totalOutstanding, 0),
+      totalOutstandingAmount: report.reduce(
+        (sum: number, s: any) => sum + s.totalOutstanding,
+        0,
+      ),
       report,
     };
   }
@@ -217,8 +221,13 @@ export class FeesReportService {
       if (academicYearId) query.academicYearId = academicYearId;
 
       const receipts = await this.receiptModel.find(query).lean();
-      const totalAmount = receipts.reduce((sum, r) => sum + r.amountReceived, 0);
-      const monthName = startDate.toLocaleDateString('en-US', { month: 'long' });
+      const totalAmount = receipts.reduce(
+        (sum, r) => sum + r.amountReceived,
+        0,
+      );
+      const monthName = startDate.toLocaleDateString('en-US', {
+        month: 'long',
+      });
 
       monthlyData[month] = {
         month: monthName,

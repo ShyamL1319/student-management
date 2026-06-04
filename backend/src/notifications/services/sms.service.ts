@@ -85,7 +85,11 @@ export class SmsService {
     phoneNumbers: string[],
     message: string,
   ): Promise<{ success: number; failed: number; errors: string[] }> {
-    const results: { success: number; failed: number; errors: string[] } = { success: 0, failed: 0, errors: [] };
+    const results: { success: number; failed: number; errors: string[] } = {
+      success: 0,
+      failed: 0,
+      errors: [],
+    };
 
     for (const phone of phoneNumbers) {
       const result = await this.sendSMS(phone, message);

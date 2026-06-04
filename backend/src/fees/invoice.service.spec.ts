@@ -92,7 +92,11 @@ describe('InvoiceService', () => {
   describe('getOverdueInvoices', () => {
     it('should get overdue invoices', async () => {
       const mockOverdue = [
-        { invoiceNumber: 'INV-2026-06-00001', status: 'OVERDUE', dueDate: new Date('2026-05-01') },
+        {
+          invoiceNumber: 'INV-2026-06-00001',
+          status: 'OVERDUE',
+          dueDate: new Date('2026-05-01'),
+        },
       ];
 
       mockModel.find = jest.fn().mockReturnValue({

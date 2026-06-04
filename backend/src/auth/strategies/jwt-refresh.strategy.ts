@@ -7,7 +7,6 @@ import { Request } from 'express';
 import { UsersService } from '../../users/users.service';
 
 @Injectable()
-// eslint-disable-next-line prettier/prettier
 export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
   'jwt-refresh',

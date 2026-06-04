@@ -1,23 +1,102 @@
-# Development Rules
+# School Management System Development Rules
+## Primary Objective
 
-Before implementing any feature:
+Build a production-grade School Management System.
+
+Technology Stack:
+
+Backend:
+
+* NestJS
+* MongoDB
+* Mongoose
+* JWT
+* Swagger
+
+Frontend:
+
+* React
+* TypeScript
+* React Router
+* Axios
+* React Query
+* Material UI
+
+## Engineering Standards
+
+Follow:
+
+* SOLID Principles
+* DRY
+* KISS
+* Clean Architecture
+* Domain Driven Design
+* Repository Pattern
+* Factory Pattern where applicable
+* Strategy Pattern where applicable
+
+## Code Quality
+
+Always:
+
+* Enable strict TypeScript
+* Use DTO validation
+* Use Swagger decorators
+* Use Dependency Injection
+* Avoid duplicated code
+* Extract reusable components
+* Extract reusable services
+
+## Security
+
+Review:
+
+* Authentication
+* Authorization
+* RBAC
+* JWT Security
+* OWASP Top 10
+* Rate Limiting
+* Input Validation
+* Mongo Injection Protection
+
+## Testing
+
+Generate:
+
+* Unit Tests
+* Integration Tests
+* E2E Tests
+
+Coverage Target:
+
+80%+
+
+## Formatting
+
+Run and fix:
+
+* ESLint
+* Prettier
+* TypeScript Errors
+
+## Development Process
+
+Before every implementation:
 
 1. Read PROJECT_ROADMAP.md
 2. Read PHASE_TRACKER.md
-3. Check completed phases
-4. Implement only current phase
-5. Update tracker after completion
+3. Read FEATURE_MATRIX.md
 
-Coding Rules:
+After every phase:
 
-- Follow existing LinkShortner architecture
-- Do not create shortcuts
-- Use DTO validation
-- Use Swagger decorators
-- Use RBAC
-- Use TypeScript strict mode
-- Generate tests
-- Generate README updates
-- Generate API documentation
+1. Refactor
+2. Security Review
+3. Performance Review
+4. Run Tests
+5. Update Documentation
+6. Update Phase Tracker
 
-Never implement future phases until current phase is approved.
+Never implement future phases.
+
+Implement one phase at a time.

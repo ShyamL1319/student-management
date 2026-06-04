@@ -21,7 +21,9 @@ export class FeesReportController {
   }
 
   @Get('outstanding')
-  async getOutstandingFeesReport(@Query('academicYearId') academicYearId?: string) {
+  async getOutstandingFeesReport(
+    @Query('academicYearId') academicYearId?: string,
+  ) {
     return this.feesReportService.generateOutstandingFeesReport(academicYearId);
   }
 
@@ -41,7 +43,10 @@ export class FeesReportController {
     @Query('classId') classId?: string,
     @Query('academicYearId') academicYearId?: string,
   ) {
-    return this.feesReportService.generateInvoiceReport(classId, academicYearId);
+    return this.feesReportService.generateInvoiceReport(
+      classId,
+      academicYearId,
+    );
   }
 
   @Get('monthly')

@@ -48,7 +48,10 @@ export class NotificationPreferenceController {
   @Patch('channel/:channel/enable')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Enable notifications for a channel' })
-  async enableChannel(@CurrentUser() user: any, @Param('channel') channel: string) {
+  async enableChannel(
+    @CurrentUser() user: any,
+    @Param('channel') channel: string,
+  ) {
     this.logger.log(`Enabling ${channel} for user: ${user._id}`);
     return this.preferenceService.enableChannel(user._id, channel);
   }
@@ -56,7 +59,10 @@ export class NotificationPreferenceController {
   @Patch('channel/:channel/disable')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Disable notifications for a channel' })
-  async disableChannel(@CurrentUser() user: any, @Param('channel') channel: string) {
+  async disableChannel(
+    @CurrentUser() user: any,
+    @Param('channel') channel: string,
+  ) {
     this.logger.log(`Disabling ${channel} for user: ${user._id}`);
     return this.preferenceService.disableChannel(user._id, channel);
   }
@@ -64,7 +70,10 @@ export class NotificationPreferenceController {
   @Patch('event/:eventType/enable')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Enable notifications for an event type' })
-  async enableEvent(@CurrentUser() user: any, @Param('eventType') eventType: string) {
+  async enableEvent(
+    @CurrentUser() user: any,
+    @Param('eventType') eventType: string,
+  ) {
     this.logger.log(`Enabling event ${eventType} for user: ${user._id}`);
     return this.preferenceService.enableEvent(user._id, eventType);
   }
@@ -72,7 +81,10 @@ export class NotificationPreferenceController {
   @Patch('event/:eventType/disable')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Disable notifications for an event type' })
-  async disableEvent(@CurrentUser() user: any, @Param('eventType') eventType: string) {
+  async disableEvent(
+    @CurrentUser() user: any,
+    @Param('eventType') eventType: string,
+  ) {
     this.logger.log(`Disabling event ${eventType} for user: ${user._id}`);
     return this.preferenceService.disableEvent(user._id, eventType);
   }

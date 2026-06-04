@@ -1,13 +1,25 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FeeStructure, FeeStructureDocument } from './schemas/fee-structure.schema';
-import { CreateFeeStructureDto, UpdateFeeStructureDto, FeeStructureQueryDto } from './dto/fee-structure.dto';
+import {
+  FeeStructure,
+  FeeStructureDocument,
+} from './schemas/fee-structure.schema';
+import {
+  CreateFeeStructureDto,
+  UpdateFeeStructureDto,
+  FeeStructureQueryDto,
+} from './dto/fee-structure.dto';
 
 @Injectable()
 export class FeeStructureService {
   constructor(
-    @InjectModel(FeeStructure.name) private feeStructureModel: Model<FeeStructureDocument>,
+    @InjectModel(FeeStructure.name)
+    private feeStructureModel: Model<FeeStructureDocument>,
   ) {}
 
   async create(dto: CreateFeeStructureDto) {
@@ -36,7 +48,11 @@ export class FeeStructureService {
   }
 
   async update(id: string, dto: UpdateFeeStructureDto) {
-    const feeStructure = await this.feeStructureModel.findByIdAndUpdate(id, dto, { new: true });
+    const feeStructure = await this.feeStructureModel.findByIdAndUpdate(
+      id,
+      dto,
+      { new: true },
+    );
     if (!feeStructure) {
       throw new NotFoundException(`Fee Structure with ID ${id} not found`);
     }

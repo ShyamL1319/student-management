@@ -1,6 +1,19 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
-import { CreateInvoiceDto, UpdateInvoiceDto, InvoiceQueryDto } from './dto/invoice.dto';
+import {
+  CreateInvoiceDto,
+  UpdateInvoiceDto,
+  InvoiceQueryDto,
+} from './dto/invoice.dto';
 
 @Controller('invoices')
 export class InvoiceController {
@@ -17,12 +30,18 @@ export class InvoiceController {
   }
 
   @Get('student/:studentId')
-  findByStudent(@Param('studentId') studentId: string, @Query('academicYearId') academicYearId?: string) {
+  findByStudent(
+    @Param('studentId') studentId: string,
+    @Query('academicYearId') academicYearId?: string,
+  ) {
     return this.invoiceService.findByStudent(studentId, academicYearId);
   }
 
   @Get('class/:classId')
-  findByClass(@Param('classId') classId: string, @Query('academicYearId') academicYearId?: string) {
+  findByClass(
+    @Param('classId') classId: string,
+    @Query('academicYearId') academicYearId?: string,
+  ) {
     return this.invoiceService.findByClass(classId, academicYearId);
   }
 

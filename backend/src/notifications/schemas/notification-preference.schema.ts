@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { NotificationChannel, NotificationEventType } from './notification.schema';
+import {
+  NotificationChannel,
+  NotificationEventType,
+} from './notification.schema';
 
 @Schema({ timestamps: true })
 export class NotificationPreference extends Document {
@@ -35,4 +38,6 @@ export class NotificationPreference extends Document {
   isActive: boolean;
 }
 
-export const NotificationPreferenceSchema = SchemaFactory.createForClass(NotificationPreference);
+export const NotificationPreferenceSchema = SchemaFactory.createForClass(
+  NotificationPreference,
+);

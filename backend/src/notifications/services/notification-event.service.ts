@@ -2,7 +2,10 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NotificationEvent } from '../schemas/notification-event.schema';
-import { NotificationEventType, NotificationChannel } from '../schemas/notification.schema';
+import {
+  NotificationEventType,
+  NotificationChannel,
+} from '../schemas/notification.schema';
 import { NotificationService } from './notification.service';
 
 @Injectable()
@@ -10,7 +13,8 @@ export class NotificationEventService {
   private readonly logger = new Logger(NotificationEventService.name);
 
   constructor(
-    @InjectModel(NotificationEvent.name) private eventModel: Model<NotificationEvent>,
+    @InjectModel(NotificationEvent.name)
+    private eventModel: Model<NotificationEvent>,
     private notificationService: NotificationService,
   ) {}
 
@@ -168,7 +172,10 @@ export class NotificationEventService {
   /**
    * Get all events
    */
-  async findAll(filters?: { eventType?: string; relatedEntityType?: string }): Promise<NotificationEvent[]> {
+  async findAll(filters?: {
+    eventType?: string;
+    relatedEntityType?: string;
+  }): Promise<NotificationEvent[]> {
     try {
       const query: any = { isActive: true };
 
@@ -194,10 +201,10 @@ export class NotificationEventService {
     try {
       const [total, success, failure] = await Promise.all([
         this.eventModel.countDocuments(),
-        this.eventModel.countDocuments({ 
+        this.eventModel.countDocuments({
           $expr: { $gt: ['$successCount', 0] },
         }),
-        this.eventModel.countDocuments({ 
+        this.eventModel.countDocuments({
           $expr: { $gt: ['$failureCount', 0] },
         }),
       ]);

@@ -1,6 +1,19 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { FeeStructureService } from './fee-structure.service';
-import { CreateFeeStructureDto, UpdateFeeStructureDto, FeeStructureQueryDto } from './dto/fee-structure.dto';
+import {
+  CreateFeeStructureDto,
+  UpdateFeeStructureDto,
+  FeeStructureQueryDto,
+} from './dto/fee-structure.dto';
 
 @Controller('fee-structures')
 export class FeeStructureController {
@@ -17,7 +30,10 @@ export class FeeStructureController {
   }
 
   @Get('class/:classId')
-  findByClass(@Param('classId') classId: string, @Query('academicYearId') academicYearId?: string) {
+  findByClass(
+    @Param('classId') classId: string,
+    @Query('academicYearId') academicYearId?: string,
+  ) {
     return this.feeStructureService.findByClass(classId, academicYearId);
   }
 

@@ -53,7 +53,11 @@ export class Notification extends Document {
   @Prop({ type: Object, default: {} })
   templateData: Record<string, any>;
 
-  @Prop({ type: String, enum: NotificationStatus, default: NotificationStatus.PENDING })
+  @Prop({
+    type: String,
+    enum: NotificationStatus,
+    default: NotificationStatus.PENDING,
+  })
   status: NotificationStatus;
 
   @Prop({})

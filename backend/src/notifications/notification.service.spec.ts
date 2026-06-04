@@ -1,7 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { NotificationService } from './services/notification.service';
-import { Notification, NotificationStatus, NotificationChannel, NotificationEventType } from './schemas/notification.schema';
+import {
+  Notification,
+  NotificationStatus,
+  NotificationChannel,
+  NotificationEventType,
+} from './schemas/notification.schema';
 import { EmailService } from './services/email.service';
 import { SmsService } from './services/sms.service';
 import { InAppService } from './services/in-app.service';
@@ -53,9 +58,23 @@ describe('NotificationService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotificationService,
-        { provide: EmailService, useValue: { sendEmail: jest.fn(), sendBulkEmail: jest.fn() } },
-        { provide: SmsService, useValue: { sendSMS: jest.fn(), sendBulkSMS: jest.fn() } },
-        { provide: InAppService, useValue: { recordInAppNotification: jest.fn(), recordBulkInAppNotifications: jest.fn(), markAsRead: jest.fn(), markAllAsRead: jest.fn() } },
+        {
+          provide: EmailService,
+          useValue: { sendEmail: jest.fn(), sendBulkEmail: jest.fn() },
+        },
+        {
+          provide: SmsService,
+          useValue: { sendSMS: jest.fn(), sendBulkSMS: jest.fn() },
+        },
+        {
+          provide: InAppService,
+          useValue: {
+            recordInAppNotification: jest.fn(),
+            recordBulkInAppNotifications: jest.fn(),
+            markAsRead: jest.fn(),
+            markAllAsRead: jest.fn(),
+          },
+        },
         {
           provide: getModelToken(Notification.name),
           useValue: mockNotificationModel,
@@ -161,7 +180,9 @@ describe('NotificationService', () => {
         isRead: true,
       };
 
-      mockNotificationModel.findByIdAndUpdate.mockResolvedValue(mockNotification);
+      mockNotificationModel.findByIdAndUpdate.mockResolvedValue(
+        mockNotification,
+      );
 
       const result = await service.markAsRead('notif123');
 

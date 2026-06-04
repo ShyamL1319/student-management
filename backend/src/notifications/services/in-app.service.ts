@@ -18,7 +18,10 @@ export class InAppService {
         messageId: `in-app-${Date.now()}`,
       };
     } catch (error) {
-      this.logger.error(`Failed to record in-app notification for user ${userId}:`, error);
+      this.logger.error(
+        `Failed to record in-app notification for user ${userId}:`,
+        error,
+      );
       return { success: false, error: error.message };
     }
   }
@@ -28,10 +31,18 @@ export class InAppService {
     message: string,
     metadata?: Record<string, any>,
   ): Promise<{ success: number; failed: number; errors: string[] }> {
-    const results: { success: number; failed: number; errors: string[] } = { success: 0, failed: 0, errors: [] };
+    const results: { success: number; failed: number; errors: string[] } = {
+      success: 0,
+      failed: 0,
+      errors: [],
+    };
 
     for (const userId of userIds) {
-      const result = await this.recordInAppNotification(userId, message, metadata);
+      const result = await this.recordInAppNotification(
+        userId,
+        message,
+        metadata,
+      );
       if (result.success) {
         results.success++;
       } else {
