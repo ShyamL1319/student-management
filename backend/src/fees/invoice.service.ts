@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Invoice, InvoiceDocument } from './schemas/invoice.schema';
-import { CreateInvoiceDto, UpdateInvoiceDto, InvoiceQueryDto } from './dto/invoice.dto';
+import {
+  CreateInvoiceDto,
+  UpdateInvoiceDto,
+  InvoiceQueryDto,
+} from './dto/invoice.dto';
 
 @Injectable()
 export class InvoiceService {
@@ -46,7 +54,9 @@ export class InvoiceService {
   async findByInvoiceNumber(invoiceNumber: string) {
     const invoice = await this.invoiceModel.findOne({ invoiceNumber }).lean();
     if (!invoice) {
-      throw new NotFoundException(`Invoice with number ${invoiceNumber} not found`);
+      throw new NotFoundException(
+        `Invoice with number ${invoiceNumber} not found`,
+      );
     }
     return invoice;
   }

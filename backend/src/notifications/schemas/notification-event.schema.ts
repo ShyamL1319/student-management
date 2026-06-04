@@ -32,4 +32,5 @@ export class NotificationEvent extends Document {
   isActive: boolean;
 }
 
-export const NotificationEventSchema = SchemaFactory.createForClass(NotificationEvent);
+export const NotificationEventSchema =
+  SchemaFactory.createForClass(NotificationEvent);

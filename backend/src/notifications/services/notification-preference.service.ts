@@ -2,7 +2,10 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NotificationPreference } from '../schemas/notification-preference.schema';
-import { NotificationChannel, NotificationEventType } from '../schemas/notification.schema';
+import {
+  NotificationChannel,
+  NotificationEventType,
+} from '../schemas/notification.schema';
 import { UpdateNotificationPreferenceDto } from '../dto/notification-preference.dto';
 
 @Injectable()
@@ -10,7 +13,8 @@ export class NotificationPreferenceService {
   private readonly logger = new Logger(NotificationPreferenceService.name);
 
   constructor(
-    @InjectModel(NotificationPreference.name) private preferenceModel: Model<NotificationPreference>,
+    @InjectModel(NotificationPreference.name)
+    private preferenceModel: Model<NotificationPreference>,
   ) {}
 
   /**
@@ -61,7 +65,10 @@ export class NotificationPreferenceService {
   /**
    * Update user preferences
    */
-  async update(userId: string, updatePreferenceDto: UpdateNotificationPreferenceDto): Promise<NotificationPreference> {
+  async update(
+    userId: string,
+    updatePreferenceDto: UpdateNotificationPreferenceDto,
+  ): Promise<NotificationPreference> {
     try {
       const preference = await this.preferenceModel.findOneAndUpdate(
         { userId },
@@ -84,7 +91,10 @@ export class NotificationPreferenceService {
   /**
    * Enable channel notifications
    */
-  async enableChannel(userId: string, channel: string): Promise<NotificationPreference> {
+  async enableChannel(
+    userId: string,
+    channel: string,
+  ): Promise<NotificationPreference> {
     try {
       const preference = await this.preferenceModel.findOne({ userId });
 
@@ -106,7 +116,10 @@ export class NotificationPreferenceService {
   /**
    * Disable channel notifications
    */
-  async disableChannel(userId: string, channel: string): Promise<NotificationPreference> {
+  async disableChannel(
+    userId: string,
+    channel: string,
+  ): Promise<NotificationPreference> {
     try {
       const preference = await this.preferenceModel.findOne({ userId });
 
@@ -128,7 +141,10 @@ export class NotificationPreferenceService {
   /**
    * Enable event notifications
    */
-  async enableEvent(userId: string, eventType: string): Promise<NotificationPreference> {
+  async enableEvent(
+    userId: string,
+    eventType: string,
+  ): Promise<NotificationPreference> {
     try {
       const preference = await this.preferenceModel.findOne({ userId });
 
@@ -150,7 +166,10 @@ export class NotificationPreferenceService {
   /**
    * Disable event notifications
    */
-  async disableEvent(userId: string, eventType: string): Promise<NotificationPreference> {
+  async disableEvent(
+    userId: string,
+    eventType: string,
+  ): Promise<NotificationPreference> {
     try {
       const preference = await this.preferenceModel.findOne({ userId });
 

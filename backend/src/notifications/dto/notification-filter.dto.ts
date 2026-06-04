@@ -1,5 +1,9 @@
 import { IsOptional, IsEnum, IsString } from 'class-validator';
-import { NotificationChannel, NotificationEventType, NotificationStatus } from '../schemas/notification.schema';
+import {
+  NotificationChannel,
+  NotificationEventType,
+  NotificationStatus,
+} from '../schemas/notification.schema';
 
 export class NotificationFilterDto {
   @IsOptional()

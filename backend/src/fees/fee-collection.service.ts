@@ -1,13 +1,25 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FeeCollection, FeeCollectionDocument } from './schemas/fee-collection.schema';
-import { CreateFeeCollectionDto, UpdateFeeCollectionDto, FeeCollectionQueryDto } from './dto/fee-collection.dto';
+import {
+  FeeCollection,
+  FeeCollectionDocument,
+} from './schemas/fee-collection.schema';
+import {
+  CreateFeeCollectionDto,
+  UpdateFeeCollectionDto,
+  FeeCollectionQueryDto,
+} from './dto/fee-collection.dto';
 
 @Injectable()
 export class FeeCollectionService {
   constructor(
-    @InjectModel(FeeCollection.name) private feeCollectionModel: Model<FeeCollectionDocument>,
+    @InjectModel(FeeCollection.name)
+    private feeCollectionModel: Model<FeeCollectionDocument>,
   ) {}
 
   async create(dto: CreateFeeCollectionDto) {
@@ -47,14 +59,23 @@ export class FeeCollectionService {
   }
 
   async update(id: string, dto: UpdateFeeCollectionDto) {
-    const feeCollection = await this.feeCollectionModel.findByIdAndUpdate(id, dto, { new: true });
+    const feeCollection = await this.feeCollectionModel.findByIdAndUpdate(
+      id,
+      dto,
+      { new: true },
+    );
     if (!feeCollection) {
       throw new NotFoundException(`Fee Collection with ID ${id} not found`);
     }
     return feeCollection;
   }
 
-  async recordPayment(id: string, amountPaid: number, paymentMethod: string, transactionId?: string) {
+  async recordPayment(
+    id: string,
+    amountPaid: number,
+    paymentMethod: string,
+    transactionId?: string,
+  ) {
     const feeCollection = await this.feeCollectionModel.findById(id);
     if (!feeCollection) {
       throw new NotFoundException(`Fee Collection with ID ${id} not found`);
@@ -76,17 +97,18 @@ export class FeeCollectionService {
       status = 'OVERDUE';
     }
 
-    const updatedFeeCollection = await this.feeCollectionModel.findByIdAndUpdate(
-      id,
-      {
-        amountPaid: totalPaid,
-        status,
-        paymentDate: new Date(),
-        paymentMethod,
-        transactionId,
-      },
-      { new: true },
-    );
+    const updatedFeeCollection =
+      await this.feeCollectionModel.findByIdAndUpdate(
+        id,
+        {
+          amountPaid: totalPaid,
+          status,
+          paymentDate: new Date(),
+          paymentMethod,
+          transactionId,
+        },
+        { new: true },
+      );
 
     return updatedFeeCollection;
   }

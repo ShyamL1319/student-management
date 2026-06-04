@@ -1,4 +1,10 @@
-import { IsOptional, IsString, IsEnum, IsBoolean, IsObject } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsBoolean,
+  IsObject,
+} from 'class-validator';
 import { NotificationStatus } from '../schemas/notification.schema';
 
 export class UpdateNotificationDto {

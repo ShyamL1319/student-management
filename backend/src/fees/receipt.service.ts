@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Receipt, ReceiptDocument } from './schemas/receipt.schema';
-import { CreateReceiptDto, UpdateReceiptDto, ReceiptQueryDto } from './dto/receipt.dto';
+import {
+  CreateReceiptDto,
+  UpdateReceiptDto,
+  ReceiptQueryDto,
+} from './dto/receipt.dto';
 
 @Injectable()
 export class ReceiptService {
@@ -43,7 +51,9 @@ export class ReceiptService {
   async findByReceiptNumber(receiptNumber: string) {
     const receipt = await this.receiptModel.findOne({ receiptNumber }).lean();
     if (!receipt) {
-      throw new NotFoundException(`Receipt with number ${receiptNumber} not found`);
+      throw new NotFoundException(
+        `Receipt with number ${receiptNumber} not found`,
+      );
     }
     return receipt;
   }
@@ -57,7 +67,9 @@ export class ReceiptService {
   }
 
   async update(id: string, dto: UpdateReceiptDto) {
-    const receipt = await this.receiptModel.findByIdAndUpdate(id, dto, { new: true });
+    const receipt = await this.receiptModel.findByIdAndUpdate(id, dto, {
+      new: true,
+    });
     if (!receipt) {
       throw new NotFoundException(`Receipt with ID ${id} not found`);
     }

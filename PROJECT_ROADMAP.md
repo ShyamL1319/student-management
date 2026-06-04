@@ -1,22 +1,47 @@
 # School Management System Roadmap
 
-Phase 1 - Project Setup
-Phase 2 - Authentication
-Phase 3 - User Management
-Phase 4 - Student Module
-Phase 5 - Teacher Module
-Phase 6 - Staff Module
-Phase 7 - Department Module
-Phase 8 - Course Module
-Phase 9 - Subject Module
-Phase 10 - Class Management
-Phase 11 - Attendance
-Phase 12 - Examination
-Phase 13 - Marks
-Phase 14 - Timetable
-Phase 15 - Fees
-Phase 16 - Notifications
-Phase 17 - Dashboard
-Phase 18 - Reports
-Phase 19 - Testing
-Phase 20 - Deployment
+Phase 0 - Architecture Analysis
+
+Phase 1 - Project Bootstrap
+
+Phase 2 - Authentication & Authorization
+
+Phase 3 - Organization Foundation
+
+* School
+* Academic Year
+* Department
+* Class
+* Section
+
+Phase 4 - Human Resources
+
+* Teacher
+* Staff
+* Parent
+
+Phase 5 - Student Management
+
+Phase 6 - Course & Subject Management
+
+Phase 7 - Timetable Management
+
+Phase 8 - Attendance Management
+
+Phase 9 - Examination Management
+
+Phase 10 - Marks & Results
+
+Phase 11 - Fee Management
+
+Phase 12 - Notifications
+
+Phase 13 - Dashboard & Analytics
+
+Phase 14 - Reports
+
+Phase 15 - Audit Logs
+
+Phase 16 - Testing
+
+Phase 17 - Deployment & DevOps

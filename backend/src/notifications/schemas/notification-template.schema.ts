@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { NotificationChannel, NotificationEventType } from './notification.schema';
+import {
+  NotificationChannel,
+  NotificationEventType,
+} from './notification.schema';
 
 @Schema({ timestamps: true })
 export class NotificationTemplate extends Document {
@@ -32,4 +35,5 @@ export class NotificationTemplate extends Document {
   metadata: Record<string, any>;
 }
 
-export const NotificationTemplateSchema = SchemaFactory.createForClass(NotificationTemplate);
+export const NotificationTemplateSchema =
+  SchemaFactory.createForClass(NotificationTemplate);

@@ -32,7 +32,7 @@ describe('ExaminationsService', () => {
     const res = await service.create({
       name: 'Mid Term',
       type: 'MID_TERM',
-    } as any);
+    });
     expect(res).toEqual({ name: 'Mid Term', type: 'MID_TERM' });
   });
 });

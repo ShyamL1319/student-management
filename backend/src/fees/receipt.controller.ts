@@ -1,6 +1,19 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ReceiptService } from './receipt.service';
-import { CreateReceiptDto, UpdateReceiptDto, ReceiptQueryDto } from './dto/receipt.dto';
+import {
+  CreateReceiptDto,
+  UpdateReceiptDto,
+  ReceiptQueryDto,
+} from './dto/receipt.dto';
 
 @Controller('receipts')
 export class ReceiptController {
@@ -32,8 +45,14 @@ export class ReceiptController {
   }
 
   @Get('date-range')
-  getReceiptsByDateRange(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
-    return this.receiptService.getReceiptsByDateRange(new Date(startDate), new Date(endDate));
+  getReceiptsByDateRange(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.receiptService.getReceiptsByDateRange(
+      new Date(startDate),
+      new Date(endDate),
+    );
   }
 
   @Get(':id')

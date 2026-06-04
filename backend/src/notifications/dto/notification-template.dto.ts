@@ -1,5 +1,16 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsEnum, IsArray, IsBoolean } from 'class-validator';
-import { NotificationChannel, NotificationEventType } from '../schemas/notification.schema';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsArray,
+  IsBoolean,
+} from 'class-validator';
+import {
+  NotificationChannel,
+  NotificationEventType,
+} from '../schemas/notification.schema';
 
 export class CreateNotificationTemplateDto {
   @IsNotEmpty()

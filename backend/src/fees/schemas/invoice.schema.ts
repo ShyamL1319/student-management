@@ -41,7 +41,10 @@ export class Invoice {
   @Prop()
   pendingAmount: number;
 
-  @Prop({ type: String, enum: ['DRAFT', 'ISSUED', 'PARTIAL', 'PAID', 'OVERDUE', 'CANCELLED'] })
+  @Prop({
+    type: String,
+    enum: ['DRAFT', 'ISSUED', 'PARTIAL', 'PAID', 'OVERDUE', 'CANCELLED'],
+  })
   status: string;
 
   @Prop({ default: null })

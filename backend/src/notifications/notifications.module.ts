@@ -1,9 +1,21 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Notification, NotificationSchema } from './schemas/notification.schema';
-import { NotificationTemplate, NotificationTemplateSchema } from './schemas/notification-template.schema';
-import { NotificationPreference, NotificationPreferenceSchema } from './schemas/notification-preference.schema';
-import { NotificationEvent, NotificationEventSchema } from './schemas/notification-event.schema';
+import {
+  Notification,
+  NotificationSchema,
+} from './schemas/notification.schema';
+import {
+  NotificationTemplate,
+  NotificationTemplateSchema,
+} from './schemas/notification-template.schema';
+import {
+  NotificationPreference,
+  NotificationPreferenceSchema,
+} from './schemas/notification-preference.schema';
+import {
+  NotificationEvent,
+  NotificationEventSchema,
+} from './schemas/notification-event.schema';
 import { NotificationService } from './services/notification.service';
 import { NotificationTemplateService } from './services/notification-template.service';
 import { NotificationPreferenceService } from './services/notification-preference.service';
@@ -21,7 +33,10 @@ import { NotificationEventController } from './notification-event.controller';
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },
       { name: NotificationTemplate.name, schema: NotificationTemplateSchema },
-      { name: NotificationPreference.name, schema: NotificationPreferenceSchema },
+      {
+        name: NotificationPreference.name,
+        schema: NotificationPreferenceSchema,
+      },
       { name: NotificationEvent.name, schema: NotificationEventSchema },
     ]),
   ],

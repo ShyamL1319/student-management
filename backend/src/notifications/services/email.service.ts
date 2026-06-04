@@ -40,7 +40,9 @@ export class EmailService {
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
       const mailOptions = {
-        from: this.configService.get('email.from') || 'noreply@schoolmanagement.com',
+        from:
+          this.configService.get('email.from') ||
+          'noreply@schoolmanagement.com',
         to,
         subject,
         text: message,
@@ -62,7 +64,11 @@ export class EmailService {
     message: string,
     htmlContent?: string,
   ): Promise<{ success: number; failed: number; errors: string[] }> {
-    const results: { success: number; failed: number; errors: string[] } = { success: 0, failed: 0, errors: [] };
+    const results: { success: number; failed: number; errors: string[] } = {
+      success: 0,
+      failed: 0,
+      errors: [],
+    };
 
     for (const email of recipients) {
       const result = await this.sendEmail(email, subject, message, htmlContent);

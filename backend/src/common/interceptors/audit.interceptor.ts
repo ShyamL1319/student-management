@@ -49,16 +49,18 @@ export class AuditInterceptor implements NestInterceptor {
             let entityType = originalUrl.split('/')[1] || 'unknown';
             if (entityType.includes('?')) entityType = entityType.split('?')[0];
 
-            this.auditLogsService.create({
-              action,
-              entityType,
-              entityId: data?._id || data?.id || body?._id || body?.id,
-              performedBy: user?._id || user?.id,
-              changes: action !== AuditAction.LOGIN ? body : undefined,
-              ipAddress: ip,
-              userAgent,
-              status: AuditStatus.SUCCESS,
-            }).catch(err => console.error('Failed to create audit log', err));
+            this.auditLogsService
+              .create({
+                action,
+                entityType,
+                entityId: data?._id || data?.id || body?._id || body?.id,
+                performedBy: user?._id || user?.id,
+                changes: action !== AuditAction.LOGIN ? body : undefined,
+                ipAddress: ip,
+                userAgent,
+                status: AuditStatus.SUCCESS,
+              })
+              .catch((err) => console.error('Failed to create audit log', err));
           }
         },
         error: (error: any) => {
@@ -67,15 +69,16 @@ export class AuditInterceptor implements NestInterceptor {
             let entityType = originalUrl.split('/')[1] || 'unknown';
             if (entityType.includes('?')) entityType = entityType.split('?')[0];
 
-            this.auditLogsService.create({
-              action,
-              entityType,
-              performedBy: user?._id || user?.id,
-              changes: action !== AuditAction.LOGIN ? body : undefined,
-              ipAddress: ip,
-              userAgent,
-              status: AuditStatus.FAILURE,
-            })
+            this.auditLogsService
+              .create({
+                action,
+                entityType,
+                performedBy: user?._id || user?.id,
+                changes: action !== AuditAction.LOGIN ? body : undefined,
+                ipAddress: ip,
+                userAgent,
+                status: AuditStatus.FAILURE,
+              })
               .catch((err) =>
                 console.error('Failed to create audit log on error', err),
               );

@@ -1,7 +1,12 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Notification, NotificationStatus, NotificationChannel, NotificationEventType } from '../schemas/notification.schema';
+import {
+  Notification,
+  NotificationStatus,
+  NotificationChannel,
+  NotificationEventType,
+} from '../schemas/notification.schema';
 import { NotificationTemplate } from '../schemas/notification-template.schema';
 import { NotificationPreference } from '../schemas/notification-preference.schema';
 import { NotificationEvent } from '../schemas/notification-event.schema';
@@ -17,10 +22,14 @@ export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
 
   constructor(
-    @InjectModel(Notification.name) private notificationModel: Model<Notification>,
-    @InjectModel(NotificationTemplate.name) private templateModel: Model<NotificationTemplate>,
-    @InjectModel(NotificationPreference.name) private preferenceModel: Model<NotificationPreference>,
-    @InjectModel(NotificationEvent.name) private eventModel: Model<NotificationEvent>,
+    @InjectModel(Notification.name)
+    private notificationModel: Model<Notification>,
+    @InjectModel(NotificationTemplate.name)
+    private templateModel: Model<NotificationTemplate>,
+    @InjectModel(NotificationPreference.name)
+    private preferenceModel: Model<NotificationPreference>,
+    @InjectModel(NotificationEvent.name)
+    private eventModel: Model<NotificationEvent>,
     private emailService: EmailService,
     private smsService: SmsService,
     private inAppService: InAppService,
@@ -29,10 +38,14 @@ export class NotificationService {
   /**
    * Create and send a notification
    */
-  async create(createNotificationDto: CreateNotificationDto): Promise<Notification> {
+  async create(
+    createNotificationDto: CreateNotificationDto,
+  ): Promise<Notification> {
     try {
       // Check user preferences
-      const preferences = await this.preferenceModel.findOne({ userId: createNotificationDto.recipientId });
+      const preferences = await this.preferenceModel.findOne({
+        userId: createNotificationDto.recipientId,
+      });
 
       if (preferences) {
         // Check if user has disabled notifications for this channel
@@ -51,7 +64,9 @@ export class NotificationService {
       }
 
       // Create notification record
-      const notification = await this.notificationModel.create(createNotificationDto);
+      const notification = await this.notificationModel.create(
+        createNotificationDto,
+      );
 
       // Send notification via appropriate channel
       await this.sendNotification(notification);
@@ -121,7 +136,10 @@ export class NotificationService {
   /**
    * Get all notifications for a user
    */
-  async findByRecipient(recipientId: string, filter?: NotificationFilterDto): Promise<Notification[]> {
+  async findByRecipient(
+    recipientId: string,
+    filter?: NotificationFilterDto,
+  ): Promise<Notification[]> {
     try {
       const query: any = { recipientId };
 
@@ -171,7 +189,10 @@ export class NotificationService {
   /**
    * Update notification
    */
-  async update(id: string, updateNotificationDto: UpdateNotificationDto): Promise<Notification> {
+  async update(
+    id: string,
+    updateNotificationDto: UpdateNotificationDto,
+  ): Promise<Notification> {
     try {
       const notification = await this.notificationModel.findByIdAndUpdate(
         id,
@@ -293,9 +314,18 @@ export class NotificationService {
 
       const [total, sent, failed, pending, read, unread] = await Promise.all([
         this.notificationModel.countDocuments(query),
-        this.notificationModel.countDocuments({ ...query, status: NotificationStatus.SENT }),
-        this.notificationModel.countDocuments({ ...query, status: NotificationStatus.FAILED }),
-        this.notificationModel.countDocuments({ ...query, status: NotificationStatus.PENDING }),
+        this.notificationModel.countDocuments({
+          ...query,
+          status: NotificationStatus.SENT,
+        }),
+        this.notificationModel.countDocuments({
+          ...query,
+          status: NotificationStatus.FAILED,
+        }),
+        this.notificationModel.countDocuments({
+          ...query,
+          status: NotificationStatus.PENDING,
+        }),
         this.notificationModel.countDocuments({ ...query, isRead: true }),
         this.notificationModel.countDocuments({ ...query, isRead: false }),
       ]);

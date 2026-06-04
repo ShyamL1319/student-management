@@ -1,7 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { FeeStructure, FeeStructureSchema } from './schemas/fee-structure.schema';
-import { FeeCollection, FeeCollectionSchema } from './schemas/fee-collection.schema';
+import {
+  FeeStructure,
+  FeeStructureSchema,
+} from './schemas/fee-structure.schema';
+import {
+  FeeCollection,
+  FeeCollectionSchema,
+} from './schemas/fee-collection.schema';
 import { Receipt, ReceiptSchema } from './schemas/receipt.schema';
 import { Invoice, InvoiceSchema } from './schemas/invoice.schema';
 import { FeeStructureService } from './fee-structure.service';
@@ -24,8 +30,26 @@ import { FeesReportController } from './fees-report.controller';
       { name: Invoice.name, schema: InvoiceSchema },
     ]),
   ],
-  providers: [FeeStructureService, FeeCollectionService, ReceiptService, InvoiceService, FeesReportService],
-  controllers: [FeeStructureController, FeeCollectionController, ReceiptController, InvoiceController, FeesReportController],
-  exports: [FeeStructureService, FeeCollectionService, ReceiptService, InvoiceService, FeesReportService],
+  providers: [
+    FeeStructureService,
+    FeeCollectionService,
+    ReceiptService,
+    InvoiceService,
+    FeesReportService,
+  ],
+  controllers: [
+    FeeStructureController,
+    FeeCollectionController,
+    ReceiptController,
+    InvoiceController,
+    FeesReportController,
+  ],
+  exports: [
+    FeeStructureService,
+    FeeCollectionService,
+    ReceiptService,
+    InvoiceService,
+    FeesReportService,
+  ],
 })
 export class FeesModule {}

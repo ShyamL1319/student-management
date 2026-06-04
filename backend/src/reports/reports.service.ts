@@ -21,7 +21,8 @@ export class ReportsService {
   constructor(
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
     @InjectModel(Teacher.name) private teacherModel: Model<TeacherDocument>,
-    @InjectModel(Attendance.name) private attendanceModel: Model<AttendanceDocument>,
+    @InjectModel(Attendance.name)
+    private attendanceModel: Model<AttendanceDocument>,
     @InjectModel(Exam.name) private examModel: Model<ExamDocument>,
     @InjectModel(Mark.name) private markModel: Model<MarkDocument>,
     private feesReportService: FeesReportService,
@@ -32,7 +33,8 @@ export class ReportsService {
     if (filters.school) query.school = new Types.ObjectId(filters.school);
     if (filters.class) query.class = new Types.ObjectId(filters.class);
 
-    const students = await this.studentModel.find(query)
+    const students = await this.studentModel
+      .find(query)
       .populate('user', 'firstName lastName email')
       .populate('class', 'name')
       .lean();
@@ -41,10 +43,10 @@ export class ReportsService {
       'Roll Number': s.rollNumber,
       'First Name': s.user?.firstName || '',
       'Last Name': s.user?.lastName || '',
-      'Email': s.user?.email || '',
-      'Class': s.class?.name || '',
-      'Gender': s.gender,
-      'Status': s.status,
+      Email: s.user?.email || '',
+      Class: s.class?.name || '',
+      Gender: s.gender,
+      Status: s.status,
     }));
 
     const columns = [
@@ -60,16 +62,22 @@ export class ReportsService {
     if (format === 'excel') {
       return this.convertToExcel(data, columns, 'Student Report');
     } else {
-      return this.convertToPdf(data, columns.map(c => c.header), 'Student Report');
+      return this.convertToPdf(
+        data,
+        columns.map((c) => c.header),
+        'Student Report',
+      );
     }
   }
 
   async exportTeacherReport(format: 'pdf' | 'excel', filters: any) {
     const query: any = {};
     if (filters.school) query.school = new Types.ObjectId(filters.school);
-    if (filters.department) query.department = new Types.ObjectId(filters.department);
+    if (filters.department)
+      query.department = new Types.ObjectId(filters.department);
 
-    const teachers = await this.teacherModel.find(query)
+    const teachers = await this.teacherModel
+      .find(query)
       .populate('user', 'firstName lastName email')
       .populate('department', 'name')
       .lean();
@@ -78,10 +86,10 @@ export class ReportsService {
       'Teacher ID': t.teacherId,
       'First Name': t.user?.firstName || '',
       'Last Name': t.user?.lastName || '',
-      'Email': t.user?.email || '',
-      'Department': t.department?.name || '',
-      'Designation': t.designation,
-      'Status': t.status,
+      Email: t.user?.email || '',
+      Department: t.department?.name || '',
+      Designation: t.designation,
+      Status: t.status,
     }));
 
     const columns = [
@@ -97,7 +105,11 @@ export class ReportsService {
     if (format === 'excel') {
       return this.convertToExcel(data, columns, 'Teacher Report');
     } else {
-      return this.convertToPdf(data, columns.map(c => c.header), 'Teacher Report');
+      return this.convertToPdf(
+        data,
+        columns.map((c) => c.header),
+        'Teacher Report',
+      );
     }
   }
 
@@ -111,20 +123,21 @@ export class ReportsService {
       if (filters.endDate) query.date.$lte = new Date(filters.endDate);
     }
 
-    const attendances = await this.attendanceModel.find(query)
+    const attendances = await this.attendanceModel
+      .find(query)
       .populate({
         path: 'student',
-        populate: { path: 'user', select: 'firstName lastName' }
+        populate: { path: 'user', select: 'firstName lastName' },
       })
       .populate('class', 'name')
       .lean();
 
     const data = attendances.map((a: any) => ({
-      'Date': new Date(a.date).toLocaleDateString(),
-      'Student': `${a.student?.user?.firstName} ${a.student?.user?.lastName}`,
-      'Class': a.class?.name || '',
-      'Status': a.status,
-      'Remarks': a.remarks || '',
+      Date: new Date(a.date).toLocaleDateString(),
+      Student: `${a.student?.user?.firstName} ${a.student?.user?.lastName}`,
+      Class: a.class?.name || '',
+      Status: a.status,
+      Remarks: a.remarks || '',
     }));
 
     const columns = [
@@ -138,7 +151,11 @@ export class ReportsService {
     if (format === 'excel') {
       return this.convertToExcel(data, columns, 'Attendance Report');
     } else {
-      return this.convertToPdf(data, columns.map(c => c.header), 'Attendance Report');
+      return this.convertToPdf(
+        data,
+        columns.map((c) => c.header),
+        'Attendance Report',
+      );
     }
   }
 
@@ -147,23 +164,24 @@ export class ReportsService {
     if (filters.school) query.school = new Types.ObjectId(filters.school);
     if (filters.exam) query.exam = new Types.ObjectId(filters.exam);
 
-    const marks = await this.markModel.find(query)
+    const marks = await this.markModel
+      .find(query)
       .populate({
         path: 'student',
-        populate: { path: 'user', select: 'firstName lastName' }
+        populate: { path: 'user', select: 'firstName lastName' },
       })
       .populate('exam', 'title')
       .populate('subject', 'name')
       .lean();
 
     const data = marks.map((m: any) => ({
-      'Student': `${m.student?.user?.firstName} ${m.student?.user?.lastName}`,
-      'Exam': m.exam?.title || '',
-      'Subject': m.subject?.name || '',
+      Student: `${m.student?.user?.firstName} ${m.student?.user?.lastName}`,
+      Exam: m.exam?.title || '',
+      Subject: m.subject?.name || '',
       'Marks Obtained': m.marksObtained,
       'Total Marks': m.totalMarks,
-      'Percentage': ((m.marksObtained / m.totalMarks) * 100).toFixed(2) + '%',
-      'Grade': m.grade || '',
+      Percentage: ((m.marksObtained / m.totalMarks) * 100).toFixed(2) + '%',
+      Grade: m.grade || '',
     }));
 
     const columns = [
@@ -179,7 +197,11 @@ export class ReportsService {
     if (format === 'excel') {
       return this.convertToExcel(data, columns, 'Exam Report');
     } else {
-      return this.convertToPdf(data, columns.map(c => c.header), 'Exam Report');
+      return this.convertToPdf(
+        data,
+        columns.map((c) => c.header),
+        'Exam Report',
+      );
     }
   }
 
@@ -189,15 +211,15 @@ export class ReportsService {
       filters.class,
       filters.academicYear,
       filters.startDate ? new Date(filters.startDate) : undefined,
-      filters.endDate ? new Date(filters.endDate) : undefined
+      filters.endDate ? new Date(filters.endDate) : undefined,
     );
 
     const data = reportData.details.map((d: any) => ({
       'Student ID': d.studentId,
       'Amount Due': d.amountDue,
       'Amount Paid': d.amountPaid,
-      'Balance': d.balance,
-      'Status': d.status,
+      Balance: d.balance,
+      Status: d.status,
       'Due Date': d.dueDate ? new Date(d.dueDate).toLocaleDateString() : '',
     }));
 
@@ -213,11 +235,19 @@ export class ReportsService {
     if (format === 'excel') {
       return this.convertToExcel(data, columns, 'Fee Report');
     } else {
-      return this.convertToPdf(data, columns.map(c => c.header), 'Fee Report');
+      return this.convertToPdf(
+        data,
+        columns.map((c) => c.header),
+        'Fee Report',
+      );
     }
   }
 
-  private async convertToExcel(data: any[], columns: any[], title: string): Promise<Buffer> {
+  private async convertToExcel(
+    data: any[],
+    columns: any[],
+    title: string,
+  ): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(title);
 
@@ -229,14 +259,18 @@ export class ReportsService {
     worksheet.getRow(1).fill = {
       type: 'pattern',
       pattern: 'solid',
-      fgColor: { argb: 'FFE0E0E0' }
+      fgColor: { argb: 'FFE0E0E0' },
     };
 
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
   }
 
-  private convertToPdf(data: any[], headers: string[], title: string): Promise<Buffer> {
+  private convertToPdf(
+    data: any[],
+    headers: string[],
+    title: string,
+  ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({ margin: 30, size: 'A4' });

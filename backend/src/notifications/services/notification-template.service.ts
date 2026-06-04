@@ -2,21 +2,30 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NotificationTemplate } from '../schemas/notification-template.schema';
-import { NotificationChannel, NotificationEventType } from '../schemas/notification.schema';
-import { CreateNotificationTemplateDto, UpdateNotificationTemplateDto } from '../dto/notification-template.dto';
+import {
+  NotificationChannel,
+  NotificationEventType,
+} from '../schemas/notification.schema';
+import {
+  CreateNotificationTemplateDto,
+  UpdateNotificationTemplateDto,
+} from '../dto/notification-template.dto';
 
 @Injectable()
 export class NotificationTemplateService {
   private readonly logger = new Logger(NotificationTemplateService.name);
 
   constructor(
-    @InjectModel(NotificationTemplate.name) private templateModel: Model<NotificationTemplate>,
+    @InjectModel(NotificationTemplate.name)
+    private templateModel: Model<NotificationTemplate>,
   ) {}
 
   /**
    * Create notification template
    */
-  async create(createTemplateDto: CreateNotificationTemplateDto): Promise<NotificationTemplate> {
+  async create(
+    createTemplateDto: CreateNotificationTemplateDto,
+  ): Promise<NotificationTemplate> {
     try {
       const template = await this.templateModel.create(createTemplateDto);
       this.logger.log(`Template created: ${template._id}`);
@@ -30,7 +39,10 @@ export class NotificationTemplateService {
   /**
    * Get all templates
    */
-  async findAll(filters?: { eventType?: string; channel?: string }): Promise<NotificationTemplate[]> {
+  async findAll(filters?: {
+    eventType?: string;
+    channel?: string;
+  }): Promise<NotificationTemplate[]> {
     try {
       const query: any = { isActive: true };
 
@@ -70,7 +82,10 @@ export class NotificationTemplateService {
   /**
    * Update template
    */
-  async update(id: string, updateTemplateDto: UpdateNotificationTemplateDto): Promise<NotificationTemplate> {
+  async update(
+    id: string,
+    updateTemplateDto: UpdateNotificationTemplateDto,
+  ): Promise<NotificationTemplate> {
     try {
       const template = await this.templateModel.findByIdAndUpdate(
         id,
@@ -112,7 +127,10 @@ export class NotificationTemplateService {
   /**
    * Get template by event type and channel
    */
-  async findByEventAndChannel(eventType: string, channel: string): Promise<NotificationTemplate> {
+  async findByEventAndChannel(
+    eventType: string,
+    channel: string,
+  ): Promise<NotificationTemplate> {
     try {
       const template = await this.templateModel.findOne({
         eventType: eventType as NotificationEventType,
@@ -121,7 +139,9 @@ export class NotificationTemplateService {
       });
 
       if (!template) {
-        throw new BadRequestException('Template not found for this event and channel');
+        throw new BadRequestException(
+          'Template not found for this event and channel',
+        );
       }
 
       return template;
