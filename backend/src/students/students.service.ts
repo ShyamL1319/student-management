@@ -2,15 +2,39 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Student, StudentDocument } from './schemas/student.schema';
+import { CounterService } from '../common/services/counter.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class StudentsService {
   constructor(
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
+    private readonly counterService: CounterService,
   ) {}
 
   async create(data: any) {
-    return this.studentModel.create(data);
+    const RoleModel = this.studentModel.db.model('Role');
+    const studentRole = await RoleModel.findOne({ name: 'STUDENT' });
+    if (!studentRole) throw new NotFoundException('STUDENT role not found');
+
+    const AcademicYearModel = this.studentModel.db.model('AcademicYear');
+    const activeYear = await AcademicYearModel.findOne({ isActive: true });
+    const academicYearId = activeYear ? activeYear._id.toString() : 'default';
+
+    const admissionNumber = data.admissionNumber || (await this.counterService.generateAdmissionNumber());
+    const rollNumber = data.rollNumber || (await this.counterService.generateRollNumber(data.class, academicYearId));
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash('ChangeMe123!', salt);
+
+    const studentData = {
+      ...data,
+      admissionNumber,
+      rollNumber,
+      role: studentRole._id,
+      passwordHash,
+    };
+    return this.studentModel.create(studentData);
   }
 
   async findAll(query: any) {
@@ -34,13 +58,12 @@ export class StudentsService {
     if (classId) q.class = Types.ObjectId.isValid(classId) ? classId : classId;
     if (section)
       q.section = Types.ObjectId.isValid(section) ? section : section;
-    if (parent) q.parent = Types.ObjectId.isValid(parent) ? parent : parent;
+    if (parent) q.parent = parent;
     if (typeof isActive !== 'undefined')
       q.isActive = isActive === 'true' || isActive === true;
 
     const itemsQuery = this.studentModel
       .find(q)
-      .populate('parent')
       .populate('class')
       .populate('section')
       .sort({ createdAt: -1 })
@@ -56,7 +79,6 @@ export class StudentsService {
   async findOne(id: string) {
     const item = await this.studentModel
       .findById(id)
-      .populate('parent')
       .populate('class')
       .populate('section')
       .exec();

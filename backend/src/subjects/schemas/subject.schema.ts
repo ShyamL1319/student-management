@@ -14,7 +14,7 @@ export class Subject {
   @Prop({ type: Types.ObjectId, ref: 'Course' })
   course: Types.ObjectId;
 
-  @Prop({ type: [Types.ObjectId], ref: 'Teacher', default: [] })
+  @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
   teachers: Types.ObjectId[];
 
   @Prop({ default: true })

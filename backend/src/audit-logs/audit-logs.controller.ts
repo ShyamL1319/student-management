@@ -12,7 +12,7 @@ export class AuditLogsController {
   constructor(private readonly auditLogsService: AuditLogsService) {}
 
   @Get()
-  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.SCHOOL_ADMIN)
+  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN)
   async findAll(@Query() query: QueryAuditLogDto) {
     return this.auditLogsService.findAll(query);
   }

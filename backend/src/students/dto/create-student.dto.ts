@@ -5,69 +5,85 @@ import {
   IsMongoId,
   IsBoolean,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 
 export class CreateStudentDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
-  admissionNumber: string;
+  admissionNumber?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
   rollNumber?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
-  firstName!: string;
+  firstName?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
   lastName?: string;
 
   @ApiPropertyOptional({ type: String, format: 'date' })
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsDateString()
   dob?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
   gender?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
   bloodGroup?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
   address?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
   email?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsString()
   phone?: string;
 
   @ApiPropertyOptional({ type: String })
   @IsOptional()
-  @IsMongoId()
+  @Transform(({ value }) => value === '' ? undefined : value)
+  @IsString()
   parent?: string;
 
   @ApiPropertyOptional({ type: String })
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsMongoId()
   class?: string;
 
   @ApiPropertyOptional({ type: String })
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsMongoId()
   section?: string;
 

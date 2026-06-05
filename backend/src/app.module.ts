@@ -18,7 +18,6 @@ import { TeachersModule } from './teachers/teachers.module';
 import { CoursesModule } from './courses/courses.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { StaffModule } from './staff/staff.module';
-import { ParentsModule } from './parents/parents.module';
 import { StudentsModule } from './students/students.module';
 import { TimetablesModule } from './timetables/timetables.module';
 import { AttendancesModule } from './attendances/attendance.module';
@@ -62,7 +61,6 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
     MarksModule,
     TeachersModule,
     StaffModule,
-    ParentsModule,
     StudentsModule,
     TimetablesModule,
     AttendancesModule,

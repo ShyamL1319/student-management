@@ -12,6 +12,11 @@ describe('TeachersService', () => {
     findByIdAndUpdate: jest.fn(),
     findByIdAndDelete: jest.fn(),
     create: jest.fn(),
+    db: {
+      model: jest.fn().mockReturnValue({
+        findOne: jest.fn().mockResolvedValue({ _id: 'mockRoleId' }),
+      }),
+    },
   };
 
   beforeEach(async () => {
@@ -29,11 +34,18 @@ describe('TeachersService', () => {
 
   it('should create a teacher', async () => {
     const dto = { name: 'John Doe' };
-    teacherModel.create.mockResolvedValue(dto);
+    const created = { firstName: 'John', lastName: 'Doe', role: 'mockRoleId', roleType: 'TEACHER' };
+    teacherModel.create.mockResolvedValue(created);
 
     const res = await service.create(dto as any);
-    expect(res).toEqual(dto);
-    expect(teacherModel.create).toHaveBeenCalledWith(dto);
+    expect(res).toEqual(created);
+    expect(teacherModel.create).toHaveBeenCalledWith(expect.objectContaining({
+      firstName: 'John',
+      lastName: 'Doe',
+      role: 'mockRoleId',
+      roleType: 'TEACHER',
+      passwordHash: expect.any(String),
+    }));
   });
 
   it('should return a teacher by id', async () => {

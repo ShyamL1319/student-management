@@ -13,7 +13,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.SCHOOL_ADMIN)
+  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN)
   findAll() {
     return this.usersService.findAll();
   }
@@ -32,11 +32,12 @@ export class UsersController {
   }
 
   @Patch(':id/role')
-  @Roles(RoleEnum.SUPER_ADMIN)
+  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN)
   updateUserRole(
     @Param('id') id: string,
     @Body() updateUserRoleDto: UpdateUserRoleDto,
+    @CurrentUser() requester: any,
   ) {
-    return this.usersService.updateUserRole(id, updateUserRoleDto.roleId);
+    return this.usersService.updateUserRole(id, updateUserRoleDto.roleId, requester);
   }
 }

@@ -21,7 +21,7 @@ export class AnalyticsController {
     switch (user.role) {
       case RoleEnum.SUPER_ADMIN:
         return this.analyticsService.getSuperAdminDashboard();
-      case RoleEnum.SCHOOL_ADMIN:
+      case RoleEnum.ADMIN:
         return this.analyticsService.getSchoolAdminDashboard(
           user.school?.toString() || '',
         );
@@ -29,8 +29,6 @@ export class AnalyticsController {
         return this.analyticsService.getTeacherDashboard(user._id.toString());
       case RoleEnum.STUDENT:
         return this.analyticsService.getStudentDashboard(user._id.toString());
-      case RoleEnum.PARENT:
-        return this.analyticsService.getParentDashboard(user._id.toString());
       default:
         // Default to a simple dashboard if role is unknown or 'STAFF'
         return { widgets: {}, recentActivity: [] };

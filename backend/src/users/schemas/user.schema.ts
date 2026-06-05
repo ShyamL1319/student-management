@@ -4,9 +4,12 @@ import { Role } from '../../roles/schemas/role.schema';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema({ 
+  timestamps: true,
+  discriminatorKey: 'roleType',
+})
 export class User {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email!: string;
 
   @Prop({ required: true })
@@ -18,8 +21,16 @@ export class User {
   @Prop({ required: true })
   lastName!: string;
 
+  @Prop()
+  phone?: string;
+
   @Prop({ type: Types.ObjectId, ref: 'Role', required: true })
   role!: Role;
+
+  roleType!: string;
+
+  @Prop({ default: true })
+  isActive!: boolean;
 
   @Prop({ default: null })
   refreshTokenHash!: string;

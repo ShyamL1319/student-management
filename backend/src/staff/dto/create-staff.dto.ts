@@ -3,7 +3,11 @@ import { Types } from 'mongoose';
 
 export class CreateStaffDto {
   @IsString()
-  name!: string;
+  firstName!: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
 
   @IsOptional()
   @IsString()
