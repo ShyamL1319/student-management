@@ -23,13 +23,13 @@ export class Attendance {
   @Prop({ type: Types.ObjectId, required: true })
   attendeeId!: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Student', required: false })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: false })
   student?: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Teacher', required: false })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: false })
   teacher?: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Staff', required: false })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: false })
   staff?: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'School', required: false })

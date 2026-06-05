@@ -9,6 +9,7 @@
     "test": "npm --prefix backend run test"
   },
   "devDependencies": {
-    "husky": "^9.0.11"
+    "husky": "^9.0.11",
+    "playwright": "^1.60.0"
   }
 }

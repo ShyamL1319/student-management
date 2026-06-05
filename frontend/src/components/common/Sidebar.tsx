@@ -27,6 +27,7 @@ import GradeIcon from '@mui/icons-material/Grade';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import HistoryIcon from '@mui/icons-material/History';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -53,117 +54,118 @@ export const Sidebar: FC = () => {
       text: 'Staff',
       icon: <PeopleIcon />,
       path: '/staff',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
-    {
-      text: 'Parents',
-      icon: <PeopleIcon />,
-      path: '/parents',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
-    },
+
     // Admin pages - show to SUPER_ADMIN and roles listed in `restricted`
     {
       text: 'Schools',
       icon: <BusinessIcon />,
       path: '/schools',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Academic Years',
       icon: <CalendarMonthIcon />,
       path: '/academic-years',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Departments',
       icon: <AccountTreeIcon />,
       path: '/departments',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Courses',
       icon: <MenuBookIcon />,
       path: '/courses',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Subjects',
       icon: <BookIcon />,
       path: '/subjects',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Classes',
       icon: <ClassIcon />,
       path: '/classes',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Sections',
       icon: <ClassIcon />,
       path: '/sections',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Exams',
       icon: <EventAvailableIcon />,
       path: '/exams',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Marks',
       icon: <GradeIcon />,
       path: '/marks',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Attendance',
       icon: <EventAvailableIcon />,
       path: '/attendances',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Timetables',
       icon: <ScheduleIcon />,
       path: '/timetables',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Fee Structures',
       icon: <AttachMoneyIcon />,
       path: '/fee-structures',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Fee Collections',
       icon: <AttachMoneyIcon />,
       path: '/fee-collections',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Pending Fees',
       icon: <AttachMoneyIcon />,
       path: '/pending-fees',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Receipts',
       icon: <ReceiptIcon />,
       path: '/receipts',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     {
       text: 'Invoices',
       icon: <AttachMoneyIcon />,
       path: '/invoices',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
     {
       text: 'Audit Logs',
       icon: <HistoryIcon />,
       path: '/audit-logs',
-      restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
+    },
+    {
+      text: 'Role Management',
+      icon: <AdminPanelSettingsIcon />,
+      path: '/admin/roles',
+      restricted: ['SUPER_ADMIN', 'ADMIN'],
     },
     { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },

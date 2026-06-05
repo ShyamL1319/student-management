@@ -27,7 +27,6 @@ import {
   FormControl,
 } from '@mui/material';
 import { studentsApi } from '../api/students.api';
-import { parentsApi } from '../../parents/api/parents.api';
 import { classesApi } from '../../classes/api/classes.api';
 import { sectionApi } from '../../sections/api/sections.api';
 
@@ -41,7 +40,6 @@ export const StudentsPage: FC = () => {
   const [editing, setEditing] = useState<any>(null);
   const [formValues, setFormValues] = useState({ admissionNumber: '', rollNumber: '', firstName: '', lastName: '', dob: '', gender: '', bloodGroup: '', address: '', email: '', phone: '', parent: '', class: '', section: '', isActive: true });
 
-  const { data: parentsData } = useQuery({ queryKey: ['parentsOptions'], queryFn: () => parentsApi.getParents({ limit: 200 }) });
   const { data: classesData } = useQuery({ queryKey: ['classesOptions'], queryFn: () => classesApi.getClasses({ limit: 200 }) });
   const { data: sectionsData } = useQuery({ queryKey: ['sectionsOptions'], queryFn: () => sectionApi.getSections({ limit: 200 }) });
 
@@ -72,7 +70,7 @@ export const StudentsPage: FC = () => {
       address: item.address || '',
       email: item.email || '',
       phone: item.phone || '',
-      parent: item.parent?._id || item.parent || '',
+      parent: item.parent || '',
       class: item.class?._id || item.class || '',
       section: item.section?._id || item.section || '',
       isActive: !!item.isActive,
@@ -140,7 +138,7 @@ export const StudentsPage: FC = () => {
                     <TableCell>{`${item.firstName} ${item.lastName || ''}`}</TableCell>
                     <TableCell>{item.class?.name || item.class || '—'}</TableCell>
                     <TableCell>{item.section?.name || item.section || '—'}</TableCell>
-                    <TableCell>{item.parent?.name || '—'}</TableCell>
+                    <TableCell>{item.parent || '—'}</TableCell>
                     <TableCell>{item.isActive ? 'Yes' : 'No'}</TableCell>
                     <TableCell align="right">
                       <Button size="small" variant="outlined" sx={{ mr: 1 }} onClick={() => openEditDialog(item)}>Edit</Button>
@@ -169,7 +167,7 @@ export const StudentsPage: FC = () => {
           <TextField label="Roll Number" value={formValues.rollNumber} onChange={(e) => setFormValues({ ...formValues, rollNumber: e.target.value })} fullWidth />
           <TextField label="First Name" value={formValues.firstName} onChange={(e) => setFormValues({ ...formValues, firstName: e.target.value })} fullWidth />
           <TextField label="Last Name" value={formValues.lastName} onChange={(e) => setFormValues({ ...formValues, lastName: e.target.value })} fullWidth />
-          <TextField type="date" label="DOB" InputLabelProps={{ shrink: true }} value={formValues.dob} onChange={(e) => setFormValues({ ...formValues, dob: e.target.value })} fullWidth />
+          <TextField type="date" label="DOB" slotProps={{ inputLabel: { shrink: true } }} value={formValues.dob} onChange={(e) => setFormValues({ ...formValues, dob: e.target.value })} fullWidth />
           <FormControl fullWidth>
             <InputLabel>Gender</InputLabel>
             <Select label="Gender" value={formValues.gender} onChange={(e) => setFormValues({ ...formValues, gender: e.target.value })}>
@@ -183,13 +181,7 @@ export const StudentsPage: FC = () => {
           <TextField label="Address" value={formValues.address} onChange={(e) => setFormValues({ ...formValues, address: e.target.value })} fullWidth />
           <TextField label="Email" value={formValues.email} onChange={(e) => setFormValues({ ...formValues, email: e.target.value })} fullWidth />
           <TextField label="Phone" value={formValues.phone} onChange={(e) => setFormValues({ ...formValues, phone: e.target.value })} fullWidth />
-          <FormControl fullWidth>
-            <InputLabel>Parent</InputLabel>
-            <Select label="Parent" value={formValues.parent} onChange={(e) => setFormValues({ ...formValues, parent: e.target.value })}>
-              <MenuItem value="">None</MenuItem>
-              {parentsData?.data?.map((p: any) => <MenuItem key={p._id || p.id} value={p._id || p.id}>{p.name}</MenuItem>)}
-            </Select>
-          </FormControl>
+          <TextField label="Parent Name" value={formValues.parent} onChange={(e) => setFormValues({ ...formValues, parent: e.target.value })} fullWidth />
           <FormControl fullWidth>
             <InputLabel>Class</InputLabel>
             <Select label="Class" value={formValues.class} onChange={(e) => setFormValues({ ...formValues, class: e.target.value })}>

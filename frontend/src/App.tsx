@@ -6,12 +6,12 @@ import { LoginPage } from './features/auth/pages/LoginPage';
 import { ForgotPasswordPage } from './features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 import { ProfilePage } from './features/users/pages/ProfilePage';
+import { RoleManagementPage } from './features/users/pages/RoleManagementPage';
 
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 import { StudentsPage } from './features/students/pages/StudentsPage';
 import { TeachersPage } from './features/teachers/pages/TeachersPage';
 import { StaffPage } from './features/staff/pages/StaffPage';
-import { ParentsPage } from './features/parents/pages/ParentsPage';
 import { ClassesPage } from './features/classes/pages/ClassesPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { SchoolsPage } from './features/schools/pages/SchoolsPage';
@@ -34,9 +34,18 @@ import { NotificationPreferences } from './features/notifications/pages/Notifica
 import { ReportsPage } from './features/reports/pages/ReportsPage';
 import { AuditLogsPage } from './features/audit-logs';
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) => {
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" />;
+
+  if (allowedRoles) {
+    const roleName = typeof user?.role === 'string' ? user.role : (user?.role as any)?.name;
+    if (!roleName || !allowedRoles.includes(roleName)) {
+      return <Navigate to="/" />;
+    }
+  }
+
+  return <>{children}</>;
 };
 
 function AppRoutes() {
@@ -87,14 +96,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/parents"
-          element={
-            <ProtectedRoute>
-              <ParentsPage />
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/schools"
           element={
@@ -250,8 +252,16 @@ function AppRoutes() {
         <Route
           path="/audit-logs"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
               <AuditLogsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/roles"
+          element={
+            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
+              <RoleManagementPage />
             </ProtectedRoute>
           }
         />

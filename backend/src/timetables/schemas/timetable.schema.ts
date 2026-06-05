@@ -20,7 +20,7 @@ export class Timetable {
   @Prop({ type: Types.ObjectId, ref: 'AcademicYear', required: true })
   academicYear!: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Teacher', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   teacher!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Subject', required: true })

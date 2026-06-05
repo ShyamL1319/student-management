@@ -215,7 +215,7 @@ export const DashboardPage: FC = () => {
         ))}
       </Grid>
 
-      {(role === 'SUPER_ADMIN' || role === 'SCHOOL_ADMIN') && (
+      {(role === 'SUPER_ADMIN' || role === 'ADMIN') && (
         <Box sx={{ mt: 4 }}>
           <Typography variant="h5" gutterBottom>
             Revenue Overview
