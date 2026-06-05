@@ -75,7 +75,8 @@ export const DepartmentsPage: FC = () => {
 
   const openCreateDialog = () => {
     setEditing(null);
-    setFormValues({ school: '', name: '', code: '', description: '', isActive: true });
+    const defaultSchool = schoolsData?.data?.[0]?._id || schoolsData?.data?.[0]?.id || '';
+    setFormValues({ school: defaultSchool, name: '', code: '', description: '', isActive: true });
     setDialogOpen(true);
   };
 
@@ -92,7 +93,11 @@ export const DepartmentsPage: FC = () => {
   };
 
   const handleSave = async () => {
-    const payload = { ...formValues };
+    const defaultSchool = schoolsData?.data?.[0]?._id || schoolsData?.data?.[0]?.id || '';
+    const payload = { 
+      ...formValues,
+      school: formValues.school || defaultSchool 
+    };
     if (editing) {
       await updateMutation.mutateAsync(payload);
     } else {
@@ -112,21 +117,23 @@ export const DepartmentsPage: FC = () => {
             onChange={(event) => setSearch(event.target.value)}
             size="small"
           />
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel>School</InputLabel>
-            <Select
-              label="School"
-              value={selectedSchool}
-              onChange={(event) => setSelectedSchool(event.target.value)}
-            >
-              <MenuItem value="">All Schools</MenuItem>
-              {schoolsData?.data?.map((school: any) => (
-                <MenuItem key={school._id || school.id} value={school._id || school.id}>
-                  {school.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {schoolsData?.data && schoolsData.data.length > 1 && (
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>School</InputLabel>
+              <Select
+                label="School"
+                value={selectedSchool}
+                onChange={(event) => setSelectedSchool(event.target.value)}
+              >
+                <MenuItem value="">All Schools</MenuItem>
+                {schoolsData.data.map((school: any) => (
+                  <MenuItem key={school._id || school.id} value={school._id || school.id}>
+                    {school.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
           <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel>Status</InputLabel>
             <Select
@@ -153,7 +160,7 @@ export const DepartmentsPage: FC = () => {
                 <TableCell>Name</TableCell>
                 <TableCell>Code</TableCell>
                 <TableCell>Description</TableCell>
-                <TableCell>School</TableCell>
+                {schoolsData?.data && schoolsData.data.length > 1 && <TableCell>School</TableCell>}
                 <TableCell>Active</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
@@ -171,7 +178,9 @@ export const DepartmentsPage: FC = () => {
                     <TableCell>{item.name}</TableCell>
                     <TableCell>{item.code || '—'}</TableCell>
                     <TableCell>{item.description || '—'}</TableCell>
-                    <TableCell>{item.school?.name || item.school || 'N/A'}</TableCell>
+                    {schoolsData?.data && schoolsData.data.length > 1 && (
+                      <TableCell>{item.school?.name || item.school || 'N/A'}</TableCell>
+                    )}
                     <TableCell>{item.isActive ? 'Yes' : 'No'}</TableCell>
                     <TableCell align="right">
                       <Button size="small" variant="outlined" sx={{ mr: 1 }} onClick={() => openEditDialog(item)}>
@@ -211,20 +220,22 @@ export const DepartmentsPage: FC = () => {
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
         <DialogTitle>{editing ? 'Edit Department' : 'Add Department'}</DialogTitle>
         <DialogContent sx={{ display: 'grid', gap: 2, mt: 1 }}>
-          <FormControl fullWidth>
-            <InputLabel>School</InputLabel>
-            <Select
-              label="School"
-              value={formValues.school}
-              onChange={(event) => setFormValues({ ...formValues, school: event.target.value })}
-            >
-              {schoolsData?.data?.map((school: any) => (
-                <MenuItem key={school._id || school.id} value={school._id || school.id}>
-                  {school.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {schoolsData?.data && schoolsData.data.length > 1 && (
+            <FormControl fullWidth>
+              <InputLabel>School</InputLabel>
+              <Select
+                label="School"
+                value={formValues.school}
+                onChange={(event) => setFormValues({ ...formValues, school: event.target.value })}
+              >
+                {schoolsData.data.map((school: any) => (
+                  <MenuItem key={school._id || school.id} value={school._id || school.id}>
+                    {school.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
           <TextField
             label="Name"
             value={formValues.name}

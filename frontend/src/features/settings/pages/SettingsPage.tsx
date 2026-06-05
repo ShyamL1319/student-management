@@ -11,13 +11,13 @@ export const SettingsPage: FC = () => {
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" gutterBottom>General Information</Typography>
         <Grid container spacing={3}>
-          <Grid xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField fullWidth label="School Name" defaultValue="Springfield High School" variant="outlined" />
           </Grid>
-          <Grid xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField fullWidth label="Contact Email" defaultValue="admin@springfield.edu" variant="outlined" />
           </Grid>
-          <Grid xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField fullWidth label="Address" defaultValue="123 Education Lane, Springfield" variant="outlined" />
           </Grid>
         </Grid>

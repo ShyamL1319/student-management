@@ -47,17 +47,13 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export const ProfilePage: React.FC = () => {
-  const { user: authUser, logout, login } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [value, setValue] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<User | null>(null);
   const [formData, setFormData] = useState<UpdateProfileDto>({});
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
 
   const fetchProfile = async () => {
     try {
@@ -70,12 +66,16 @@ export const ProfilePage: React.FC = () => {
         phone: data.phone || '',
         address: data.address || '',
       });
-    } catch (error) {
+    } catch {
       setSnackbar({ open: true, message: 'Failed to fetch profile', severity: 'error' });
     }
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
@@ -97,7 +97,7 @@ export const ProfilePage: React.FC = () => {
       setSnackbar({ open: true, message: 'Profile updated successfully', severity: 'success' });
       // Update local auth context user if needed
       // login(updatedUser); 
-    } catch (error) {
+    } catch {
       setSnackbar({ open: true, message: 'Failed to update profile', severity: 'error' });
     }
   };
@@ -114,7 +114,7 @@ export const ProfilePage: React.FC = () => {
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Grid container spacing={3}>
         {/* Left Column - Avatar & Basic Info */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper elevation={3} sx={{ p: 3, textAlign: 'center', height: '100%' }}>
             <Box sx={{ position: 'relative', display: 'inline-block' }}>
               <Avatar
@@ -143,10 +143,10 @@ export const ProfilePage: React.FC = () => {
             <Typography variant="h5" gutterBottom>
               {profile.firstName} {profile.lastName}
             </Typography>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
               {userRole}
             </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Member since {new Date(profile.createdAt).toLocaleDateString()}
             </Typography>
             <Divider sx={{ my: 2 }} />
@@ -163,7 +163,7 @@ export const ProfilePage: React.FC = () => {
         </Grid>
 
         {/* Right Column - Tabs & Details */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Paper elevation={3} sx={{ height: '100%' }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={value} onChange={handleTabChange} aria-label="profile tabs">
@@ -198,7 +198,7 @@ export const ProfilePage: React.FC = () => {
               </Box>
 
               <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     label="First Name"
@@ -208,7 +208,7 @@ export const ProfilePage: React.FC = () => {
                     disabled={!isEditing}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     label="Last Name"
@@ -218,7 +218,7 @@ export const ProfilePage: React.FC = () => {
                     disabled={!isEditing}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Email Address"
@@ -228,7 +228,7 @@ export const ProfilePage: React.FC = () => {
                     disabled={!isEditing}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Phone Number"
@@ -238,7 +238,7 @@ export const ProfilePage: React.FC = () => {
                     disabled={!isEditing}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Address"
@@ -256,7 +256,7 @@ export const ProfilePage: React.FC = () => {
             <TabPanel value={value} index={1}>
               <Typography variant="h6" gutterBottom>Security Settings</Typography>
               <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" color="textSecondary" paragraph>
+                <Typography variant="body2" color="text.secondary" component="p" sx={{ mb: 2 }}>
                   Keep your account secure by using a strong password.
                 </Typography>
                 <Button variant="outlined" sx={{ mb: 4 }}>Change Password</Button>
@@ -264,7 +264,7 @@ export const ProfilePage: React.FC = () => {
                 <Divider sx={{ my: 3 }} />
                 
                 <Typography variant="h6" gutterBottom>Two-Factor Authentication</Typography>
-                <Typography variant="body2" color="textSecondary" paragraph>
+                <Typography variant="body2" color="text.secondary" component="p" sx={{ mb: 2 }}>
                   Add an extra layer of security to your account. (Coming Soon)
                 </Typography>
                 <Button variant="outlined" disabled>Enable 2FA</Button>
@@ -274,13 +274,13 @@ export const ProfilePage: React.FC = () => {
             <TabPanel value={value} index={2}>
               <Typography variant="h6" gutterBottom>Account Settings</Typography>
               <Grid container spacing={3} sx={{ mt: 1 }}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     select
                     fullWidth
                     label="Language"
                     value="en"
-                    SelectProps={{ native: true }}
+                    slotProps={{ select: { native: true } }}
                     variant="outlined"
                   >
                     <option value="en">English</option>
@@ -288,13 +288,13 @@ export const ProfilePage: React.FC = () => {
                     <option value="fr">French</option>
                   </TextField>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     select
                     fullWidth
                     label="Theme"
                     value="light"
-                    SelectProps={{ native: true }}
+                    slotProps={{ select: { native: true } }}
                     variant="outlined"
                   >
                     <option value="light">Light</option>

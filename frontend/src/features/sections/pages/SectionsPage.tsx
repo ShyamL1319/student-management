@@ -59,18 +59,18 @@ export const SectionsPage: FC = () => {
 
   const createMutation = useMutation({
     mutationFn: (data: any) => sectionApi.createSection(data),
-    onSuccess: () => queryClient.invalidateQueries(['sections']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sections'] }),
   });
   const updateMutation = useMutation({
     mutationFn: (data: any) => sectionApi.updateSection(editing.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['sections']);
+      queryClient.invalidateQueries({ queryKey: ['sections'] });
       setEditing(null);
     },
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) => sectionApi.deleteSection(id),
-    onSuccess: () => queryClient.invalidateQueries(['sections']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sections'] }),
   });
 
   const openCreateDialog = () => {

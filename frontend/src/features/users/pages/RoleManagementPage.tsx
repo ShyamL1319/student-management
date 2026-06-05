@@ -35,10 +35,6 @@ export const RoleManagementPage: React.FC = () => {
   const [newRoleId, setNewRoleId] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -48,12 +44,16 @@ export const RoleManagementPage: React.FC = () => {
       ]);
       setUsers(usersData);
       setRoles(rolesData);
-    } catch (error) {
+    } catch {
       setSnackbar({ open: true, message: 'Failed to fetch data', severity: 'error' });
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleEditClick = (user: User) => {
     setSelectedUser(user);
@@ -69,7 +69,7 @@ export const RoleManagementPage: React.FC = () => {
       setSnackbar({ open: true, message: 'User role updated successfully', severity: 'success' });
       setEditDialogOpen(false);
       fetchData(); // Refresh list
-    } catch (error) {
+    } catch {
       setSnackbar({ open: true, message: 'Failed to update role', severity: 'error' });
     }
   };
@@ -108,7 +108,7 @@ export const RoleManagementPage: React.FC = () => {
             {users.map((user) => (
               <TableRow key={user._id} hover>
                 <TableCell>
-                  <Typography variant="body1" fontWeight="medium">
+                  <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
                     {user.firstName} {user.lastName}
                   </Typography>
                 </TableCell>

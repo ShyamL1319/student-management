@@ -6,7 +6,6 @@ import {
   CircularProgress,
   Alert,
   TextField,
-  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -70,7 +69,7 @@ const WeeklyTimetableView: React.FC<WeeklyTimetableProps> = ({ classId }) => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
         <CircularProgress />
       </Box>
     );

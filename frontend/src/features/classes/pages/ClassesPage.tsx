@@ -59,18 +59,18 @@ export const ClassesPage: FC = () => {
 
   const createMutation = useMutation({
     mutationFn: (data: any) => classesApi.createClass(data),
-    onSuccess: () => queryClient.invalidateQueries(['classes']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['classes'] }),
   });
   const updateMutation = useMutation({
     mutationFn: (data: any) => classesApi.updateClass(editing.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['classes']);
+      queryClient.invalidateQueries({ queryKey: ['classes'] });
       setEditing(null);
     },
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) => classesApi.deleteClass(id),
-    onSuccess: () => queryClient.invalidateQueries(['classes']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['classes'] }),
   });
 
   const openCreateDialog = () => {

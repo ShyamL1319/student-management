@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useState } from 'react';
 import {
   Drawer,
   List,
@@ -8,204 +9,313 @@ import {
   Toolbar,
   Box,
   ListItemButton,
+  Collapse,
+  Typography,
+  Divider,
 } from '@mui/material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import PeopleIcon from '@mui/icons-material/People';
-import SchoolIcon from '@mui/icons-material/School';
-import ClassIcon from '@mui/icons-material/Class';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import BookIcon from '@mui/icons-material/Book';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import BusinessIcon from '@mui/icons-material/Business';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import GradeIcon from '@mui/icons-material/Grade';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import HistoryIcon from '@mui/icons-material/History';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import {
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  School as SchoolIcon,
+  Class as ClassIcon,
+  AccountTree as AccountTreeIcon,
+  MenuBook as MenuBookIcon,
+  Book as BookIcon,
+  CalendarMonth as CalendarMonthIcon,
+  Business as BusinessIcon,
+  Settings as SettingsIcon,
+  Schedule as ScheduleIcon,
+  EventAvailable as EventAvailableIcon,
+  AttachMoney as AttachMoneyIcon,
+  Receipt as ReceiptIcon,
+  Grade as GradeIcon,
+  Notifications as NotificationsIcon,
+  Assessment as AssessmentIcon,
+  History as HistoryIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
+  ExpandLess,
+  ExpandMore,
+} from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
-const drawerWidth = 240;
+interface SidebarProps {
+  drawerWidth: number;
+  mobileOpen: boolean;
+  onDrawerToggle: () => void;
+}
 
-export const Sidebar: FC = () => {
+export const Sidebar: FC<SidebarProps> = ({ drawerWidth, mobileOpen, onDrawerToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const { user } = useAuth();
-  // Resolve role name from possible shapes
-  const userTyped = user as unknown as { role?: { name?: string } | string };
+
+  // Resolve user role name
+  const userTyped = user as any;
   const roleName = userTyped?.role
     ? typeof userTyped.role === 'string'
       ? userTyped.role
       : userTyped.role.name
-    : undefined;
+    : '';
 
-  const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { text: 'Students', icon: <PeopleIcon />, path: '/students' },
-    { text: 'Teachers', icon: <SchoolIcon />, path: '/teachers' },
-    {
-      text: 'Staff',
-      icon: <PeopleIcon />,
-      path: '/staff',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
+  // Collapsible Submenu States
+  const [registryOpen, setRegistryOpen] = useState(false);
+  const [academicsOpen, setAcademicsOpen] = useState(false);
+  const [financeOpen, setFinanceOpen] = useState(false);
 
-    // Admin pages - show to SUPER_ADMIN and roles listed in `restricted`
-    {
-      text: 'Schools',
-      icon: <BusinessIcon />,
-      path: '/schools',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Academic Years',
-      icon: <CalendarMonthIcon />,
-      path: '/academic-years',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Departments',
-      icon: <AccountTreeIcon />,
-      path: '/departments',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Courses',
-      icon: <MenuBookIcon />,
-      path: '/courses',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Subjects',
-      icon: <BookIcon />,
-      path: '/subjects',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Classes',
-      icon: <ClassIcon />,
-      path: '/classes',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Sections',
-      icon: <ClassIcon />,
-      path: '/sections',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Exams',
-      icon: <EventAvailableIcon />,
-      path: '/exams',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Marks',
-      icon: <GradeIcon />,
-      path: '/marks',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Attendance',
-      icon: <EventAvailableIcon />,
-      path: '/attendances',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Timetables',
-      icon: <ScheduleIcon />,
-      path: '/timetables',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Fee Structures',
-      icon: <AttachMoneyIcon />,
-      path: '/fee-structures',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Fee Collections',
-      icon: <AttachMoneyIcon />,
-      path: '/fee-collections',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Pending Fees',
-      icon: <AttachMoneyIcon />,
-      path: '/pending-fees',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Receipts',
-      icon: <ReceiptIcon />,
-      path: '/receipts',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Invoices',
-      icon: <AttachMoneyIcon />,
-      path: '/invoices',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
-    {
-      text: 'Audit Logs',
-      icon: <HistoryIcon />,
-      path: '/audit-logs',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    {
-      text: 'Role Management',
-      icon: <AdminPanelSettingsIcon />,
-      path: '/admin/roles',
-      restricted: ['SUPER_ADMIN', 'ADMIN'],
-    },
-    { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
-  ];
+  const toggleRegistry = () => setRegistryOpen(!registryOpen);
+  const toggleAcademics = () => setAcademicsOpen(!academicsOpen);
+  const toggleFinance = () => setFinanceOpen(!financeOpen);
 
-  const visibleMenu = menuItems.filter((item) => {
-    if (!item.restricted) return true;
-    // SUPER_ADMIN always sees everything
+  // Helper to determine active state
+  const isPathActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  // Helper to filter role-restricted items
+  const checkAccess = (restricted?: string[]) => {
+    if (!restricted) return true;
     if (roleName === 'SUPER_ADMIN') return true;
-    return item.restricted.includes(roleName || '');
-  });
+    return restricted.includes(roleName || '');
+  };
 
-  return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
-      }}
-    >
-      <Toolbar />
-      <Box sx={{ overflow: 'auto' }}>
-        <List>
-          {visibleMenu.map((item) => (
-            <ListItem key={item.text} disablePadding>
+  // Render a standard link item
+  const renderLinkItem = (text: string, icon: React.ReactNode, path: string, onClick?: () => void) => {
+    const active = isPathActive(path);
+    return (
+      <ListItem key={text} disablePadding>
+        <ListItemButton
+          selected={active}
+          onClick={() => {
+            navigate(path);
+            if (onClick) onClick();
+          }}
+          sx={{
+            borderRadius: '8px',
+            mx: 1,
+            my: 0.25,
+            py: 1,
+            px: 2,
+            '&.Mui-selected': {
+              backgroundColor: (theme) => theme.palette.action.selected,
+              color: 'primary.main',
+              fontWeight: 600,
+              '& .MuiListItemIcon-root': {
+                color: 'primary.main',
+              },
+            },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 40, color: active ? 'primary.main' : 'text.secondary' }}>
+            {icon}
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography sx={{ fontSize: '0.875rem', fontWeight: active ? 600 : 500 }}>
+                {text}
+              </Typography>
+            }
+          />
+        </ListItemButton>
+      </ListItem>
+    );
+  };
+
+  const drawerContent = (onLinkClick?: () => void) => (
+    <Box sx={{ overflowY: 'auto', height: '100%', pt: 1, pb: 4 }}>
+      <List>
+        {/* Section: Overview */}
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ px: 3, pt: 1.5, pb: 0.5, display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}
+        >
+          Overview
+        </Typography>
+        {renderLinkItem('Dashboard', <DashboardIcon fontSize="small" />, '/', onLinkClick)}
+        {renderLinkItem('Notifications', <NotificationsIcon fontSize="small" />, '/notifications', onLinkClick)}
+        {renderLinkItem('Settings', <SettingsIcon fontSize="small" />, '/settings', onLinkClick)}
+
+        <Divider sx={{ my: 1.5, mx: 2 }} />
+
+        {/* Section: Registry */}
+        {checkAccess(['SUPER_ADMIN', 'ADMIN']) && (
+          <>
+            <ListItem disablePadding>
               <ListItemButton
-                selected={
-                  location.pathname === item.path ||
-                  (item.path !== '/' && location.pathname.startsWith(item.path))
-                }
-                onClick={() => navigate(item.path)}
+                onClick={toggleRegistry}
+                sx={{ borderRadius: '8px', mx: 1, my: 0.25, py: 1, px: 2 }}
               >
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
+                <ListItemIcon sx={{ minWidth: 40, color: 'text.secondary' }}>
+                  <BusinessIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                      Registry
+                    </Typography>
+                  }
+                />
+                {registryOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
               </ListItemButton>
             </ListItem>
-          ))}
-        </List>
-      </Box>
-    </Drawer>
+            <Collapse in={registryOpen} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding sx={{ pl: 2 }}>
+                {renderLinkItem('Academic Years', <CalendarMonthIcon fontSize="small" />, '/academic-years', onLinkClick)}
+                {renderLinkItem('Departments', <AccountTreeIcon fontSize="small" />, '/departments', onLinkClick)}
+                {renderLinkItem('Courses', <MenuBookIcon fontSize="small" />, '/courses', onLinkClick)}
+                {renderLinkItem('Subjects', <BookIcon fontSize="small" />, '/subjects', onLinkClick)}
+                {renderLinkItem('Classes', <ClassIcon fontSize="small" />, '/classes', onLinkClick)}
+                {renderLinkItem('Sections', <ClassIcon fontSize="small" />, '/sections', onLinkClick)}
+              </List>
+            </Collapse>
+          </>
+        )}
+
+        {/* Section: Users */}
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ px: 3, pt: 1.5, pb: 0.5, display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}
+        >
+          User Directory
+        </Typography>
+        {renderLinkItem('Students', <PeopleIcon fontSize="small" />, '/students', onLinkClick)}
+        {renderLinkItem('Teachers', <SchoolIcon fontSize="small" />, '/teachers', onLinkClick)}
+        {checkAccess(['SUPER_ADMIN', 'ADMIN']) && renderLinkItem('Staff', <PeopleIcon fontSize="small" />, '/staff', onLinkClick)}
+
+        <Divider sx={{ my: 1.5, mx: 2 }} />
+
+        {/* Section: Academics */}
+        {checkAccess(['SUPER_ADMIN', 'ADMIN']) && (
+          <>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={toggleAcademics}
+                sx={{ borderRadius: '8px', mx: 1, my: 0.25, py: 1, px: 2 }}
+              >
+                <ListItemIcon sx={{ minWidth: 40, color: 'text.secondary' }}>
+                  <ScheduleIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                      Academic Operations
+                    </Typography>
+                  }
+                />
+                {academicsOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+              </ListItemButton>
+            </ListItem>
+            <Collapse in={academicsOpen} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding sx={{ pl: 2 }}>
+                {renderLinkItem('Exams', <EventAvailableIcon fontSize="small" />, '/exams', onLinkClick)}
+                {renderLinkItem('Marks', <GradeIcon fontSize="small" />, '/marks', onLinkClick)}
+                {renderLinkItem('Attendance', <EventAvailableIcon fontSize="small" />, '/attendances', onLinkClick)}
+                {renderLinkItem('Timetables', <ScheduleIcon fontSize="small" />, '/timetables', onLinkClick)}
+              </List>
+            </Collapse>
+          </>
+        )}
+
+        {/* Section: Finance */}
+        {checkAccess(['SUPER_ADMIN', 'ADMIN']) && (
+          <>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={toggleFinance}
+                sx={{ borderRadius: '8px', mx: 1, my: 0.25, py: 1, px: 2 }}
+              >
+                <ListItemIcon sx={{ minWidth: 40, color: 'text.secondary' }}>
+                  <AttachMoneyIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                      Finance Center
+                    </Typography>
+                  }
+                />
+                {financeOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+              </ListItemButton>
+            </ListItem>
+            <Collapse in={financeOpen} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding sx={{ pl: 2 }}>
+                {renderLinkItem('Fee Structures', <AttachMoneyIcon fontSize="small" />, '/fee-structures', onLinkClick)}
+                {renderLinkItem('Fee Collections', <AttachMoneyIcon fontSize="small" />, '/fee-collections', onLinkClick)}
+                {renderLinkItem('Pending Fees', <AttachMoneyIcon fontSize="small" />, '/pending-fees', onLinkClick)}
+                {renderLinkItem('Receipts', <ReceiptIcon fontSize="small" />, '/receipts', onLinkClick)}
+                {renderLinkItem('Invoices', <AttachMoneyIcon fontSize="small" />, '/invoices', onLinkClick)}
+              </List>
+            </Collapse>
+          </>
+        )}
+
+        <Divider sx={{ my: 1.5, mx: 2 }} />
+
+        {/* Section: System Control */}
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ px: 3, pt: 1.5, pb: 0.5, display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}
+        >
+          Administration
+        </Typography>
+        {renderLinkItem('Reports', <AssessmentIcon fontSize="small" />, '/reports', onLinkClick)}
+        {checkAccess(['SUPER_ADMIN', 'ADMIN']) && renderLinkItem('Audit Logs', <HistoryIcon fontSize="small" />, '/audit-logs', onLinkClick)}
+        {checkAccess(['SUPER_ADMIN', 'ADMIN']) && renderLinkItem('Role Management', <AdminPanelSettingsIcon fontSize="small" />, '/admin/roles', onLinkClick)}
+      </List>
+    </Box>
+  );
+
+  return (
+    <Box
+      component="nav"
+      sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+      aria-label="mailbox folders"
+    >
+      {/* Mobile Drawer (temporary) */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={onDrawerToggle}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          [`& .MuiDrawer-paper`]: {
+            boxSizing: 'border-box',
+            width: drawerWidth,
+            backgroundColor: (theme) => theme.palette.background.paper,
+            borderRight: (theme) => `1px solid ${theme.palette.divider}`,
+          },
+        }}
+      >
+        <Toolbar />
+        {drawerContent(onDrawerToggle)}
+      </Drawer>
+
+      {/* Desktop Drawer (permanent) */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          [`& .MuiDrawer-paper`]: {
+            boxSizing: 'border-box',
+            width: drawerWidth,
+            backgroundColor: (theme) => theme.palette.background.paper,
+            borderRight: (theme) => `1px solid ${theme.palette.divider}`,
+          },
+        }}
+        open
+      >
+        <Toolbar />
+        {drawerContent()}
+      </Drawer>
+    </Box>
   );
 };

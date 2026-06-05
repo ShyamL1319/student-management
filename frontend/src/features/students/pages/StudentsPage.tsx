@@ -47,9 +47,9 @@ export const StudentsPage: FC = () => {
 
   const { data, isLoading } = useQuery({ queryKey: ['students', filterParams], queryFn: () => studentsApi.getStudents(filterParams) });
 
-  const createMutation = useMutation({ mutationFn: (data: any) => studentsApi.createStudent(data), onSuccess: () => queryClient.invalidateQueries(['students']) });
-  const updateMutation = useMutation({ mutationFn: (data: any) => studentsApi.updateStudent(editing._id || editing.id, data), onSuccess: () => { queryClient.invalidateQueries(['students']); setEditing(null); } });
-  const deleteMutation = useMutation({ mutationFn: (id: string) => studentsApi.deleteStudent(id), onSuccess: () => queryClient.invalidateQueries(['students']) });
+  const createMutation = useMutation({ mutationFn: (data: any) => studentsApi.createStudent(data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['students'] }) });
+  const updateMutation = useMutation({ mutationFn: (data: any) => studentsApi.updateStudent(editing._id || editing.id, data), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['students'] }); setEditing(null); } });
+  const deleteMutation = useMutation({ mutationFn: (id: string) => studentsApi.deleteStudent(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['students'] }) });
 
   const openCreateDialog = () => {
     setEditing(null);

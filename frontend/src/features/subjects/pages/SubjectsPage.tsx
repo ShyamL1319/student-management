@@ -48,9 +48,9 @@ export const SubjectsPage: FC = () => {
   const filterParams = { page, limit: 10, search: search || undefined, course: selectedCourse || undefined };
   const { data, isLoading } = useQuery({ queryKey: ['subjects', filterParams], queryFn: () => subjectsApi.getSubjects(filterParams) });
 
-  const createMutation = useMutation({ mutationFn: (data: any) => subjectsApi.createSubject(data), onSuccess: () => queryClient.invalidateQueries(['subjects']) });
-  const updateMutation = useMutation({ mutationFn: (data: any) => subjectsApi.updateSubject(editing._id || editing.id, data), onSuccess: () => { queryClient.invalidateQueries(['subjects']); setEditing(null); } });
-  const deleteMutation = useMutation({ mutationFn: (id: string) => subjectsApi.deleteSubject(id), onSuccess: () => queryClient.invalidateQueries(['subjects']) });
+  const createMutation = useMutation({ mutationFn: (data: any) => subjectsApi.createSubject(data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['subjects'] }) });
+  const updateMutation = useMutation({ mutationFn: (data: any) => subjectsApi.updateSubject(editing._id || editing.id, data), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['subjects'] }); setEditing(null); } });
+  const deleteMutation = useMutation({ mutationFn: (id: string) => subjectsApi.deleteSubject(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['subjects'] }) });
 
   const openCreateDialog = () => { setEditing(null); setFormValues({ name: '', code: '', course: '', teachers: [], isActive: true }); setDialogOpen(true); };
 
