@@ -8,9 +8,9 @@ import {
 import { RoleEnum } from '../../common/enums/role.enum';
 
 export class CreateRoleDto {
-  @IsEnum(RoleEnum)
+  @IsString()
   @IsNotEmpty()
-  name!: RoleEnum;
+  name!: string;
 
   @IsString()
   @IsOptional()
@@ -23,9 +23,9 @@ export class CreateRoleDto {
 }
 
 export class UpdateRoleDto {
-  @IsEnum(RoleEnum)
+  @IsString()
   @IsOptional()
-  name?: RoleEnum;
+  name?: string;
 
   @IsString()
   @IsOptional()

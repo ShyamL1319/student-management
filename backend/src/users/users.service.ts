@@ -72,9 +72,13 @@ export class UsersService {
       }
     }
 
-    user.role = newRole._id;
-    user.roleType = newRoleName;
-    const savedUser = await user.save();
-    return savedUser.populate('role');
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(id, { role: newRole._id, roleType: newRoleName }, { new: true })
+      .populate('role')
+      .exec();
+    if (!updatedUser) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return updatedUser;
   }
 }
