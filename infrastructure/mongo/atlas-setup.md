@@ -1,6 +1,6 @@
 # MongoDB Atlas Setup Guide
 
-This document outlines the steps to set up MongoDB Atlas for the Student Management application.
+This document outlines the steps to set up MongoDB Atlas for the School Management application.
 
 ## Prerequisites
 1. A MongoDB Atlas account ([Register here](https://www.mongodb.com/cloud/atlas/register))
@@ -11,7 +11,7 @@ This document outlines the steps to set up MongoDB Atlas for the Student Managem
 ### 1. Create a Project
 1. Log into your MongoDB Atlas console.
 2. Click on **New Project**.
-3. Name your project `Student-Management` and click **Next**.
+3. Name your project `School-Management` and click **Next**.
 4. Add team members if necessary and click **Create Project**.
 
 ### 2. Build a Cluster
@@ -28,7 +28,7 @@ This document outlines the steps to set up MongoDB Atlas for the Student Managem
 2. Click **Add New Database User**.
 3. Select **Password** as the authentication method.
 4. Enter a username (e.g., `app_user`) and a secure password. Make sure to save this password in your secrets manager (e.g., AWS Secrets Manager).
-5. Under Database User Privileges, select **Read and write to any database** (or restrict it to a specific database `student_management`).
+5. Under Database User Privileges, select **Read and write to any database** (or restrict it to a specific database `school-management`).
 6. Click **Add User**.
 
 ### 4. Setup Network Access
@@ -47,8 +47,8 @@ This document outlines the steps to set up MongoDB Atlas for the Student Managem
 5. Copy the connection string. It will look something like:
    `mongodb+srv://<username>:<password>@cluster0.mongodb.net/?retryWrites=true&w=majority`
 6. Replace `<username>` and `<password>` with the credentials you created in Step 3.
-7. Add the database name (e.g., `student_management`) before the `?` query parameters:
-   `mongodb+srv://<username>:<password>@cluster0.mongodb.net/student_management?retryWrites=true&w=majority`
+7. Add the database name (e.g., `school-management`) before the `?` query parameters:
+   `mongodb+srv://<username>:<password>@cluster0.mongodb.net/school-management?retryWrites=true&w=majority`
 
 ### 6. Configure Application
 1. Provide the connection string to your backend application via the `MONGODB_URI` environment variable.

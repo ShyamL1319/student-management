@@ -1,11 +1,10 @@
-version: '3.8'
 
 services:
   mongodb:
     image: mongo:latest
-    container_name: student_management_mongodb
+    container_name: school-management-mongodb
     ports:
-      - '27017:27017'
+      - '27018:27017'
     volumes:
       - mongodb_data:/data/db
     environment:
@@ -16,11 +15,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: student_management_backend
+    container_name: school-management-backend
     ports:
       - '3000:3000'
     environment:
-      - MONGODB_URI=mongodb://root:examplepassword@mongodb:27017/student_management?authSource=admin
+      - MONGODB_URI=mongodb://root:examplepassword@mongodb:27017/school-management?authSource=admin
       - PORT=3000
     depends_on:
       - mongodb
@@ -32,7 +31,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: student_management_frontend
+    container_name: school-management-frontend
     ports:
       - '5173:5173'
     environment:
