@@ -24,29 +24,35 @@ async function seed() {
   });
   const User = mongoose.model('User', userSchema);
 
-  // Clear existing to avoid duplicates during test
-  await Role.deleteMany({});
-  await User.deleteMany({});
+  // Check for existing Role
+  let superAdminRole = await Role.findOne({ name: 'SUPER_ADMIN' });
+  if (!superAdminRole) {
+    superAdminRole = await Role.create({
+      name: 'SUPER_ADMIN',
+      description: 'Super Administrator with all permissions'
+    });
+    console.log('Created Role:', superAdminRole.name);
+  } else {
+    console.log('Role already exists:', superAdminRole.name);
+  }
 
-  // Create Role
-  const superAdminRole = await Role.create({
-    name: 'SUPER_ADMIN',
-    description: 'Super Administrator with all permissions'
-  });
-  console.log('Created Role:', superAdminRole.name);
+  // Check for existing User
+  const existingUser = await User.findOne({ email: 'admin@school.com' });
+  if (!existingUser) {
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash('password123', salt);
 
-  // Create User
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash('password123', salt);
-
-  const adminUser = await User.create({
-    email: 'admin@school.com',
-    passwordHash: passwordHash,
-    firstName: 'Super',
-    lastName: 'Admin',
-    role: superAdminRole._id
-  });
-  console.log('Created User:', adminUser.email);
+    const adminUser = await User.create({
+      email: 'admin@school.com',
+      passwordHash: passwordHash,
+      firstName: 'Super',
+      lastName: 'Admin',
+      role: superAdminRole._id
+    });
+    console.log('Created User:', adminUser.email);
+  } else {
+    console.log('User already exists:', existingUser.email);
+  }
 
   await mongoose.disconnect();
   console.log('Disconnected');
