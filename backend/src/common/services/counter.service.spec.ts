@@ -67,7 +67,7 @@ describe('CounterService', () => {
 
       const admissionNumber = await service.generateAdmissionNumber();
       const year = new Date().getFullYear();
-      expect(admissionNumber).toBe(`ADM-${year}-000005`);
+      expect(admissionNumber).toBe(`PSEI-${year}-000005`);
     });
   });
 
@@ -81,7 +81,7 @@ describe('CounterService', () => {
       const classId = '60783f2a';
       const academicYearId = '2026';
       const rollNumber = await service.generateRollNumber(classId, academicYearId);
-      expect(rollNumber).toBe('ROLL-783f2a-000012');
+      expect(rollNumber).toBe('PSEIGEN783F2A000012');
       expect(mockCounterModel.findOneAndUpdate).toHaveBeenCalledWith(
         { _id: `roll_number:${classId}:${academicYearId}` },
         { $inc: { seq: 1 } },

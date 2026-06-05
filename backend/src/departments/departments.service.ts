@@ -25,7 +25,12 @@ export class DepartmentsService {
 
   async create(createDepartmentDto: CreateDepartmentDto): Promise<Department> {
     await this.validateSchool(createDepartmentDto.school);
-    return this.departmentModel.create(createDepartmentDto);
+    const code = createDepartmentDto.code || createDepartmentDto.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase();
+    const departmentData = {
+      ...createDepartmentDto,
+      code,
+    };
+    return this.departmentModel.create(departmentData);
   }
 
   async findAll(query: PaginationQueryDto) {
@@ -89,8 +94,14 @@ export class DepartmentsService {
     if (updateDepartmentDto.school) {
       await this.validateSchool(updateDepartmentDto.school);
     }
+    const current = await this.findOne(id);
+    const code = updateDepartmentDto.code || (updateDepartmentDto.name ? updateDepartmentDto.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() : current.code);
+    const updateData = {
+      ...updateDepartmentDto,
+      code,
+    };
     const updated = await this.departmentModel
-      .findByIdAndUpdate(id, updateDepartmentDto, { new: true })
+      .findByIdAndUpdate(id, updateData, { new: true })
       .populate('school')
       .exec();
     if (!updated) {

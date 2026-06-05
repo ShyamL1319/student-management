@@ -163,10 +163,10 @@ export const StudentsPage: FC = () => {
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
         <DialogTitle>{editing ? 'Edit Student' : 'Admit Student'}</DialogTitle>
         <DialogContent sx={{ display: 'grid', gap: 2, mt: 1 }}>
-          <TextField label="Admission Number" value={formValues.admissionNumber} onChange={(e) => setFormValues({ ...formValues, admissionNumber: e.target.value })} fullWidth />
-          <TextField label="Roll Number" value={formValues.rollNumber} onChange={(e) => setFormValues({ ...formValues, rollNumber: e.target.value })} fullWidth />
-          <TextField label="First Name" value={formValues.firstName} onChange={(e) => setFormValues({ ...formValues, firstName: e.target.value })} fullWidth />
-          <TextField label="Last Name" value={formValues.lastName} onChange={(e) => setFormValues({ ...formValues, lastName: e.target.value })} fullWidth />
+          <TextField label="Admission Number (Auto-generated if blank)" value={formValues.admissionNumber} onChange={(e) => setFormValues({ ...formValues, admissionNumber: e.target.value })} fullWidth />
+          <TextField label="Roll Number (Auto-generated if blank)" value={formValues.rollNumber} onChange={(e) => setFormValues({ ...formValues, rollNumber: e.target.value })} fullWidth />
+          <TextField label="First Name" required value={formValues.firstName} onChange={(e) => setFormValues({ ...formValues, firstName: e.target.value })} fullWidth />
+          <TextField label="Last Name" required value={formValues.lastName} onChange={(e) => setFormValues({ ...formValues, lastName: e.target.value })} fullWidth />
           <TextField type="date" label="DOB" slotProps={{ inputLabel: { shrink: true } }} value={formValues.dob} onChange={(e) => setFormValues({ ...formValues, dob: e.target.value })} fullWidth />
           <FormControl fullWidth>
             <InputLabel>Gender</InputLabel>
@@ -179,10 +179,10 @@ export const StudentsPage: FC = () => {
           </FormControl>
           <TextField label="Blood Group" value={formValues.bloodGroup} onChange={(e) => setFormValues({ ...formValues, bloodGroup: e.target.value })} fullWidth />
           <TextField label="Address" value={formValues.address} onChange={(e) => setFormValues({ ...formValues, address: e.target.value })} fullWidth />
-          <TextField label="Email" value={formValues.email} onChange={(e) => setFormValues({ ...formValues, email: e.target.value })} fullWidth />
+          <TextField label="Email" required value={formValues.email} onChange={(e) => setFormValues({ ...formValues, email: e.target.value })} fullWidth />
           <TextField label="Phone" value={formValues.phone} onChange={(e) => setFormValues({ ...formValues, phone: e.target.value })} fullWidth />
           <TextField label="Parent Name" value={formValues.parent} onChange={(e) => setFormValues({ ...formValues, parent: e.target.value })} fullWidth />
-          <FormControl fullWidth>
+          <FormControl fullWidth required>
             <InputLabel>Class</InputLabel>
             <Select label="Class" value={formValues.class} onChange={(e) => setFormValues({ ...formValues, class: e.target.value })}>
               <MenuItem value="">None</MenuItem>

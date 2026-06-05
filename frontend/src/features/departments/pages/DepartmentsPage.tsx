@@ -37,7 +37,7 @@ export const DepartmentsPage: FC = () => {
   const [selectedSchool, setSelectedSchool] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [formValues, setFormValues] = useState({ school: '', name: '', isActive: true });
+  const [formValues, setFormValues] = useState({ school: '', name: '', code: '', description: '', isActive: true });
 
   const { data: schoolsData } = useQuery({
     queryKey: ['schoolsOptions'],
@@ -59,23 +59,23 @@ export const DepartmentsPage: FC = () => {
 
   const createMutation = useMutation({
     mutationFn: (data: any) => departmentApi.createDepartment(data),
-    onSuccess: () => queryClient.invalidateQueries(['departments']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['departments'] }),
   });
   const updateMutation = useMutation({
     mutationFn: (data: any) => departmentApi.updateDepartment(editing.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['departments']);
+      queryClient.invalidateQueries({ queryKey: ['departments'] });
       setEditing(null);
     },
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) => departmentApi.deleteDepartment(id),
-    onSuccess: () => queryClient.invalidateQueries(['departments']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['departments'] }),
   });
 
   const openCreateDialog = () => {
     setEditing(null);
-    setFormValues({ school: '', name: '', isActive: true });
+    setFormValues({ school: '', name: '', code: '', description: '', isActive: true });
     setDialogOpen(true);
   };
 
@@ -84,6 +84,8 @@ export const DepartmentsPage: FC = () => {
     setFormValues({
       school: item.school?._id || item.school || '',
       name: item.name || '',
+      code: item.code || '',
+      description: item.description || '',
       isActive: !!item.isActive,
     });
     setDialogOpen(true);
@@ -149,6 +151,8 @@ export const DepartmentsPage: FC = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
+                <TableCell>Code</TableCell>
+                <TableCell>Description</TableCell>
                 <TableCell>School</TableCell>
                 <TableCell>Active</TableCell>
                 <TableCell align="right">Actions</TableCell>
@@ -157,7 +161,7 @@ export const DepartmentsPage: FC = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
+                  <TableCell colSpan={6} align="center">
                     <CircularProgress size={24} />
                   </TableCell>
                 </TableRow>
@@ -165,6 +169,8 @@ export const DepartmentsPage: FC = () => {
                 data.data.map((item: any) => (
                   <TableRow key={item._id || item.id}>
                     <TableCell>{item.name}</TableCell>
+                    <TableCell>{item.code || '—'}</TableCell>
+                    <TableCell>{item.description || '—'}</TableCell>
                     <TableCell>{item.school?.name || item.school || 'N/A'}</TableCell>
                     <TableCell>{item.isActive ? 'Yes' : 'No'}</TableCell>
                     <TableCell align="right">
@@ -183,7 +189,7 @@ export const DepartmentsPage: FC = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
+                  <TableCell colSpan={6} align="center">
                     No departments found.
                   </TableCell>
                 </TableRow>
@@ -223,6 +229,21 @@ export const DepartmentsPage: FC = () => {
             label="Name"
             value={formValues.name}
             onChange={(event) => setFormValues({ ...formValues, name: event.target.value })}
+            fullWidth
+          />
+          <TextField
+            label="Code"
+            value={formValues.code}
+            onChange={(event) => setFormValues({ ...formValues, code: event.target.value })}
+            helperText="Leave empty to auto-generate from the first 4 characters of the name"
+            fullWidth
+          />
+          <TextField
+            label="Description"
+            value={formValues.description}
+            onChange={(event) => setFormValues({ ...formValues, description: event.target.value })}
+            multiline
+            rows={3}
             fullWidth
           />
           <FormControlLabel
