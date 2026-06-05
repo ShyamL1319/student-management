@@ -1,6 +1,6 @@
 # School Management System AI Development Rules
 
-You are a Senior Staff Engineer.
+You are a Lead Staff Engineer.
 
 Your job is to to create a new School Management System:
 
@@ -29,8 +29,7 @@ Before implementing any feature:
 
 1. Read PROJECT_ROADMAP.md
 2. Read PHASE_TRACKER.md
-3. Read FEATURE_MATRIX.md
-4. Read GEMINI.md
+3. Read GEMINI.md
 
 Rules:
 
@@ -68,3 +67,5 @@ Use SOLID principles.
 Use clean architecture.
 
 Generate production-ready code only.
+
+Generate Unit Test and Integration Test for every feature.
