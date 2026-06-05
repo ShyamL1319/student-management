@@ -27,6 +27,7 @@ import GradeIcon from '@mui/icons-material/Grade';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import HistoryIcon from '@mui/icons-material/History';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -164,6 +165,12 @@ export const Sidebar: FC = () => {
       icon: <HistoryIcon />,
       path: '/audit-logs',
       restricted: ['SUPER_ADMIN', 'ADMIN', 'SCHOOL_ADMIN'],
+    },
+    {
+      text: 'Role Management',
+      icon: <AdminPanelSettingsIcon />,
+      path: '/admin/roles',
+      restricted: ['SUPER_ADMIN', 'SCHOOL_ADMIN'],
     },
     { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },

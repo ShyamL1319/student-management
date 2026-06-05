@@ -6,6 +6,7 @@ import { LoginPage } from './features/auth/pages/LoginPage';
 import { ForgotPasswordPage } from './features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 import { ProfilePage } from './features/users/pages/ProfilePage';
+import { RoleManagementPage } from './features/users/pages/RoleManagementPage';
 
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 import { StudentsPage } from './features/students/pages/StudentsPage';
@@ -252,6 +253,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <AuditLogsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/roles"
+          element={
+            <ProtectedRoute>
+              <RoleManagementPage />
             </ProtectedRoute>
           }
         />

@@ -400,6 +400,76 @@ Parent Dashboard
 
 ---
 
+# Application Walkthrough & Features
+
+Explore the core functionality of our School Management System. Below are visual representations (generated automatically via Playwright E2E tests) of the key modules and workflows available in the application.
+
+## 1. Authentication & Authorization Flow
+
+Secure login with Role-Based Access Control (RBAC). The system dynamically routes users (Super Admin, School Admin, Teacher, Student, Parent) to their respective dashboards.
+
+*   **Features:** Email/Password login, Forgot Password, Reset Password, User Profile Management.
+*   **Workflow:** User inputs credentials -> JWT token generated -> RBAC middleware validates role -> Redirected to role-specific dashboard.
+
+![Login Screen](./docs/screenshots/auth-login.png)
+*(Screenshot of the login portal)*
+
+## 2. Dashboard Module
+
+Comprehensive overview of school operations tailored to the logged-in user's role.
+
+*   **Admin Features:** View total students, teachers, staff, revenue statistics, and recent activities.
+*   **Teacher Features:** Quick access to today's classes, attendance pending, and recent notifications.
+*   **Workflow:** Data fetched via aggregate API endpoints combining metrics from multiple modules.
+
+![Admin Dashboard](./docs/screenshots/dashboard-admin.png)
+*(Screenshot of the main admin dashboard with statistics)*
+
+## 3. Student Management
+
+Complete lifecycle management of student records.
+
+*   **Features:** Add new student (admission), view student profiles, update details, filter by class/section, and track academic progress.
+*   **Workflow:** Fill admission form -> System assigns roll number and class -> Profile becomes active.
+
+![Student Directory](./docs/screenshots/student-directory.png)
+*(Screenshot of the student list with search and filters)*
+
+![Student Profile](./docs/screenshots/student-profile.png)
+*(Screenshot of an individual student's detailed profile)*
+
+## 4. User Role & Access Management
+
+Super Admins can define and manage roles and permissions granularly.
+
+*   **Features:** View users, manage user-role assignments, control access to specific application areas.
+*   **Workflow:** Admin selects user -> Updates role -> Changes dictate UI and API access across the platform.
+
+![Role Management](./docs/screenshots/role-management.png)
+*(Screenshot of the user role management interface)*
+
+## 5. Attendance Module
+
+Track daily and monthly attendance for students and staff.
+
+*   **Features:** Bulk mark attendance, view monthly reports, identify low-attendance students.
+*   **Workflow:** Teacher selects class and date -> Marks present/absent -> System updates records.
+
+![Attendance Tracker](./docs/screenshots/attendance-tracker.png)
+*(Screenshot of the attendance marking interface)*
+
+## 6. Notifications Center
+
+Centralized communication hub for the entire platform.
+
+*   **Features:** Real-time bell alerts, in-app messages, user preference settings.
+*   **Workflow:** System event triggered -> Notification Service dispatches alert -> Users receive instant update.
+
+![Notifications Center](./docs/screenshots/notifications-center.png)
+*(Screenshot of the notification dropdown and preferences)*
+
+---
+
 # Deliverables
 
 Generate implementation in phases.
