@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: student-management-backend
-  namespace: student-management
+  name: school-management-backend
+  namespace: school-management
 spec:
   replicas: 2
   selector:
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/student-management-backend:latest
+        image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/school-management-backend:latest
         ports:
         - containerPort: 3000
         envFrom:
@@ -33,7 +33,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend-service
-  namespace: student-management
+  namespace: school-management
 spec:
   selector:
     app: backend
@@ -45,8 +45,8 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: student-management-frontend
-  namespace: student-management
+  name: school-management-frontend
+  namespace: school-management
 spec:
   replicas: 2
   selector:
@@ -59,7 +59,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/student-management-frontend:latest
+        image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/school-management-frontend:latest
         ports:
         - containerPort: 80
         resources:
@@ -74,7 +74,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend-service
-  namespace: student-management
+  namespace: school-management
 spec:
   type: LoadBalancer
   selector:

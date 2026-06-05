@@ -1,6 +1,6 @@
 # Fee Management System - Complete Implementation Summary
 
-## Project: Student Management System
+## Project: School Management System
 ## Phase: 15 - Fees
 ## Status: ✅ COMPLETED
 

@@ -1,12 +1,12 @@
 {
-  "family": "student-management",
+  "family": "school-management",
   "networkMode": "awsvpc",
   "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
   "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskRole",
   "containerDefinitions": [
     {
       "name": "backend",
-      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/student-management-backend:latest",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/school-management-backend:latest",
       "portMappings": [
         {
           "containerPort": 3000,
@@ -23,7 +23,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/student-management-backend",
+          "awslogs-group": "/ecs/school-management-backend",
           "awslogs-region": "REGION",
           "awslogs-stream-prefix": "ecs"
         }
@@ -31,7 +31,7 @@
     },
     {
       "name": "frontend",
-      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/student-management-frontend:latest",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/school-management-frontend:latest",
       "portMappings": [
         {
           "containerPort": 80,
@@ -42,7 +42,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/student-management-frontend",
+          "awslogs-group": "/ecs/school-management-frontend",
           "awslogs-region": "REGION",
           "awslogs-stream-prefix": "ecs"
         }

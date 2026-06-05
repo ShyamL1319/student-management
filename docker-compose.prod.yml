@@ -1,12 +1,11 @@
-version: '3.8'
 
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
-    image: student-management-backend:latest
-    container_name: student_management_backend_prod
+    image: school-management-backend:latest
+    container_name: school-management-backend-prod
     ports:
       - '3000:3000'
     environment:
@@ -19,8 +18,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-    image: student-management-frontend:latest
-    container_name: student_management_frontend_prod
+    image: school-management-frontend:latest
+    container_name: school-management-frontend-prod
     ports:
       - '80:80'
     environment:

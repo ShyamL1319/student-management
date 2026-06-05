@@ -1,6 +1,6 @@
 # End-to-End AWS Production Deployment Guide
 
-This document outlines the step-by-step process for deploying the Student Management application from a local environment to a production environment on AWS. It covers Secrets Management, Infrastructure Setup, CI/CD configuration, and specific instructions for both ECS (Elastic Container Service) and EKS (Elastic Kubernetes Service) deployments.
+This document outlines the step-by-step process for deploying the School Management application from a local environment to a production environment on AWS. It covers Secrets Management, Infrastructure Setup, CI/CD configuration, and specific instructions for both ECS (Elastic Container Service) and EKS (Elastic Kubernetes Service) deployments.
 
 ---
 
@@ -34,13 +34,13 @@ EKS relies on Kubernetes Secrets to inject environment variables.
    ```
 2. Create the namespace:
    ```bash
-   kubectl create namespace student-management
+   kubectl create namespace school-management
    ```
 3. Create the Kubernetes secret:
    ```bash
    kubectl create secret generic backend-secrets \
-     --namespace student-management \
-     --from-literal=MONGODB_URI="mongodb+srv://<user>:<pass>@cluster.mongodb.net/student_management" \
+     --namespace school-management \
+     --from-literal=MONGODB_URI="mongodb+srv://<user>:<pass>@cluster.mongodb.net/school-management" \
      --from-literal=JWT_SECRET="your-production-jwt-secret"
    ```
 
@@ -53,10 +53,10 @@ Before deploying, you must create registries to host your Docker images.
 1. Open the **Amazon ECR** console.
 2. Click **Create repository**.
 3. Create two private repositories:
-   - `student-management-backend`
-   - `student-management-frontend`
+   - `school-management-backend`
+   - `school-management-frontend`
 4. Note your AWS Account ID and the AWS Region. Your repository URIs will look like:
-   `<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/student-management-...`
+   `<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/school-management-...`
 
 ---
 
@@ -97,8 +97,8 @@ Use the configuration located at `infrastructure/aws/ecs/task-definition.json`.
    aws ecs register-task-definition --cli-input-json file://infrastructure/aws/ecs/task-definition.json
    ```
 3. **Create the ECS Cluster and Service:**
-   - In the ECS Console, create a new Fargate cluster named `student-management-cluster`.
-   - Create a new Service within this cluster, selecting the `student-management` task definition.
+   - In the ECS Console, create a new Fargate cluster named `school-management-cluster`.
+   - Create a new Service within this cluster, selecting the `school-management` task definition.
    - Configure a target group and Application Load Balancer (ALB) to route port `80` traffic to the `frontend` container.
    - (Optional but recommended) Route API paths (e.g., `/api/*`) via the ALB to the `backend` container on port `3000`.
 
@@ -115,7 +115,7 @@ Use the configuration located at `infrastructure/aws/eks/deployment.yaml`.
 3. **Expose the Frontend:**
    The `deployment.yaml` creates a LoadBalancer service for the frontend. To get the DNS name of the ALB provisioned by AWS:
    ```bash
-   kubectl get svc frontend-service -n student-management
+   kubectl get svc frontend-service -n school-management
    ```
    Navigate to the `EXTERNAL-IP` provided to view the application.
 
@@ -127,7 +127,7 @@ Use the configuration located at `infrastructure/aws/eks/deployment.yaml`.
    Ensure your ECS Tasks or EKS Worker Nodes have network access to MongoDB Atlas. Refer to `infrastructure/mongo/atlas-setup.md` to configure VPC Peering or whitelist your NAT Gateway IP addresses.
 2. **Seeding Initial Data:**
    If this is a fresh production database, you need to create the Super Admin. Connect to the backend container shell and run the seeder:
-   - **EKS:** `kubectl exec -it <backend-pod-name> -n student-management -- sh -c "node seed.js"`
+   - **EKS:** `kubectl exec -it <backend-pod-name> -n school-management -- sh -c "node seed.js"`
    - **ECS:** Use ECS Exec to connect to the container and run `node seed.js`.
 3. **Verify Health:** 
-   Check CloudWatch Logs (`/ecs/student-management-backend`) or Kubernetes logs (`kubectl logs -l app=backend -n student-management`) to ensure the server connected to MongoDB successfully and is listening on port 3000.
+   Check CloudWatch Logs (`/ecs/school-management-backend`) or Kubernetes logs (`kubectl logs -l app=backend -n school-management`) to ensure the server connected to MongoDB successfully and is listening on port 3000.
