@@ -44,6 +44,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import StudentDashboard from './StudentDashboard';
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate();
@@ -499,86 +500,9 @@ export const DashboardPage: FC = () => {
 
         {/* --- ROLE: STUDENT --- */}
         {role === 'STUDENT' && (
-          <>
-            {/* Left Workspace: Weekly Class Roster */}
-            <Grid size={{ xs: 12, lg: 8 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
-                    My Registered Subjects
-                  </Typography>
-                  <List disablePadding>
-                    <ListItem sx={{ mb: 1.5 }}>
-                      <ListItemText
-                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Introduction to Chemistry (CHEM-101)</Typography>}
-                        secondary={<Typography variant="caption" color="text.secondary">Dr. Sarah Jenkins | Syllabus Progress: 78%</Typography>}
-                      />
-                      <Box sx={{ width: 120, ml: 2 }}>
-                        <LinearProgress variant="determinate" value={78} sx={{ height: 6, borderRadius: 3 }} />
-                      </Box>
-                    </ListItem>
-                    <Divider />
-                    <ListItem sx={{ mb: 1.5, mt: 1.5 }}>
-                      <ListItemText
-                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Algebra & Calculus Basics (MATH-202)</Typography>}
-                        secondary={<Typography variant="caption" color="text.secondary">Prof. Allan Evans | Syllabus Progress: 90%</Typography>}
-                      />
-                      <Box sx={{ width: 120, ml: 2 }}>
-                        <LinearProgress variant="determinate" value={90} color="success" sx={{ height: 6, borderRadius: 3 }} />
-                      </Box>
-                    </ListItem>
-                    <Divider />
-                    <ListItem sx={{ mt: 1.5 }}>
-                      <ListItemText
-                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Modern English Literature (LIT-112)</Typography>}
-                        secondary={<Typography variant="caption" color="text.secondary">Dr. Robert Vance | Syllabus Progress: 64%</Typography>}
-                      />
-                      <Box sx={{ width: 120, ml: 2 }}>
-                        <LinearProgress variant="determinate" value={64} sx={{ height: 6, borderRadius: 3 }} />
-                      </Box>
-                    </ListItem>
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Right Workspace: Student Performance */}
-            <Grid size={{ xs: 12, lg: 4 }}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" align="left" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
-                    Performance Grade
-                  </Typography>
-                  <Box sx={{ position: 'relative', display: 'inline-flex', my: 2 }}>
-                    <CircularProgress variant="determinate" value={95} size={120} thickness={6} color="success" />
-                    <Box
-                      sx={{
-                        top: 0,
-                        left: 0,
-                        bottom: 0,
-                        right: 0,
-                        position: 'absolute',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      <Typography variant="h5" sx={{ fontWeight: 700, fontFamily: "'Outfit', sans-serif" }}>
-                        3.85
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Current GPA
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 2 }} color="text.secondary">
-                    Your attendance of 95% places you in Excellent Academic Standing. Keep it up!
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </>
+          <Grid size={{ xs: 12 }}>
+            <StudentDashboard firstName={firstName} />
+          </Grid>
         )}
 
         {/* --- ROLE: PARENT --- */}
