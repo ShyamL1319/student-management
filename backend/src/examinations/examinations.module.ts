@@ -10,6 +10,6 @@ import { Exam, ExamSchema } from './schemas/exam.schema';
   ],
   controllers: [ExaminationsController],
   providers: [ExaminationsService],
-  exports: [ExaminationsService],
+  exports: [ExaminationsService, MongooseModule],
 })
 export class ExaminationsModule {}

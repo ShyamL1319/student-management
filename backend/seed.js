@@ -2,7 +2,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://root:examplepassword@mongodb:27017/school-management?authSource=admin';
+// const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://root:examplepassword@mongodb:27017/school-management?authSource=admin';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/school-management';
 
 async function seed() {
   await mongoose.connect(MONGODB_URI);

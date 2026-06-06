@@ -12,6 +12,6 @@ import { Timetable, TimetableSchema } from './schemas/timetable.schema';
   ],
   controllers: [TimetablesController],
   providers: [TimetablesService],
-  exports: [TimetablesService],
+  exports: [TimetablesService, MongooseModule],
 })
 export class TimetablesModule {}

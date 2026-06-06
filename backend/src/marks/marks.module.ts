@@ -10,6 +10,6 @@ import { Mark, MarkSchema } from './schemas/mark.schema';
   ],
   providers: [MarksService],
   controllers: [MarksController],
-  exports: [MarksService],
+  exports: [MarksService, MongooseModule],
 })
 export class MarksModule {}
