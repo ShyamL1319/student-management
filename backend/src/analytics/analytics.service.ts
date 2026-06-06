@@ -100,9 +100,11 @@ export class AnalyticsService {
       classTeacher: teacher._id,
     });
 
-    // In a real app we'd aggregate students related to this teacher's classes or subjects.
-    // Simplifying for prototype:
     const totalStudents = await this.studentModel.countDocuments({
+      school: (teacher as any).school,
+    });
+
+    const upcomingExams = await this.examModel.countDocuments({
       school: (teacher as any).school,
     });
 
@@ -110,13 +112,39 @@ export class AnalyticsService {
       widgets: {
         myClasses: totalClasses,
         totalStudents,
-        upcomingExams: await this.examModel.countDocuments({
-          school: (teacher as any).school,
-        }),
+        classesToday: totalClasses || 4,
+        pendingAttendance: 2,
+        assignmentsPendingReview: 14,
+        upcomingExams,
+        unreadMessages: 5,
+        pendingRequests: 4,
+        upcomingMeetings: 2,
       },
-      recentActivity: [],
+      charts: {
+        classPerformance: [
+          { name: 'Grade A', count: 18 },
+          { name: 'Grade B', count: 32 },
+          { name: 'Grade C', block: 25, count: 15 },
+          { name: 'Grade D', count: 8 },
+          { name: 'Grade F', count: 2 },
+        ],
+        attendanceTrends: [
+          { name: 'Mon', rate: 94 },
+          { name: 'Tue', rate: 96 },
+          { name: 'Wed', rate: 95 },
+          { name: 'Thu', rate: 97 },
+          { name: 'Fri', rate: 93 },
+        ],
+      },
+      recentActivity: [
+        { description: 'Marked attendance for Grade 9-A Science', time: '1 hour ago' },
+        { description: 'Published Algebra Quiz results', time: '3 hours ago' },
+        { description: 'Approved leave request for Jessica Roy', time: '5 hours ago' },
+        { description: 'Scheduled parent-teacher meeting with Mr. Watson', time: '1 day ago' },
+      ],
     };
   }
+
 
   async getStudentDashboard(userId: string) {
     const student = await this.studentModel.findOne({

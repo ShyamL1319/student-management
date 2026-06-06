@@ -1,498 +1,101 @@
-# School Management System (NestJS + React + MongoDB)
+# School Management System - Architecture, UI/UX, and Workflow Document
 
-## Objective
-
-Create a completely new enterprise-grade School Management System while preserving:
-
-* Folder structure
-* Coding standards
-* Architecture patterns
-* Authentication strategy
-* Authorization flow
-* Guards
-* Interceptors
-* Exception filters
-* DTO validation
-* Repository patterns
-* Environment configuration
-* API response standards
-* Logger implementation
-* Swagger documentation
-* React architecture
-* Routing structure
-* Redux/Context patterns if present
-* Axios API layer
-* UI design system
-
-The new project must NOT be a modified copy of LinkShortner.
-
-Instead, it should use the same architecture to build a School Management Platform.
+This document provides a comprehensive overview of the system architecture, UI/UX design principles, and functional workflows of the School Management System, based on the codebase structure and specific analysis of the `RoleManagementPage` feature.
 
 ---
 
-# Technology Stack
+## 1. High-Level Architecture
 
-Backend:
+The project follows a modern, decoupled client-server architecture using an enterprise-grade technology stack.
 
-* NestJS
-* MongoDB
-* Mongoose
-* JWT Authentication
-* Role Based Access Control
+### 1.1. Frontend Architecture (React + Vite + TypeScript)
+- **Build Tool:** Vite for fast hot-module replacement and optimized production builds.
+- **Component Structure:** Feature-based folder architecture (`src/features/*`). Each feature (e.g., users, dashboard, students, fees) encapsulates its own pages, components, and specific logic.
+- **Routing & Protection:** Uses `react-router-dom`. The `App.tsx` defines a central `ProtectedRoute` component that enforces both authentication (JWT) and Role-Based Access Control (RBAC), ensuring users can only access routes permitted for their assigned roles.
+- **API Layer:** Axios is used for HTTP requests, abstracted into feature-specific API services (e.g., `usersApi.ts`, `roleApi.ts`). `react-query` is integrated for caching and server-state management.
+- **State Management:** React Context (`AuthProvider`) is used for global auth state, while local component state manages UI interactions.
 
-Frontend:
-
-* React
-* TypeScript
-* React Router
-* Material UI / existing design system
-* Axios
-* React Query
-
-Database:
-
-* MongoDB
+### 1.2. Backend Architecture (NestJS + MongoDB)
+- **Framework:** NestJS, providing a highly structured, Angular-like modular architecture.
+- **Database:** MongoDB with Mongoose ORM for flexible, document-based data storage.
+- **Modularity:** Divided into cohesive modules (`auth`, `users`, `students`, `attendance`, `fees`, `notifications`). Each module strictly follows the Controller-Service-Repository pattern.
+- **Security & Validation:** 
+  - JWT for stateless authentication.
+  - RBAC via NestJS Guards.
+  - Strict input validation using DTOs (Data Transfer Objects) with `class-validator` and `class-transformer`.
+- **Documentation:** Swagger is integrated for auto-generated API documentation.
 
 ---
 
-# User Roles
+## 2. UI/UX Design System
 
-1. Super Admin
-2. School Admin
-3. Teacher
-4. Staff
-5. Student
-6. Parent
+The frontend leverages **Material UI (MUI)** with a highly customized, modern aesthetic defined in `src/theme.ts`.
 
----
+### 2.1. Visual Identity
+- **Typography:** Dual-font strategy. `Outfit` is used for bold, modern headings (h1-h6), while `Inter` is used for highly readable body text, buttons, and captions.
+- **Color Palette:** 
+  - *Primary:* Indigo/Blue shades (e.g., `#4f46e5`).
+  - *Secondary:* Teal shades (e.g., `#0d9488`).
+  - *Backgrounds:* Slate grays providing a soft contrast (`#f8fafc` for light mode).
+- **Theming:** Full support for both Light and Dark modes.
 
-# Core Modules
-
-## Authentication
-
-* Login
-* Logout
-* Refresh Token
-* Forgot Password
-* Reset Password
-* Change Password
-* Profile Management
-* Role Based Authorization
+### 2.2. UX Principles & Components
+- **Soft UI:** Extensive use of rounded corners (`borderRadius: 8` or `12`), removed default drop-shadows in favor of flat borders (`1px solid #e2e8f0`), creating a clean "flat-design" look.
+- **Feedback Mechanisms:** 
+  - Visual loading states (`CircularProgress`) on buttons during form submissions.
+  - Toast notifications (`Snackbar` with `Alert`) for immediate success/error feedback upon API actions.
+  - Empty states (e.g., "No users found") to prevent dead-end screens.
+- **Micro-interactions:** Hover effects on table rows, scaled transitions on buttons, and color-coded `Chip` components (e.g., red for Admins, green for Students) to provide immediate visual context.
+- **Layout:** Responsive grid system. Uses multi-column layouts on desktop that gracefully stack on mobile devices.
 
 ---
 
-## Student Module
-
-Student CRUD
-
-Fields:
-
-* admissionNumber
-* rollNumber
-* firstName
-* lastName
-* gender
-* dateOfBirth
-* bloodGroup
-* email
-* phone
-* address
-* class
-* section
-* parentDetails
-* status
-
-Features:
-
-* Student profile
-* Student search
-* Student filters
-* Student promotion
-
----
-
-## Teacher Module
-
-Teacher CRUD
-
-Fields:
-
-* employeeId
-* firstName
-* lastName
-* qualification
-* department
-* specialization
-* joiningDate
-* salary
-* email
-* phone
-
-Features:
-
-* Assign classes
-* Assign subjects
-* Attendance tracking
-
----
-
-## Staff Module
-
-Staff CRUD
-
-Fields:
-
-* employeeId
-* designation
-* department
-* salary
-* contactInfo
-
----
-
-## Department Module
-
-CRUD
-
-Examples:
-
-* Science
-* Commerce
-* Arts
-* Administration
-
----
-
-## Course Module
-
-CRUD
-
-Fields:
-
-* courseCode
-* courseName
-* description
-* department
-* assignedTeacher
-
----
-
-## Subject Module
-
-CRUD
-
-Fields:
-
-* subjectCode
-* subjectName
-* department
-* teacher
-
----
-
-## Class Module
-
-CRUD
-
-Fields:
-
-* className
-* section
-* classTeacher
-
----
-
-## Attendance Module
-
-Student Attendance
-
-Features:
-
-* Daily attendance
-* Monthly attendance
-* Attendance reports
-* Student, teacher, and staff attendance types
-
-Teacher Attendance
-
-Staff Attendance
-
----
-
-## Marks Module
-
-Exam Types:
-
-* Unit Test
-* Mid Term
-* Final Exam
-
-Features:
-
-* Enter marks
-* Edit marks
-* Grade calculation
-* GPA calculation
-* Rank generation
-
----
-
-## Examination Module
-
-CRUD
-
-Fields:
-
-* examName
-* examDate
-* examType
-
----
-
-## Timetable Module
-
-Features:
-
-* Class timetable
-* Teacher timetable
-
----
-
-## Fee Management
-
-Features:
-
-* Fee structure
-* Fee collection
-* Pending dues
-* Reports
-
----
-
-## Notification Module
-
-**Status**: ✅ Fully Implemented
-
-### Notification Channels
-* Email (via SMTP with nodemailer)
-* SMS (Twilio, AWS SNS, or Mock providers)
-* In-App (Database storage)
-
-### Event Types
-* Attendance Alerts - Low attendance warnings
-* Fee Alerts - Pending/overdue payment notifications
-* Result Alerts - Exam result published notifications
-* Exam Schedule - Exam schedule notifications
-* Timetable Change - Schedule change notifications
-* Announcements - General announcements
-
-### Core Features
-* Create and send notifications via multiple channels
-* User notification preferences management
-* Notification status tracking (pending, sent, failed, delivered, opened)
-* Retry mechanism for failed notifications
-* Unread notification count and tracking
-* Mark as read (single and bulk)
-* Notification history and search
-* Statistics and reporting
-* Event-based triggers
-* Quiet hours configuration
-* Do Not Disturb mode
-* Notification templates
-* Template variable substitution
-* Metadata storage for tracking
-
-### API Endpoints
-**Notifications:**
-- `POST /notifications` - Create and send
-- `GET /notifications` - Get all with filtering
-- `GET /notifications/:id` - Get single
-- `PATCH /notifications/:id` - Update
-- `PATCH /notifications/:id/read` - Mark as read
-- `PATCH /notifications/read/all` - Mark all as read
-- `POST /notifications/:id/retry` - Retry failed
-- `DELETE /notifications/:id` - Delete single
-- `DELETE /notifications` - Clear all
-- `GET /notifications/unread/count` - Get unread count
-- `GET /notifications/statistics` - Get statistics
-
-**Preferences:**
-- `GET /notification-preferences` - Get user preferences
-- `PATCH /notification-preferences` - Update preferences
-- `PATCH /notification-preferences/channel/:channel/enable` - Enable channel
-- `PATCH /notification-preferences/channel/:channel/disable` - Disable channel
-- `PATCH /notification-preferences/event/:eventType/enable` - Enable event
-- `PATCH /notification-preferences/event/:eventType/disable` - Disable event
-
-**Templates:**
-- `POST /notification-templates` - Create template
-- `GET /notification-templates` - Get all
-- `GET /notification-templates/:id` - Get single
-- `PATCH /notification-templates/:id` - Update
-- `DELETE /notification-templates/:id` - Delete
-
-**Events:**
-- `POST /notification-events/attendance-alert` - Trigger attendance alert
-- `POST /notification-events/fee-alert` - Trigger fee alert
-- `POST /notification-events/result-alert` - Trigger result alert
-- `GET /notification-events` - Get all events
-- `GET /notification-events/:id` - Get single event
-- `GET /notification-events/statistics` - Get event statistics
-
-### Frontend Components
-* **NotificationCenter** - Main notification management page
-  - View all notifications with filtering
-  - Statistics dashboard
-  - Mark as read/unread
-  - Retry failed notifications
-  - Delete notifications
-  
-* **NotificationPreferences** - User preference settings
-  - Enable/disable channels
-  - Configure quiet hours
-  - Event type preferences
-  - Do Not Disturb mode
-
-* **NotificationBell** - Header component
-  - Real-time unread count display
-  - Animated badge
-  - Quick dropdown
-
----
-
----
-
-## Dashboard Module
-
-Admin Dashboard
-
-Statistics:
-
-* Total Students
-* Total Teachers
-* Total Staff
-* Attendance %
-* Exam Statistics
-
-Teacher Dashboard
-
-Student Dashboard
-
-Parent Dashboard
-
----
-
-# Non Functional Requirements
-
-* Modular architecture
-* Scalable design
-* SOLID principles
-* Clean Architecture
-* Enterprise folder structure
-* Swagger documentation
-* Unit tests
-* Integration tests
-* Pagination
-* Sorting
-* Filtering
-* Search
-* Audit Logs
-
----
-
-# Application Walkthrough & Features
-
-Explore the core functionality of our School Management System. Below are visual representations (generated automatically via Playwright E2E tests) of the key modules and workflows available in the application.
-
-## 1. Authentication & Authorization Flow
-
-Secure login with Role-Based Access Control (RBAC). The system dynamically routes users (Super Admin, School Admin, Teacher, Student, Parent) to their respective dashboards.
-
-*   **Features:** Email/Password login, Forgot Password, Reset Password, User Profile Management.
-*   **Workflow:** User inputs credentials -> JWT token generated -> RBAC middleware validates role -> Redirected to role-specific dashboard.
-
-![Login Screen](./docs/screenshots/auth-login.png)
-*(Screenshot of the login portal)*
-
-## 2. Dashboard Module
-
-Comprehensive overview of school operations tailored to the logged-in user's role.
-
-*   **Admin Features:** View total students, teachers, staff, revenue statistics, and recent activities.
-*   **Teacher Features:** Quick access to today's classes, attendance pending, and recent notifications.
-*   **Workflow:** Data fetched via aggregate API endpoints combining metrics from multiple modules.
-
-![Admin Dashboard](./docs/screenshots/dashboard-admin.png)
-*(Screenshot of the main admin dashboard with statistics)*
-
-## 3. Student Management
-
-Complete lifecycle management of student records.
-
-*   **Features:** Add new student (admission), view student profiles, update details, filter by class/section, and track academic progress.
-*   **Workflow:** Fill admission form -> System assigns roll number and class -> Profile becomes active.
-
-![Student Directory](./docs/screenshots/student-directory.png)
-*(Screenshot of the student list with search and filters)*
-
-![Student Profile](./docs/screenshots/student-profile.png)
-*(Screenshot of an individual student's detailed profile)*
-
-## 4. User Role & Access Management
-
-Super Admins can define and manage roles and permissions granularly.
-
-*   **Features:** View users, manage user-role assignments, control access to specific application areas.
-*   **Workflow:** Admin selects user -> Updates role -> Changes dictate UI and API access across the platform.
-
-![Role Management](./docs/screenshots/role-management.png)
-*(Screenshot of the user role management interface)*
-
-## 5. Attendance Module
-
-Track daily and monthly attendance for students and staff.
-
-*   **Features:** Bulk mark attendance, view monthly reports, identify low-attendance students.
-*   **Workflow:** Teacher selects class and date -> Marks present/absent -> System updates records.
-
-![Attendance Tracker](./docs/screenshots/attendance-tracker.png)
-*(Screenshot of the attendance marking interface)*
-
-## 6. Notifications Center
-
-Centralized communication hub for the entire platform.
-
-*   **Features:** Real-time bell alerts, in-app messages, user preference settings.
-*   **Workflow:** System event triggered -> Notification Service dispatches alert -> Users receive instant update.
-
-![Notifications Center](./docs/screenshots/notifications-center.png)
-*(Screenshot of the notification dropdown and preferences)*
-
----
-
-# Deliverables
-
-Generate implementation in phases.
-
-Never generate entire project at once.
-
-After each phase:
-
-1. Generate code
-2. Generate folder structure
-3. Generate README updates
-4. Generate migration notes
-5. Generate API documentation
-6. Generate frontend screens
-7. Update project tracking files
-
-Keep track of completed phases.
-
-Generate markdown files for project governance.
-
----
-
-# Current Progress
-
-* **Phase 1 (Setup):** Completed. Bootstrap of NestJS Backend, React Vite Frontend, MongoDB, Docker, and Swagger.
-* **Phase 2 (Authentication):** Completed. Auth module with JWT, Refresh Tokens, RBAC, Users/Roles schemas, Login, Forgot/Reset Password, and Profile pages.
+## 3. Functional Workflow Example: Role & Access Management
+
+The `RoleManagementPage.tsx` perfectly illustrates the standard workflow, combining architecture and UX principles.
+
+### 3.1. Page Layout & Objective
+- **Goal:** Allow Super Admins/Admins to manage system roles and assign these roles to users.
+- **Layout:** 
+  - A gradient header with an action button ("New Role").
+  - A split 2-column view:
+    - **Left Column:** A searchable list of all users and their currently assigned roles.
+    - **Right Column:** A list of all available roles showing how many members are assigned, with options to create or delete roles.
+  - **Bottom Section:** A summary grid of "Role Members Overview".
+
+### 3.2. User Interaction Workflow
+1. **Data Initialization:** On mount, `fetchData()` triggers parallel API calls to fetch both `Users` and `Roles`. A central loader spins until both resolve.
+2. **Assigning a Role:**
+   - The admin searches for a user in the left panel.
+   - Clicking "Assign Role" opens a custom `Dialog`.
+   - The dialog presents a searchable, premium "Radio Group" UI of available roles. The currently assigned role is highlighted.
+   - Upon confirmation, the UI goes into a loading state, calls `usersApi.updateUserRole`, and upon success, triggers a green `Snackbar` and refreshes the data.
+3. **Creating a Role:**
+   - Clicking "New Role" opens a modal.
+   - The input automatically formats the role name to `UPPERCASE_SNAKE_CASE` (e.g., `LIBRARIAN`).
+   - The system prevents creation if the name is empty and handles API validation errors gracefully via the Snackbar.
+4. **Deleting a Role:**
+   - Admins can delete custom roles.
+   - **Business Logic Protection:** The frontend explicitly blocks the deletion of core system roles (`SUPER_ADMIN`, `ADMIN`, `TEACHER`, `STAFF`, `STUDENT`) to prevent accidental system lockouts.
+
+### 3.3. Technical Highlights in Workflow
+- **Optimized Searching:** Client-side filtering is used for instantaneous search results for both users and roles without spamming the backend.
+- **Defensive UI:** Buttons are disabled (`disabled={savingRole}`) while API requests are pending to prevent double-submissions.
+- **Dynamic Styling:** Role chips dynamically calculate their background, border, and text colors based on the role name (e.g., `roleColorHex` map), making the UI highly scannable.
+
+## #System Architecture 
+The backend is powered by NestJS, utilizing its highly structured, Angular-like modular architecture to separate concerns into cohesive modules such as authentication, users, students, and fees. It relies on MongoDB with Mongoose ORM for flexible, document-based data storage. Every module strictly adheres to the Controller-Service-Repository pattern, ensuring clean separation of business logic. Security is a core focus; the system implements stateless JWT authentication, deep Role-Based Access Control (RBAC) via NestJS Guards, and rigorous input validation using Data Transfer Objects (DTOs).
+
+On the frontend, the application leverages React, TypeScript, and Vite, organized into a feature-based folder structure where each module encapsulates its own components, pages, and API logic. Routing is handled by React Router, featuring a centralized protection mechanism that enforces both authentication and RBAC dynamically, ensuring users only access authorized views. Data fetching is abstracted into isolated API services using Axios, while global authentication state is managed via React Context.
+
+###UI/UX Design System
+The user interface is built on Material UI (MUI) but heavily customized to deliver a premium "Soft UI" aesthetic. Traditional drop-shadows are discarded in favor of clean, flat borders and rounded corners, resulting in a modern and uncluttered interface. The application utilizes a dual-typography strategy: the "Outfit" font is used for bold, modern headings, while the "Inter" font ensures maximum readability for body text and data-dense tables.
+
+The user experience relies heavily on immediate, clear feedback. The system utilizes toast notifications (Snackbars) for success and error messages, inline loading spinners to indicate background processes, and thoughtfully designed empty states to prevent dead-ends. Micro-interactions, such as dynamic, color-coded status chips and responsive hover effects, make complex data scannable and intuitive.
+
+### Functional Workflow Implementation
+The RoleManagementPage serves as a prime example of these architectural and UX principles in action. The page utilizes a responsive split-column layout: the left side allows admins to search users and assign roles, while the right side manages the roles themselves alongside a bottom summary dashboard.
+
+The workflow is highly defensive and user-centric. Client-side filtering ensures instant search results for users and roles without incurring backend latency. When an admin assigns a role, the system opens a focused dialog, highlights the current role natively, and disables submission buttons during the API call to prevent duplicate actions. Furthermore, the UI actively protects business logic—for instance, explicitly blocking the deletion of core system roles (like SUPER_ADMIN or STUDENT) to prevent accidental lockouts, while allowing the creation of custom roles with automatic formatting.
+
+In summary, the School Management System combines a rigidly structured NestJS backend with a highly responsive, aesthetically refined React frontend, resulting in a secure and maintainable platform.
