@@ -9,6 +9,12 @@ api.interceptors.request.use((config) => {
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
+  // Inject browser hostname as X-Tenant-ID header dynamically
+  if (config.headers) {
+    config.headers['X-Tenant-ID'] = window.location.hostname;
+  }
+
   return config;
 });
 
