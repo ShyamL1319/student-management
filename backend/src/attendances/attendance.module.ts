@@ -12,6 +12,6 @@ import { AttendancesService } from './attendances.service';
   ],
   controllers: [AttendancesController],
   providers: [AttendancesService],
-  exports: [AttendancesService],
+  exports: [AttendancesService, MongooseModule],
 })
 export class AttendancesModule {}

@@ -7,19 +7,16 @@ async function check() {
     await mongoose.connect(MONGODB_URI);
     console.log('Connected to MongoDB');
 
-    const User = mongoose.model('User', new mongoose.Schema({ email: String, firstName: String, lastName: String }));
-    const Role = mongoose.model('Role', new mongoose.Schema({ name: String }));
-
-    const users = await User.find().populate('role');
+    const users = await mongoose.connection.db.collection('users').find().toArray();
     console.log('Users found:', users.length);
     users.forEach(u => {
-      console.log(`- ${u.email} (${u.firstName} ${u.lastName})`);
+      console.log(`- ${u.email} (${u.firstName} ${u.lastName}) role: ${u.role} roleType: ${u.roleType}`);
     });
 
-    const roles = await Role.find();
+    const roles = await mongoose.connection.db.collection('roles').find().toArray();
     console.log('Roles found:', roles.length);
     roles.forEach(r => {
-      console.log(`- ${r.name}`);
+      console.log(`- ${r.name} (${r._id})`);
     });
 
   } catch (err) {

@@ -8,12 +8,28 @@ import {
   CardContent,
   CardActionArea,
   CircularProgress,
+  Button,
+  LinearProgress,
+  Avatar,
+  Checkbox,
+  FormControlLabel,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
 } from '@mui/material';
-import PeopleIcon from '@mui/icons-material/People';
-import SchoolIcon from '@mui/icons-material/School';
-import ClassIcon from '@mui/icons-material/Class';
-import EventIcon from '@mui/icons-material/Event';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import {
+  People as PeopleIcon,
+  School as SchoolIcon,
+  Class as ClassIcon,
+  Event as EventIcon,
+  AccountBalance as AccountBalanceIcon,
+  CheckCircleOutlined as CheckCircleIcon,
+  AssignmentTurnedIn as AssignmentIcon,
+  Schedule as ScheduleIcon,
+  FiberManualRecord as DotIcon,
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { fetchDashboardData } from '../api/dashboardApi';
@@ -28,6 +44,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import StudentDashboard from './StudentDashboard';
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate();
@@ -35,6 +52,20 @@ export const DashboardPage: FC = () => {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Interactive mock state for Staff Checklists
+  const [todoList, setTodoList] = useState([
+    { id: 1, text: 'File student admissions catalog', checked: true },
+    { id: 2, text: 'Verify teacher leave request logs', checked: false },
+    { id: 3, text: 'Audit monthly fee collections report', checked: false },
+    { id: 4, text: 'Update library textbook reserves', checked: false },
+  ]);
+
+  const toggleTodo = (id: number) => {
+    setTodoList(prev =>
+      prev.map(todo => (todo.id === id ? { ...todo, checked: !todo.checked } : todo))
+    );
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -53,36 +84,37 @@ export const DashboardPage: FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress />
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress size={40} />
       </Box>
     );
   }
 
   if (error || !data) {
-    return <Typography color="error">{error}</Typography>;
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography color="error" variant="h6">{error || 'Failed to load dashboard data'}</Typography>
+      </Box>
+    );
   }
 
-  const roleName = typeof user?.role === 'string' ? user.role : (user?.role as any)?.name || '';
-  const role = roleName as string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userTyped = user as any;
+  const roleName = typeof userTyped?.role === 'string' ? userTyped.role : userTyped?.role?.name || '';
+  const role = roleName.toUpperCase();
   const { widgets, recentActivity } = data;
 
-  // Generate widgets based on available data
+  const firstName = typeof userTyped?.firstName === 'string' ? userTyped.firstName : 'User';
+
+  // Generate dynamic stat cards based on role availability
   const statWidgets = [];
 
-  if (widgets.totalSchools !== undefined) {
-    statWidgets.push({
-      title: 'Total Schools',
-      value: widgets.totalSchools,
-      icon: <SchoolIcon fontSize="large" color="primary" />,
-      link: '/schools',
-    });
-  }
   if (widgets.totalUsers !== undefined) {
     statWidgets.push({
       title: 'Total Users',
       value: widgets.totalUsers,
-      icon: <PeopleIcon fontSize="large" color="secondary" />,
+      desc: 'Active user database profiles',
+      icon: <PeopleIcon sx={{ color: '#6366f1' }} />,
       link: '/users',
     });
   }
@@ -90,7 +122,8 @@ export const DashboardPage: FC = () => {
     statWidgets.push({
       title: 'Total Students',
       value: widgets.totalStudents,
-      icon: <PeopleIcon fontSize="large" color="info" />,
+      desc: 'Registered student roster',
+      icon: <PeopleIcon sx={{ color: '#0d9488' }} />,
       link: '/students',
     });
   }
@@ -98,7 +131,8 @@ export const DashboardPage: FC = () => {
     statWidgets.push({
       title: 'Total Teachers',
       value: widgets.totalTeachers,
-      icon: <SchoolIcon fontSize="large" color="success" />,
+      desc: 'Assigned academic educators',
+      icon: <SchoolIcon sx={{ color: '#10b981' }} />,
       link: '/teachers',
     });
   }
@@ -106,7 +140,8 @@ export const DashboardPage: FC = () => {
     statWidgets.push({
       title: 'Active Classes',
       value: widgets.totalClasses,
-      icon: <ClassIcon fontSize="large" color="warning" />,
+      desc: 'Academic classrooms listed',
+      icon: <ClassIcon sx={{ color: '#f59e0b' }} />,
       link: '/classes',
     });
   }
@@ -114,100 +149,189 @@ export const DashboardPage: FC = () => {
     statWidgets.push({
       title: 'My Classes',
       value: widgets.myClasses,
-      icon: <ClassIcon fontSize="large" color="primary" />,
-      link: '/classes',
+      desc: 'Teaching schedules today',
+      icon: <ClassIcon sx={{ color: '#6366f1' }} />,
+      link: '/timetables',
     });
   }
   if (widgets.upcomingExams !== undefined) {
     statWidgets.push({
       title: 'Upcoming Exams',
       value: widgets.upcomingExams,
-      icon: <EventIcon fontSize="large" color="error" />,
-      link: '/examinations',
+      desc: 'Scheduled examinations in system',
+      icon: <EventIcon sx={{ color: '#ef4444' }} />,
+      link: '/exams',
     });
   }
   if (widgets.attendancePercentage !== undefined) {
     statWidgets.push({
       title: 'Attendance Rate',
       value: `${widgets.attendancePercentage}%`,
-      icon: <EventIcon fontSize="large" color="success" />,
+      desc: 'Average school attendance status',
+      icon: <CheckCircleIcon sx={{ color: '#10b981' }} />,
       link: '/attendances',
     });
   }
   if (widgets.totalMarksRecords !== undefined) {
     statWidgets.push({
-      title: 'Marks Records',
+      title: 'Marks Recorded',
       value: widgets.totalMarksRecords,
-      icon: <EventIcon fontSize="large" color="primary" />,
+      desc: 'Graded report card entries',
+      icon: <AssignmentIcon sx={{ color: '#3b82f6' }} />,
       link: '/marks',
-    });
-  }
-  if (widgets.globalRevenue !== undefined) {
-    statWidgets.push({
-      title: 'Global Revenue',
-      value: `$${widgets.globalRevenue}`,
-      icon: <AccountBalanceIcon fontSize="large" color="success" />,
-      link: '#',
     });
   }
   if (widgets.totalRevenue !== undefined) {
     statWidgets.push({
-      title: 'Total Revenue',
-      value: `$${widgets.totalRevenue}`,
-      icon: <AccountBalanceIcon fontSize="large" color="success" />,
-      link: '/fees/collections',
+      title: 'Fee Revenue',
+      value: `$${widgets.totalRevenue.toLocaleString()}`,
+      desc: 'Total collected tuition revenues',
+      icon: <AccountBalanceIcon sx={{ color: '#10b981' }} />,
+      link: '/fee-collections',
     });
   }
   if (widgets.pendingFees !== undefined) {
     statWidgets.push({
-      title: 'Pending Fees',
-      value: `$${widgets.pendingFees}`,
-      icon: <AccountBalanceIcon fontSize="large" color="error" />,
-      link: '/fees/pending',
+      title: 'Pending Invoices',
+      value: `$${widgets.pendingFees.toLocaleString()}`,
+      desc: 'Outstanding tuition payments due',
+      icon: <AccountBalanceIcon sx={{ color: '#ef4444' }} />,
+      link: '/pending-fees',
     });
   }
   if (widgets.childrenCount !== undefined) {
     statWidgets.push({
-      title: 'Children',
+      title: 'Enrolled Children',
       value: widgets.childrenCount,
-      icon: <PeopleIcon fontSize="large" color="primary" />,
+      desc: 'Academic family dependents',
+      icon: <PeopleIcon sx={{ color: '#6366f1' }} />,
       link: '#',
     });
   }
 
-  // Mock data for Recharts just to show it visually if actual charts data not fully available
+  // Mock data for Admin collection charts
   const mockChartData = [
-    { name: 'Jan', revenue: 4000, expected: 5000 },
-    { name: 'Feb', revenue: 3000, expected: 5000 },
-    { name: 'Mar', revenue: 5000, expected: 5000 },
-    { name: 'Apr', revenue: 4500, expected: 5000 },
-    { name: 'May', revenue: 6000, expected: 5000 },
+    { name: 'Jan', collected: 14000, projected: 15000 },
+    { name: 'Feb', collected: 18000, projected: 18000 },
+    { name: 'Mar', collected: 25000, projected: 28000 },
+    { name: 'Apr', collected: 22000, projected: 24000 },
+    { name: 'May', collected: 31000, projected: 32000 },
   ];
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Dashboard{' '}
-        <Typography variant="caption" color="textSecondary">
-          ({role})
-        </Typography>
-      </Typography>
+      {/* 1. Welcoming Hero Banner */}
+      <Card
+        sx={{
+          mb: 4,
+          background: (theme) =>
+            theme.palette.mode === 'light'
+              ? 'linear-gradient(135deg, #312e81 0%, #4f46e5 100%)'
+              : 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+          color: 'white',
+          borderRadius: '16px',
+          boxShadow: 'none',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '-20%',
+            right: '-10%',
+            width: '30%',
+            height: '100%',
+            borderRadius: '50%',
+            background: 'rgba(20, 184, 166, 0.15)',
+            filter: 'blur(50px)',
+          },
+        }}
+      >
+        <CardContent sx={{ p: { xs: 3, sm: 4 }, position: 'relative', zIndex: 2 }}>
+          <Grid container spacing={2} sx={{ alignItems: 'center' }}>
+            <Grid size={{ xs: 12, sm: 8 }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontWeight: 700,
+                  letterSpacing: '-0.5px',
+                  mb: 1,
+                }}
+              >
+                Welcome back, {firstName}!
+              </Typography>
+              <Typography variant="body1" sx={{ opacity: 0.85, fontFamily: "'Inter', sans-serif" }}>
+                Here is the current operational status for PS Educational Institute.
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
+              <Box
+                sx={{
+                  display: 'inline-block',
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  backdropFilter: 'blur(8px)',
+                  px: 2,
+                  py: 1,
+                  borderRadius: '24px',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, fontFamily: "'Outfit', sans-serif" }}>
+                  Role: {role}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
 
-      <Grid container spacing={3}>
+      {/* 2. Top-level Statistic Badges */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
         {statWidgets.map((stat, index) => (
           <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
-            <Card>
-              <CardActionArea onClick={() => stat.link !== '#' && navigate(stat.link)}>
-                <CardContent
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom variant="overline">
+            <Card
+              sx={{
+                height: '100%',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: (theme) =>
+                    theme.palette.mode === 'light'
+                      ? '0 10px 15px -3px rgba(0,0,0,0.05)'
+                      : 'none',
+                },
+              }}
+            >
+              <CardActionArea
+                onClick={() => stat.link !== '#' && navigate(stat.link)}
+                sx={{ height: '100%', p: 1 }}
+              >
+                <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ pr: 1 }}>
+                    <Typography color="text.secondary" variant="overline" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
                       {stat.title}
                     </Typography>
-                    <Typography variant="h4">{stat.value}</Typography>
+                    <Typography variant="h4" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, mb: 0.5 }}>
+                      {stat.value}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {stat.desc}
+                    </Typography>
                   </Box>
-                  <Box>{stat.icon}</Box>
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: '50%',
+                      backgroundColor: (theme) =>
+                        theme.palette.mode === 'light' ? 'rgba(79, 70, 229, 0.05)' : 'rgba(255,255,255,0.05)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {stat.icon}
+                  </Box>
                 </CardContent>
               </CardActionArea>
             </Card>
@@ -215,52 +339,286 @@ export const DashboardPage: FC = () => {
         ))}
       </Grid>
 
-      {(role === 'SUPER_ADMIN' || role === 'ADMIN') && (
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Revenue Overview
-          </Typography>
-          <Card>
-            <CardContent sx={{ height: 350 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mockChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <RechartsTooltip />
-                  <Legend />
-                  <Bar dataKey="revenue" fill="#8884d8" name="Actual Revenue" />
-                  <Bar dataKey="expected" fill="#82ca9d" name="Expected Revenue" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Box>
-      )}
-
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          Recent Activity
-        </Typography>
-        <Card>
-          <CardContent>
-            {recentActivity && recentActivity.length > 0 ? (
-              recentActivity.map((activity, i) => (
-                <Box key={i} sx={{ mb: 2 }}>
-                  <Typography variant="body1">{activity.description}</Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    {activity.time}
+      {/* 3. Role-Based Central Workspaces */}
+      <Grid container spacing={4}>
+        {/* --- ROLE: SUPER_ADMIN & ADMIN --- */}
+        {(role === 'SUPER_ADMIN' || role === 'ADMIN') && (
+          <>
+            {/* Expected vs Actual Revenue Chart */}
+            <Grid size={{ xs: 12, lg: 8 }}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
+                    Tuition Collections Overview
                   </Typography>
-                </Box>
-              ))
-            ) : (
-              <Typography variant="body1" color="textSecondary">
-                No recent activity.
-              </Typography>
-            )}
-          </CardContent>
-        </Card>
-      </Box>
+                  <Box sx={{ height: 320, width: '100%' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={mockChartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.15} />
+                          </linearGradient>
+                          <linearGradient id="colorProjected" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#0d9488" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="#0d9488" stopOpacity={0.15} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                        <XAxis dataKey="name" stroke="#64748b" tickLine={false} style={{ fontSize: '0.8rem' }} />
+                        <YAxis stroke="#64748b" tickLine={false} axisLine={false} style={{ fontSize: '0.8rem' }} />
+                        <RechartsTooltip
+                          contentStyle={{
+                            borderRadius: '8px',
+                            border: '1px solid #e2e8f0',
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.85rem',
+                          }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: '0.85rem', paddingTop: '10px' }} />
+                        <Bar dataKey="collected" fill="url(#colorCollected)" radius={[4, 4, 0, 0]} name="Actual Collections" />
+                        <Bar dataKey="projected" fill="url(#colorProjected)" radius={[4, 4, 0, 0]} name="Projected Target" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Recent System Activity log */}
+            <Grid size={{ xs: 12, lg: 4 }}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
+                    Audited Actions History
+                  </Typography>
+                  {recentActivity && recentActivity.length > 0 ? (
+                    <List disablePadding>
+                      {recentActivity.map((activity, i) => (
+                        <ListItem key={i} sx={{ px: 0, py: 1.5, alignItems: 'flex-start' }} divider={i !== recentActivity.length - 1}>
+                          <ListItemIcon sx={{ minWidth: 24, mt: 0.5 }}>
+                            <DotIcon sx={{ fontSize: '10px', color: 'primary.main' }} />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4 }}>
+                                {activity.description}
+                              </Typography>
+                            }
+                            secondary={
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                {activity.time}
+                              </Typography>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Box sx={{ py: 6, textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        No recent audited operations detected.
+                      </Typography>
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          </>
+        )}
+
+        {/* --- ROLE: TEACHER --- */}
+        {role === 'TEACHER' && (
+          <>
+            {/* Left Workspace: Today's Timetable */}
+            <Grid size={{ xs: 12, lg: 8 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
+                    Today's Academic Schedule
+                  </Typography>
+                  <List disablePadding>
+                    <ListItem sx={{ borderLeft: '3px solid #4f46e5', pl: 2, mb: 2, bgcolor: (theme) => theme.palette.mode === 'light' ? 'rgba(79, 70, 229, 0.02)' : 'rgba(255,255,255,0.02)', borderRadius: '0 8px 8px 0' }}>
+                      <ListItemText
+                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Grade 9-A Algebra</Typography>}
+                        secondary={<Typography variant="caption" color="text.secondary"><ScheduleIcon sx={{ fontSize: 12, verticalAlign: 'text-bottom', mr: 0.5 }} />08:30 AM - 09:30 AM (Room 3B)</Typography>}
+                      />
+                      <Button size="small" variant="outlined" onClick={() => navigate('/attendances')}>Record Attendance</Button>
+                    </ListItem>
+                    <ListItem sx={{ borderLeft: '3px solid #10b981', pl: 2, mb: 2, bgcolor: (theme) => theme.palette.mode === 'light' ? 'rgba(16, 185, 129, 0.02)' : 'rgba(255,255,255,0.02)', borderRadius: '0 8px 8px 0' }}>
+                      <ListItemText
+                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Grade 10-B Geometry</Typography>}
+                        secondary={<Typography variant="caption" color="text.secondary"><ScheduleIcon sx={{ fontSize: 12, verticalAlign: 'text-bottom', mr: 0.5 }} />10:00 AM - 11:00 AM (Room 4)</Typography>}
+                      />
+                      <Button size="small" variant="outlined" onClick={() => navigate('/attendances')}>Record Attendance</Button>
+                    </ListItem>
+                    <ListItem sx={{ borderLeft: '3px solid #f59e0b', pl: 2, mb: 0, bgcolor: (theme) => theme.palette.mode === 'light' ? 'rgba(245, 158, 11, 0.02)' : 'rgba(255,255,255,0.02)', borderRadius: '0 8px 8px 0' }}>
+                      <ListItemText
+                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Office Mentoring Hours</Typography>}
+                        secondary={<Typography variant="caption" color="text.secondary"><ScheduleIcon sx={{ fontSize: 12, verticalAlign: 'text-bottom', mr: 0.5 }} />01:30 PM - 02:30 PM (Faculty Hall)</Typography>}
+                      />
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Right Workspace: Quick Teacher Actions */}
+            <Grid size={{ xs: 12, lg: 4 }}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyItems: 'space-between' }}>
+                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
+                    Quick Teacher Actions
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12 }}>
+                      <Button variant="contained" fullWidth size="medium" onClick={() => navigate('/attendances')}>
+                        Take Daily Attendance
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <Button variant="outlined" fullWidth size="medium" onClick={() => navigate('/marks')}>
+                        Enter Grade Book Marks
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <Button variant="outlined" fullWidth size="medium" onClick={() => navigate('/timetables')}>
+                        View Full Schedule
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <Button variant="outlined" fullWidth size="medium" onClick={() => navigate('/notifications')}>
+                        Broadcast Class Notice
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          </>
+        )}
+
+        {/* --- ROLE: STUDENT --- */}
+        {role === 'STUDENT' && (
+          <Grid size={{ xs: 12 }}>
+            <StudentDashboard firstName={firstName} />
+          </Grid>
+        )}
+
+        {/* --- ROLE: PARENT --- */}
+        {role === 'PARENT' && (
+          <>
+            {/* Left Workspace: Children List */}
+            <Grid size={{ xs: 12, lg: 8 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
+                    Registered Children Status
+                  </Typography>
+                  <List disablePadding>
+                    <ListItem sx={{ py: 2 }}>
+                      <Avatar sx={{ width: 44, height: 44, bgcolor: '#6366f1', mr: 2 }}>LR</Avatar>
+                      <ListItemText
+                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Leo Rivera (Grade 6-B)</Typography>}
+                        secondary={<Typography variant="caption" color="text.secondary">Attendance Rate: 98% | Next Class: Science (09:00 AM)</Typography>}
+                      />
+                      <Button size="small" variant="outlined" onClick={() => navigate('/timetables')}>Schedule</Button>
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Right Workspace: Parent Contacts */}
+            <Grid size={{ xs: 12, lg: 4 }}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 2 }}>
+                    Billing & Fees Portal
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    Tuition fees invoice for term Fall 2026 is active. Please process payment before the due date.
+                  </Typography>
+                  <Button variant="contained" fullWidth color="error" onClick={() => navigate('/pending-fees')} sx={{ mb: 1.5 }}>
+                    Pay Pending Invoice
+                  </Button>
+                  <Button variant="outlined" fullWidth onClick={() => navigate('/receipts')}>
+                    View Payment Receipts
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          </>
+        )}
+
+        {/* --- ROLE: STAFF & OTHERS --- */}
+        {role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'TEACHER' && role !== 'STUDENT' && role !== 'PARENT' && (
+          <>
+            {/* Left Workspace: Interactive checklist */}
+            <Grid size={{ xs: 12, lg: 8 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 2 }}>
+                    Task Operations Checklist
+                  </Typography>
+                  <List disablePadding>
+                    {todoList.map((todo) => (
+                      <ListItem key={todo.id} disablePadding sx={{ py: 1 }}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={todo.checked}
+                              onChange={() => toggleTodo(todo.id)}
+                              color="primary"
+                            />
+                          }
+                          label={
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                textDecoration: todo.checked ? 'line-through' : 'none',
+                                color: todo.checked ? 'text.secondary' : 'text.primary',
+                                fontWeight: todo.checked ? 400 : 500,
+                              }}
+                            >
+                              {todo.text}
+                            </Typography>
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Right Workspace: Leave logs */}
+            <Grid size={{ xs: 12, lg: 4 }}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
+                    My Leaves Account
+                  </Typography>
+                  <Box sx={{ mb: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Paid Sick Leave</Typography>
+                      <Typography variant="body2" color="text.secondary">8 / 12 Days Used</Typography>
+                    </Box>
+                    <LinearProgress variant="determinate" value={(8 / 12) * 100} sx={{ height: 6, borderRadius: 3 }} />
+                  </Box>
+                  <Box sx={{ mb: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Vacations Earned</Typography>
+                      <Typography variant="body2" color="text.secondary">14 / 20 Days Used</Typography>
+                    </Box>
+                    <LinearProgress variant="determinate" value={(14 / 20) * 100} color="success" sx={{ height: 6, borderRadius: 3 }} />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </>
+        )}
+      </Grid>
     </Box>
   );
 };

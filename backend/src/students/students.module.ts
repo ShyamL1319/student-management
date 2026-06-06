@@ -4,11 +4,12 @@ import { StudentsController } from './students.controller';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [
-    UsersModule,
-  ],
+  imports: [UsersModule],
   controllers: [StudentsController],
   providers: [StudentsService],
-  exports: [StudentsService],
+  exports: [
+    StudentsService,
+    UsersModule,
+  ],
 })
 export class StudentsModule {}

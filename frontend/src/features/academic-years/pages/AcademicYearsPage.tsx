@@ -56,18 +56,18 @@ export const AcademicYearsPage: FC = () => {
 
   const createMutation = useMutation({
     mutationFn: (data: any) => academicYearApi.createAcademicYear(data),
-    onSuccess: () => queryClient.invalidateQueries(['academicYears']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['academicYears'] }),
   });
   const updateMutation = useMutation({
     mutationFn: (data: any) => academicYearApi.updateAcademicYear(editing.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['academicYears']);
+      queryClient.invalidateQueries({ queryKey: ['academicYears'] });
       setEditing(null);
     },
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) => academicYearApi.deleteAcademicYear(id),
-    onSuccess: () => queryClient.invalidateQueries(['academicYears']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['academicYears'] }),
   });
 
   const openCreateDialog = () => {
@@ -201,7 +201,7 @@ export const AcademicYearsPage: FC = () => {
             type="date"
             value={formValues.startDate}
             onChange={(event) => setFormValues({ ...formValues, startDate: event.target.value })}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             fullWidth
           />
           <TextField
@@ -209,7 +209,7 @@ export const AcademicYearsPage: FC = () => {
             type="date"
             value={formValues.endDate}
             onChange={(event) => setFormValues({ ...formValues, endDate: event.target.value })}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             fullWidth
           />
           <FormControlLabel

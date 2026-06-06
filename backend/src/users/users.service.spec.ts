@@ -46,6 +46,7 @@ describe('UsersService', () => {
     mockUserInstance.roleType = 'STUDENT';
     mockUserInstance.save.mockClear();
     mockUserInstance.populate.mockClear();
+    mockUserModel.findByIdAndUpdate.mockClear();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -71,10 +72,12 @@ describe('UsersService', () => {
   describe('updateUserRole', () => {
     it('should successfully update role if target role is not SUPER_ADMIN and current is not SUPER_ADMIN', async () => {
       const requester = { roleType: 'ADMIN' };
-      const res = await service.updateUserRole('targetUserId', 'adminRoleId', requester);
-      expect(mockUserInstance.role).toBe('adminRoleId');
-      expect(mockUserInstance.roleType).toBe('ADMIN');
-      expect(mockUserInstance.save).toHaveBeenCalled();
+      await service.updateUserRole('targetUserId', 'adminRoleId', requester);
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'targetUserId',
+        { role: 'adminRoleId', roleType: 'ADMIN' },
+        { new: true },
+      );
     });
 
     it('should throw ForbiddenException if requester is not SUPER_ADMIN and target role is SUPER_ADMIN', async () => {
@@ -82,7 +85,7 @@ describe('UsersService', () => {
       await expect(
         service.updateUserRole('targetUserId', 'superAdminRoleId', requester),
       ).rejects.toThrow(ForbiddenException);
-      expect(mockUserInstance.save).not.toHaveBeenCalled();
+      expect(mockUserModel.findByIdAndUpdate).not.toHaveBeenCalled();
     });
 
     it('should throw ForbiddenException if requester is not SUPER_ADMIN and current role is SUPER_ADMIN', async () => {
@@ -93,15 +96,17 @@ describe('UsersService', () => {
       await expect(
         service.updateUserRole('targetUserId', 'adminRoleId', requester),
       ).rejects.toThrow(ForbiddenException);
-      expect(mockUserInstance.save).not.toHaveBeenCalled();
+      expect(mockUserModel.findByIdAndUpdate).not.toHaveBeenCalled();
     });
 
     it('should successfully update role to SUPER_ADMIN if requester is SUPER_ADMIN', async () => {
       const requester = { roleType: 'SUPER_ADMIN' };
       await service.updateUserRole('targetUserId', 'superAdminRoleId', requester);
-      expect(mockUserInstance.role).toBe('superAdminRoleId');
-      expect(mockUserInstance.roleType).toBe('SUPER_ADMIN');
-      expect(mockUserInstance.save).toHaveBeenCalled();
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'targetUserId',
+        { role: 'superAdminRoleId', roleType: 'SUPER_ADMIN' },
+        { new: true },
+      );
     });
   });
 });

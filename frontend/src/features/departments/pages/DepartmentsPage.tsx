@@ -37,7 +37,7 @@ export const DepartmentsPage: FC = () => {
   const [selectedSchool, setSelectedSchool] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [formValues, setFormValues] = useState({ school: '', name: '', isActive: true });
+  const [formValues, setFormValues] = useState({ school: '', name: '', code: '', description: '', isActive: true });
 
   const { data: schoolsData } = useQuery({
     queryKey: ['schoolsOptions'],
@@ -59,23 +59,24 @@ export const DepartmentsPage: FC = () => {
 
   const createMutation = useMutation({
     mutationFn: (data: any) => departmentApi.createDepartment(data),
-    onSuccess: () => queryClient.invalidateQueries(['departments']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['departments'] }),
   });
   const updateMutation = useMutation({
     mutationFn: (data: any) => departmentApi.updateDepartment(editing.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['departments']);
+      queryClient.invalidateQueries({ queryKey: ['departments'] });
       setEditing(null);
     },
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) => departmentApi.deleteDepartment(id),
-    onSuccess: () => queryClient.invalidateQueries(['departments']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['departments'] }),
   });
 
   const openCreateDialog = () => {
     setEditing(null);
-    setFormValues({ school: '', name: '', isActive: true });
+    const defaultSchool = schoolsData?.data?.[0]?._id || schoolsData?.data?.[0]?.id || '';
+    setFormValues({ school: defaultSchool, name: '', code: '', description: '', isActive: true });
     setDialogOpen(true);
   };
 
@@ -84,13 +85,19 @@ export const DepartmentsPage: FC = () => {
     setFormValues({
       school: item.school?._id || item.school || '',
       name: item.name || '',
+      code: item.code || '',
+      description: item.description || '',
       isActive: !!item.isActive,
     });
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
-    const payload = { ...formValues };
+    const defaultSchool = schoolsData?.data?.[0]?._id || schoolsData?.data?.[0]?.id || '';
+    const payload = { 
+      ...formValues,
+      school: formValues.school || defaultSchool 
+    };
     if (editing) {
       await updateMutation.mutateAsync(payload);
     } else {
@@ -110,21 +117,23 @@ export const DepartmentsPage: FC = () => {
             onChange={(event) => setSearch(event.target.value)}
             size="small"
           />
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel>School</InputLabel>
-            <Select
-              label="School"
-              value={selectedSchool}
-              onChange={(event) => setSelectedSchool(event.target.value)}
-            >
-              <MenuItem value="">All Schools</MenuItem>
-              {schoolsData?.data?.map((school: any) => (
-                <MenuItem key={school._id || school.id} value={school._id || school.id}>
-                  {school.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {schoolsData?.data && schoolsData.data.length > 1 && (
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>School</InputLabel>
+              <Select
+                label="School"
+                value={selectedSchool}
+                onChange={(event) => setSelectedSchool(event.target.value)}
+              >
+                <MenuItem value="">All Schools</MenuItem>
+                {schoolsData.data.map((school: any) => (
+                  <MenuItem key={school._id || school.id} value={school._id || school.id}>
+                    {school.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
           <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel>Status</InputLabel>
             <Select
@@ -149,7 +158,9 @@ export const DepartmentsPage: FC = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
-                <TableCell>School</TableCell>
+                <TableCell>Code</TableCell>
+                <TableCell>Description</TableCell>
+                {schoolsData?.data && schoolsData.data.length > 1 && <TableCell>School</TableCell>}
                 <TableCell>Active</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
@@ -157,7 +168,7 @@ export const DepartmentsPage: FC = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
+                  <TableCell colSpan={6} align="center">
                     <CircularProgress size={24} />
                   </TableCell>
                 </TableRow>
@@ -165,7 +176,11 @@ export const DepartmentsPage: FC = () => {
                 data.data.map((item: any) => (
                   <TableRow key={item._id || item.id}>
                     <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.school?.name || item.school || 'N/A'}</TableCell>
+                    <TableCell>{item.code || '—'}</TableCell>
+                    <TableCell>{item.description || '—'}</TableCell>
+                    {schoolsData?.data && schoolsData.data.length > 1 && (
+                      <TableCell>{item.school?.name || item.school || 'N/A'}</TableCell>
+                    )}
                     <TableCell>{item.isActive ? 'Yes' : 'No'}</TableCell>
                     <TableCell align="right">
                       <Button size="small" variant="outlined" sx={{ mr: 1 }} onClick={() => openEditDialog(item)}>
@@ -183,7 +198,7 @@ export const DepartmentsPage: FC = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
+                  <TableCell colSpan={6} align="center">
                     No departments found.
                   </TableCell>
                 </TableRow>
@@ -205,24 +220,41 @@ export const DepartmentsPage: FC = () => {
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
         <DialogTitle>{editing ? 'Edit Department' : 'Add Department'}</DialogTitle>
         <DialogContent sx={{ display: 'grid', gap: 2, mt: 1 }}>
-          <FormControl fullWidth>
-            <InputLabel>School</InputLabel>
-            <Select
-              label="School"
-              value={formValues.school}
-              onChange={(event) => setFormValues({ ...formValues, school: event.target.value })}
-            >
-              {schoolsData?.data?.map((school: any) => (
-                <MenuItem key={school._id || school.id} value={school._id || school.id}>
-                  {school.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {schoolsData?.data && schoolsData.data.length > 1 && (
+            <FormControl fullWidth>
+              <InputLabel>School</InputLabel>
+              <Select
+                label="School"
+                value={formValues.school}
+                onChange={(event) => setFormValues({ ...formValues, school: event.target.value })}
+              >
+                {schoolsData.data.map((school: any) => (
+                  <MenuItem key={school._id || school.id} value={school._id || school.id}>
+                    {school.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
           <TextField
             label="Name"
             value={formValues.name}
             onChange={(event) => setFormValues({ ...formValues, name: event.target.value })}
+            fullWidth
+          />
+          <TextField
+            label="Code"
+            value={formValues.code}
+            onChange={(event) => setFormValues({ ...formValues, code: event.target.value })}
+            helperText="Leave empty to auto-generate from the first 4 characters of the name"
+            fullWidth
+          />
+          <TextField
+            label="Description"
+            value={formValues.description}
+            onChange={(event) => setFormValues({ ...formValues, description: event.target.value })}
+            multiline
+            rows={3}
             fullWidth
           />
           <FormControlLabel

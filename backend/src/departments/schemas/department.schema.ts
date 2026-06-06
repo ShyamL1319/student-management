@@ -12,6 +12,12 @@ export class Department {
   @Prop({ required: true })
   name: string;
 
+  @Prop({ required: false })
+  code?: string;
+
+  @Prop({ required: false })
+  description?: string;
+
   @Prop({ required: false, default: true })
   isActive: boolean;
 }

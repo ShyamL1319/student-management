@@ -31,6 +31,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { ReportsModule } from './reports/reports.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
     AnalyticsModule,
     ReportsModule,
     AuditLogsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

@@ -50,6 +50,7 @@ import { FeesReportController } from './fees-report.controller';
     ReceiptService,
     InvoiceService,
     FeesReportService,
+    MongooseModule,
   ],
 })
 export class FeesModule {}

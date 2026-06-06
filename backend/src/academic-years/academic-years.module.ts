@@ -15,6 +15,6 @@ import {
   ],
   controllers: [AcademicYearsController],
   providers: [AcademicYearsService],
-  exports: [AcademicYearsService],
+  exports: [AcademicYearsService, MongooseModule],
 })
 export class AcademicYearsModule {}

@@ -7,7 +7,7 @@ export type RoleDocument = Role & Document;
 
 @Schema({ timestamps: true })
 export class Role {
-  @Prop({ required: true, unique: true, enum: RoleEnum })
+  @Prop({ required: true, unique: true })
   name!: string;
 
   @Prop()

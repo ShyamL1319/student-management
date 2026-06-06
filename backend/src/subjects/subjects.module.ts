@@ -16,6 +16,6 @@ import { UsersModule } from '../users/users.module';
   ],
   controllers: [SubjectsController],
   providers: [SubjectsService],
-  exports: [SubjectsService],
+  exports: [SubjectsService, MongooseModule],
 })
 export class SubjectsModule {}

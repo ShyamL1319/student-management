@@ -223,7 +223,7 @@ export default function FeeCollectionPage() {
             onChange={(e) => setPaymentData({ ...paymentData, paymentMethod: e.target.value })}
             margin="normal"
             select
-            SelectProps={{ native: true }}
+            slotProps={{ select: { native: true } }}
           >
             <option value="CASH">Cash</option>
             <option value="CHEQUE">Cheque</option>

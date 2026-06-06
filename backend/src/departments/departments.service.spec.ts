@@ -48,23 +48,97 @@ describe('DepartmentsService', () => {
     ).rejects.toThrow('School not found');
   });
 
-  it('should create a department when school exists', async () => {
+  it('should create a department with auto-generated code and description when school exists', async () => {
     schoolModel.findById.mockReturnValue({
       exec: jest.fn().mockResolvedValue({ id: '1' }),
     });
-    departmentModel.create.mockResolvedValue({
-      school: '1',
-      name: 'History',
-      isActive: true,
-    });
+    departmentModel.create.mockImplementation((dto) => Promise.resolve(dto));
 
     const result = await service.create({
       school: '1',
-      name: 'History',
+      name: 'Computer Science',
+      description: 'Department of CS',
+      isActive: true,
+    } as any);
+
+    expect(result).toEqual({
+      school: '1',
+      name: 'Computer Science',
+      code: 'COMP',
+      description: 'Department of CS',
       isActive: true,
     });
-
-    expect(result).toEqual({ school: '1', name: 'History', isActive: true });
     expect(schoolModel.findById).toHaveBeenCalledWith('1');
+  });
+
+  it('should create a department with custom code and description', async () => {
+    schoolModel.findById.mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ id: '1' }),
+    });
+    departmentModel.create.mockImplementation((dto) => Promise.resolve(dto));
+
+    const result = await service.create({
+      school: '1',
+      name: 'Mechanical Engineering',
+      code: 'MECH-ENG',
+      description: 'Department of ME',
+      isActive: true,
+    } as any);
+
+    expect(result).toEqual({
+      school: '1',
+      name: 'Mechanical Engineering',
+      code: 'MECH-ENG',
+      description: 'Department of ME',
+      isActive: true,
+    });
+  });
+
+  describe('update', () => {
+    it('should update department and modify description and code', async () => {
+      const existingDept = {
+        _id: 'dep1',
+        school: '1',
+        name: 'Civil Engineering',
+        code: 'CIVI',
+        description: 'Old Description',
+        isActive: true,
+      };
+
+      departmentModel.findById.mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(existingDept),
+        }),
+      });
+
+      departmentModel.findByIdAndUpdate.mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue({
+            ...existingDept,
+            name: 'New Civil',
+            code: 'NEWCIV',
+            description: 'New Description',
+          }),
+        }),
+      });
+
+      const result = await service.update('dep1', {
+        name: 'New Civil',
+        code: 'NEWCIV',
+        description: 'New Description',
+      } as any);
+
+      expect(result.description).toBe('New Description');
+      expect(result.code).toBe('NEWCIV');
+      expect(departmentModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'dep1',
+        {
+          name: 'New Civil',
+          code: 'NEWCIV',
+          description: 'New Description',
+        },
+        { new: true },
+      );
+    });
   });
 });

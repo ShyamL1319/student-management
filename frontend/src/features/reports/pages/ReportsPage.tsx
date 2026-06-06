@@ -1,4 +1,5 @@
-import { FC, useState } from 'react';
+import type { FC } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -16,16 +17,11 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import SchoolIcon from '@mui/icons-material/School';
-import { useAuth } from '../../../contexts/AuthContext';
 import { reportsApi } from '../reportsApi';
 
 export const ReportsPage: FC = () => {
-  const { user } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const roleName = typeof user?.role === 'string' ? user.role : (user?.role as any)?.name || '';
-  const role = roleName as string;
 
   const handleExport = async (type: string, format: 'pdf' | 'excel') => {
     setLoading(`${type}-${format}`);
@@ -79,7 +75,7 @@ export const ReportsPage: FC = () => {
         <Typography variant="h4" gutterBottom>
           Reports & Exports
         </Typography>
-        <Typography variant="body1" color="textSecondary">
+        <Typography variant="body1" color="text.secondary">
           Generate and download detailed reports in PDF or Excel format.
         </Typography>
       </Box>
@@ -92,7 +88,7 @@ export const ReportsPage: FC = () => {
 
       <Grid container spacing={3}>
         {reports.map((report) => (
-          <Grid item xs={12} sm={6} md={4} key={report.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={report.id}>
             <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
                 <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
@@ -101,7 +97,7 @@ export const ReportsPage: FC = () => {
                 <Typography variant="h6" gutterBottom>
                   {report.title}
                 </Typography>
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                   {report.description}
                 </Typography>
                 

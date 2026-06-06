@@ -49,9 +49,9 @@ export const StaffPage: FC = () => {
 
   const { data, isLoading } = useQuery({ queryKey: ['staff', filterParams], queryFn: () => staffApi.getStaff(filterParams) });
 
-  const createMutation = useMutation({ mutationFn: (data: any) => staffApi.createStaff(data), onSuccess: () => queryClient.invalidateQueries(['staff']) });
-  const updateMutation = useMutation({ mutationFn: (data: any) => staffApi.updateStaff(editing._id || editing.id, data), onSuccess: () => { queryClient.invalidateQueries(['staff']); setEditing(null); } });
-  const deleteMutation = useMutation({ mutationFn: (id: string) => staffApi.deleteStaff(id), onSuccess: () => queryClient.invalidateQueries(['staff']) });
+  const createMutation = useMutation({ mutationFn: (data: any) => staffApi.createStaff(data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['staff'] }) });
+  const updateMutation = useMutation({ mutationFn: (data: any) => staffApi.updateStaff(editing._id || editing.id, data), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['staff'] }); setEditing(null); } });
+  const deleteMutation = useMutation({ mutationFn: (id: string) => staffApi.deleteStaff(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['staff'] }) });
 
   const openCreateDialog = () => {
     setEditing(null);
