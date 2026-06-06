@@ -2,11 +2,7 @@ import { IsString, IsOptional, IsArray, IsBoolean } from 'class-validator';
 
 export class CreateTeacherDto {
   @IsString()
-  firstName!: string;
-
-  @IsOptional()
-  @IsString()
-  lastName?: string;
+  name!: string;
 
   @IsOptional()
   @IsString()

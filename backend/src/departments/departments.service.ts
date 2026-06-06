@@ -4,28 +4,23 @@ import { Model } from 'mongoose';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { Department, DepartmentDocument } from './schemas/department.schema';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { School, SchoolDocument } from '../schools/schemas/school.schema';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @Injectable()
 export class DepartmentsService {
   constructor(
     @InjectModel(Department.name)
-    private departmentModel: Model<DepartmentDocument>,
-    @InjectModel(School.name)
-    private schoolModel: Model<SchoolDocument>,
-  ) {}
-
-  private async validateSchool(schoolId: string) {
-    const school = await this.schoolModel.findById(schoolId).exec();
-    if (!school) {
-      throw new NotFoundException('School not found');
-    }
-  }
+    private departmentModel: Model<DepartmentDocument>
+  ) { }
 
   async create(createDepartmentDto: CreateDepartmentDto): Promise<Department> {
-    await this.validateSchool(createDepartmentDto.school);
-    const code = createDepartmentDto.code || createDepartmentDto.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase();
+    const code =
+      createDepartmentDto.code ||
+      createDepartmentDto.name
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .slice(0, 4)
+        .toUpperCase();
     const departmentData = {
       ...createDepartmentDto,
       code,
@@ -40,7 +35,6 @@ export class DepartmentsService {
       search,
       sort = 'createdAt',
       order = 'desc',
-      school,
       isActive,
     } = query;
     const skip = (page - 1) * limit;
@@ -48,9 +42,6 @@ export class DepartmentsService {
     const filter: Record<string, any> = {};
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
-    }
-    if (school) {
-      filter.school = school;
     }
     if (typeof isActive !== 'undefined') {
       filter.isActive = isActive;
@@ -62,7 +53,6 @@ export class DepartmentsService {
         .sort({ [sort]: order === 'desc' ? -1 : 1 })
         .skip(skip)
         .limit(limit)
-        .populate('school')
         .exec(),
       this.departmentModel.countDocuments(filter).exec(),
     ]);
@@ -91,18 +81,21 @@ export class DepartmentsService {
     id: string,
     updateDepartmentDto: UpdateDepartmentDto,
   ): Promise<Department> {
-    if (updateDepartmentDto.school) {
-      await this.validateSchool(updateDepartmentDto.school);
-    }
     const current = await this.findOne(id);
-    const code = updateDepartmentDto.code || (updateDepartmentDto.name ? updateDepartmentDto.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() : current.code);
+    const code =
+      updateDepartmentDto.code ||
+      (updateDepartmentDto.name
+        ? updateDepartmentDto.name
+          .replace(/[^a-zA-Z0-9]/g, '')
+          .slice(0, 4)
+          .toUpperCase()
+        : current.code);
     const updateData = {
       ...updateDepartmentDto,
       code,
     };
     const updated = await this.departmentModel
       .findByIdAndUpdate(id, updateData, { new: true })
-      .populate('school')
       .exec();
     if (!updated) {
       throw new NotFoundException('Department not found');

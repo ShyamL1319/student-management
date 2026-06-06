@@ -6,11 +6,8 @@ export type DepartmentDocument = Department & Document;
 
 @Schema({ timestamps: true })
 export class Department {
-  @Prop({ type: Types.ObjectId, ref: 'School', required: true })
-  school: Types.ObjectId;
-
   @Prop({ required: true })
-  name: string;
+  name!: string;
 
   @Prop({ required: false })
   code?: string;
@@ -19,7 +16,7 @@ export class Department {
   description?: string;
 
   @Prop({ required: false, default: true })
-  isActive: boolean;
+  isActive!: boolean;
 }
 
 export const DepartmentSchema = SchemaFactory.createForClass(Department);

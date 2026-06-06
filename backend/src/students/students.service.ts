@@ -25,7 +25,7 @@ export class StudentsService {
     const rollNumber = data.rollNumber || (await this.counterService.generateRollNumber(data.class, academicYearId));
 
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash('ChangeMe123!', salt);
+    const passwordHash = await bcrypt.hash(process.env.DEFAULT_PASSWORD || 'ChangeMe123!', salt);
 
     const studentData = {
       ...data,

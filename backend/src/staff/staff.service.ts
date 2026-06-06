@@ -12,42 +12,29 @@ export class StaffService {
 
   async create(data: any) {
     const RoleModel = this.staffModel.db.model('Role');
-    const staffRole = await RoleModel.findOne({ name: 'STAFF' });
+    const staffRole = await RoleModel.findOne({ name: 'STAFF' }).lean().exec() as { _id: any } | null;
     if (!staffRole) throw new NotFoundException('STAFF role not found');
 
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash('ChangeMe123!', salt);
-
-    let firstName = data.firstName;
-    let lastName = data.lastName;
-    if (data.name && !firstName) {
-      const parts = data.name.trim().split(/\s+/);
-      firstName = parts[0] || 'N/A';
-      lastName = parts.slice(1).join(' ') || 'N/A';
-    }
+    const passwordHash = await bcrypt.hash(process.env.DEFAULT_PASSWORD || 'ChangeMe123!', salt);
 
     const staffData = {
       ...data,
-      firstName: firstName || 'N/A',
-      lastName: lastName || 'N/A',
       role: staffRole._id,
       passwordHash,
       roleType: 'STAFF',
     };
-    // Delete legacy single name field
-    delete staffData.name;
 
     return this.staffModel.create(staffData);
   }
 
   async findAll(query: any) {
     const { page = 1, limit = 10, search } = query;
-    const q: any = {};
+    const q: Record<string, any> = {};
     if (search) {
       q.$or = [
-        { firstName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: (search as string), $options: 'i' } },
       ];
     }
     const itemsQuery = this.staffModel

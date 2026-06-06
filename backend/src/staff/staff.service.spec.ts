@@ -14,7 +14,11 @@ describe('StaffService', () => {
     create: jest.fn(),
     db: {
       model: jest.fn().mockReturnValue({
-        findOne: jest.fn().mockResolvedValue({ _id: 'mockRoleId' }),
+        findOne: jest.fn().mockReturnValue({
+          lean: jest.fn().mockReturnValue({
+            exec: jest.fn().mockResolvedValue({ _id: 'mockRoleId' }),
+          }),
+        }),
       }),
     },
   };
@@ -33,7 +37,7 @@ describe('StaffService', () => {
   afterEach(() => jest.clearAllMocks());
 
   it('should create a staff', async () => {
-    const dto = { name: 'Staff One' };
+    const dto = { firstName: 'Staff', lastName: 'One' };
     const created = { firstName: 'Staff', lastName: 'One', role: 'mockRoleId', roleType: 'STAFF' };
     staffModel.create.mockResolvedValue(created);
 
