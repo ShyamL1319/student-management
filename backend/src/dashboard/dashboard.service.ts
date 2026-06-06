@@ -24,8 +24,8 @@ import { Subject, SubjectDocument } from '../subjects/schemas/subject.schema';
 import {
   AcademicYear,
   AcademicYearDocument,
-} from 'src/academic-years/schemas/academic-year.schema';
-import { DayOfWeek } from 'src/common/enums/day-of-week.enum';
+} from '../academic-years/schemas/academic-year.schema';
+import { DayOfWeek } from '../common/enums/day-of-week.enum';
 import { StudentDashboardResponseDto } from './dto/student-dashboard.dto';
 
 const SUBJECT_COLORS = [
