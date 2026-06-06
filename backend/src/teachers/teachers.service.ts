@@ -8,35 +8,22 @@ import * as bcrypt from 'bcrypt';
 export class TeachersService {
   constructor(
     @InjectModel(Teacher.name) private teacherModel: Model<TeacherDocument>,
-  ) {}
+  ) { }
 
   async create(data: any) {
     const RoleModel = this.teacherModel.db.model('Role');
-    const teacherRole = await RoleModel.findOne({ name: 'TEACHER' });
+    const teacherRole = await RoleModel.findOne({ name: 'TEACHER' }).lean().exec() as { _id: any } | null;
     if (!teacherRole) throw new NotFoundException('TEACHER role not found');
 
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash('ChangeMe123!', salt);
+    const passwordHash = await bcrypt.hash(process.env.DEFAULT_PASSWORD || 'ChangeMe123!', salt);
 
-    let firstName = data.firstName;
-    let lastName = data.lastName;
-    if (data.name && !firstName) {
-      const parts = data.name.trim().split(/\s+/);
-      firstName = parts[0] || 'N/A';
-      lastName = parts.slice(1).join(' ') || 'N/A';
-    }
-
-    const teacherData = {
+    const teacherData: Partial<Teacher> = {
       ...data,
-      firstName: firstName || 'N/A',
-      lastName: lastName || 'N/A',
       role: teacherRole._id,
       passwordHash,
       roleType: 'TEACHER',
     };
-    // Delete legacy single name field
-    delete teacherData.name;
-
     return this.teacherModel.create(teacherData);
   }
 

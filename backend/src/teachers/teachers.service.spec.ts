@@ -14,7 +14,11 @@ describe('TeachersService', () => {
     create: jest.fn(),
     db: {
       model: jest.fn().mockReturnValue({
-        findOne: jest.fn().mockResolvedValue({ _id: 'mockRoleId' }),
+        findOne: jest.fn().mockReturnValue({
+          lean: jest.fn().mockReturnValue({
+            exec: jest.fn().mockResolvedValue({ _id: 'mockRoleId' }),
+          }),
+        }),
       }),
     },
   };
@@ -33,7 +37,7 @@ describe('TeachersService', () => {
   afterEach(() => jest.clearAllMocks());
 
   it('should create a teacher', async () => {
-    const dto = { name: 'John Doe' };
+    const dto = { firstName: 'John', lastName: 'Doe' };
     const created = { firstName: 'John', lastName: 'Doe', role: 'mockRoleId', roleType: 'TEACHER' };
     teacherModel.create.mockResolvedValue(created);
 

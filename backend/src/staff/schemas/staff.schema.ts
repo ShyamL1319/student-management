@@ -8,6 +8,9 @@ export type StaffDocument = Staff & Document;
 export class Staff extends User {
   @Prop({ type: Types.ObjectId, ref: 'Department' })
   department!: Types.ObjectId;
+
+  @Prop({ type: String, required: true })
+  name!: string;
 }
 
 export const StaffSchema = SchemaFactory.createForClass(Staff);

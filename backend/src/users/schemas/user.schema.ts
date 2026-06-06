@@ -15,10 +15,10 @@ export class User {
   @Prop({ required: true })
   passwordHash!: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   firstName!: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false, default: '' })
   lastName!: string;
 
   @Prop()
