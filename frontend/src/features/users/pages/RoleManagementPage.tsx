@@ -67,10 +67,10 @@ const getRoleIcon = (roleName: string) => {
 
 const roleColorHex: Record<string, { bg: string; border: string; text: string }> = {
   SUPER_ADMIN: { bg: '#fef2f2', border: '#fca5a5', text: '#dc2626' },
-  ADMIN:       { bg: '#fffbeb', border: '#fcd34d', text: '#d97706' },
-  TEACHER:     { bg: '#eff6ff', border: '#93c5fd', text: '#2563eb' },
-  STAFF:       { bg: '#f0f9ff', border: '#7dd3fc', text: '#0284c7' },
-  STUDENT:     { bg: '#f0fdf4', border: '#86efac', text: '#16a34a' },
+  ADMIN: { bg: '#fffbeb', border: '#fcd34d', text: '#d97706' },
+  TEACHER: { bg: '#eff6ff', border: '#93c5fd', text: '#2563eb' },
+  STAFF: { bg: '#f0f9ff', border: '#7dd3fc', text: '#0284c7' },
+  STUDENT: { bg: '#f0fdf4', border: '#86efac', text: '#16a34a' },
 };
 
 const getColorHex = (name: string) =>
@@ -246,7 +246,7 @@ export const RoleManagementPage: React.FC = () => {
             <ShieldIcon fontSize="medium" />
           </Box>
           <Box>
-            <Typography variant="h5" component="h1" fontWeight="bold" letterSpacing={-0.5}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', letterSpacing: -0.5 }}>
               Role &amp; Access Management
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.75, mt: 0.25 }}>
@@ -275,12 +275,12 @@ export const RoleManagementPage: React.FC = () => {
 
       <Grid container spacing={4}>
         {/* ── Left: Users Table ── */}
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
             <CardHeader
               title={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="h6" fontWeight="bold">User Role Assignments</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>User Role Assignments</Typography>
                   <Chip
                     label={
                       userSearchQuery
@@ -305,7 +305,7 @@ export const RoleManagementPage: React.FC = () => {
                 placeholder="Search by name or email…"
                 value={userSearchQuery}
                 onChange={(e) => setUserSearchQuery(e.target.value)}
-                InputProps={{
+                slotProps={{ input: {
                   startAdornment: (
                     <InputAdornment position="start">
                       <SearchIcon fontSize="small" color="action" />
@@ -318,7 +318,7 @@ export const RoleManagementPage: React.FC = () => {
                       </IconButton>
                     </InputAdornment>
                   ) : null,
-                }}
+                }}}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
@@ -362,7 +362,7 @@ export const RoleManagementPage: React.FC = () => {
                                   {getInitials(user.firstName, user.lastName)}
                                 </Avatar>
                                 <Box>
-                                  <Typography variant="body2" fontWeight={600}>
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                     {user.firstName} {user.lastName}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">{user.email}</Typography>
@@ -409,7 +409,7 @@ export const RoleManagementPage: React.FC = () => {
                           <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
                             {userSearchQuery ? (
                               <Box>
-                                <Typography color="text.secondary" fontWeight={600}>
+                                  <Typography color="text.secondary" sx={{ fontWeight: 600 }} >
                                   No users match &ldquo;{userSearchQuery}&rdquo;
                                 </Typography>
                                 <Typography variant="caption" color="text.disabled">
@@ -431,12 +431,14 @@ export const RoleManagementPage: React.FC = () => {
         </Grid>
 
         {/* ── Right: Roles Panel ── */}
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
             <CardHeader
               title={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="h6" fontWeight="bold">Roles &amp; Members</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Roles &amp; Members
+                  </Typography>
                   <Chip label={`${roles.length} roles`} size="small" color="default" variant="outlined" />
                 </Box>
               }
@@ -484,9 +486,10 @@ export const RoleManagementPage: React.FC = () => {
                           {getRoleIcon(role.name)}
                         </Box>
                         <ListItemText
+                          disableTypography
                           primary={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography fontWeight={700} variant="body2" sx={{ color: colors.text }}>
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: colors.text }}>
                                 {role.name}
                               </Typography>
                               {isSystem && (
@@ -496,7 +499,7 @@ export const RoleManagementPage: React.FC = () => {
                           }
                           secondary={
                             <Box sx={{ mt: 0.5 }}>
-                              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.75 }}>
+                              <Typography variant="caption" sx={{color: "text.secondary", display: "block", mb: 0.75 }}>
                                 {role.description || 'No description provided.'}
                               </Typography>
 
@@ -548,7 +551,7 @@ export const RoleManagementPage: React.FC = () => {
                                         borderRadius: 4, px: 1, py: 0.25,
                                       }}
                                     >
-                                      <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.65rem' }}>
+                                      <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, fontSize: '0.65rem' }}>
                                         +{count - 5} more
                                       </Typography>
                                     </Box>
@@ -594,7 +597,9 @@ export const RoleManagementPage: React.FC = () => {
       {/* ── Full-width Role Members Summary ── */}
       <Box sx={{ mt: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <Typography variant="h6" fontWeight="bold">Role Members Overview</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            Role Members Overview
+          </Typography>
           <Chip label="All Roles" size="small" color="default" variant="outlined" />
         </Box>
         <Grid container spacing={2}>
@@ -606,7 +611,7 @@ export const RoleManagementPage: React.FC = () => {
               return (u.role as { _id: string })._id === role._id;
             });
             return (
-              <Grid item xs={12} sm={6} md={4} key={role._id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={role._id}>
                 <Card
                   elevation={0}
                   sx={{
@@ -641,10 +646,10 @@ export const RoleManagementPage: React.FC = () => {
                       {getRoleIcon(role.name)}
                     </Box>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" fontWeight={700} sx={{ color: colors.text }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: colors.text }}>
                         {role.name}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
                         {roleMembers.length} {roleMembers.length === 1 ? 'member' : 'members'}
                       </Typography>
                     </Box>
@@ -659,7 +664,7 @@ export const RoleManagementPage: React.FC = () => {
                   <CardContent sx={{ p: 0 }}>
                     {roleMembers.length === 0 ? (
                       <Box sx={{ py: 3, textAlign: 'center' }}>
-                        <Typography variant="caption" color="text.disabled" fontStyle="italic">
+                        <Typography variant="caption" sx={{ color: "text.disabled", fontStyle: "italic" }}>
                           No users assigned
                         </Typography>
                       </Box>
@@ -681,10 +686,10 @@ export const RoleManagementPage: React.FC = () => {
                                   {getInitials(member.firstName, member.lastName)}
                                 </Avatar>
                                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                                  <Typography variant="body2" fontWeight={600} noWrap>
+                                  <Typography variant="body2" sx={{ fontWeight: 600, color: colors.text }} noWrap>
                                     {member.firstName} {member.lastName}
                                   </Typography>
-                                  <Typography variant="caption" color="text.secondary" noWrap display="block">
+                                  <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }} noWrap>
                                     {member.email}
                                   </Typography>
                                 </Box>
@@ -721,7 +726,7 @@ export const RoleManagementPage: React.FC = () => {
         onClose={() => !savingRole && setAssignDialogOpen(false)}
         fullWidth
         maxWidth="sm"
-        PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
+        slotProps={{ paper: { sx: { borderRadius: 3, overflow: 'hidden' } } }}
       >
         {/* Dialog Header */}
         <Box
@@ -742,7 +747,7 @@ export const RoleManagementPage: React.FC = () => {
               {getInitials(selectedUser?.firstName ?? '', selectedUser?.lastName ?? '')}
             </Avatar>
             <Box>
-              <Typography variant="h6" fontWeight="bold">
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 Assign Role
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -763,15 +768,15 @@ export const RoleManagementPage: React.FC = () => {
               {selectedRoleId !== (
                 typeof selectedUser?.role === 'string' ? selectedUser.role : (selectedUser?.role as { _id: string })?._id
               ) && (
-                <>
-                  <Typography variant="caption" sx={{ opacity: 0.6 }}>→ will change to:</Typography>
-                  <Chip
-                    label={selectedRoleObj.name}
-                    size="small"
-                    sx={{ bgcolor: 'rgba(255,255,255,0.35)', color: 'white', fontWeight: 700, height: 20, fontSize: '0.7rem' }}
-                  />
-                </>
-              )}
+                  <>
+                    <Typography variant="caption" sx={{ opacity: 0.6 }}>→ will change to:</Typography>
+                    <Chip
+                      label={selectedRoleObj.name}
+                      size="small"
+                      sx={{ bgcolor: 'rgba(255,255,255,0.35)', color: 'white', fontWeight: 700, height: 20, fontSize: '0.7rem' }}
+                    />
+                  </>
+                )}
             </Box>
           )}
         </Box>
@@ -784,13 +789,13 @@ export const RoleManagementPage: React.FC = () => {
             placeholder="Search roles…"
             value={roleSearchQuery}
             onChange={(e) => setRoleSearchQuery(e.target.value)}
-            InputProps={{
+            slotProps={{ input: {
               startAdornment: (
                 <InputAdornment position="start">
                   <SearchIcon fontSize="small" color="action" />
                 </InputAdornment>
               ),
-            }}
+            }}}
             sx={{ mb: 2 }}
           />
 
@@ -847,14 +852,14 @@ export const RoleManagementPage: React.FC = () => {
                     {/* Role info */}
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
-                        <Typography variant="body2" fontWeight={700} sx={{ color: isSelected ? colors.text : 'text.primary' }}>
+                        <Typography variant="body2" sx={{ color: isSelected ? colors.text : 'text.primary' , fontWeight:700}}>
                           {role.name}
                         </Typography>
                         {isCurrent && (
                           <Chip label="Current" size="small" color="default" sx={{ height: 16, fontSize: '0.65rem' }} />
                         )}
                       </Box>
-                      <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }} noWrap>
                         {role.description || 'No description provided.'}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -917,7 +922,7 @@ export const RoleManagementPage: React.FC = () => {
         onClose={() => !submittingRole && setCreateDialogOpen(false)}
         fullWidth
         maxWidth="xs"
-        PaperProps={{ sx: { borderRadius: 3 } }}
+        slotProps={{ paper: { sx: { borderRadius: 3 } } }}
       >
         <DialogTitle sx={{ fontWeight: 'bold', pb: 1 }}>Create New Role</DialogTitle>
         <DialogContent dividers>

@@ -45,6 +45,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import StudentDashboard from './StudentDashboard';
+import TeacherDashboard from './TeacherDashboard';
+
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate();
@@ -400,6 +402,7 @@ export const DashboardPage: FC = () => {
                             <DotIcon sx={{ fontSize: '10px', color: 'primary.main' }} />
                           </ListItemIcon>
                           <ListItemText
+                            disableTypography
                             primary={
                               <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4 }}>
                                 {activity.description}
@@ -429,73 +432,9 @@ export const DashboardPage: FC = () => {
 
         {/* --- ROLE: TEACHER --- */}
         {role === 'TEACHER' && (
-          <>
-            {/* Left Workspace: Today's Timetable */}
-            <Grid size={{ xs: 12, lg: 8 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
-                    Today's Academic Schedule
-                  </Typography>
-                  <List disablePadding>
-                    <ListItem sx={{ borderLeft: '3px solid #4f46e5', pl: 2, mb: 2, bgcolor: (theme) => theme.palette.mode === 'light' ? 'rgba(79, 70, 229, 0.02)' : 'rgba(255,255,255,0.02)', borderRadius: '0 8px 8px 0' }}>
-                      <ListItemText
-                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Grade 9-A Algebra</Typography>}
-                        secondary={<Typography variant="caption" color="text.secondary"><ScheduleIcon sx={{ fontSize: 12, verticalAlign: 'text-bottom', mr: 0.5 }} />08:30 AM - 09:30 AM (Room 3B)</Typography>}
-                      />
-                      <Button size="small" variant="outlined" onClick={() => navigate('/attendances')}>Record Attendance</Button>
-                    </ListItem>
-                    <ListItem sx={{ borderLeft: '3px solid #10b981', pl: 2, mb: 2, bgcolor: (theme) => theme.palette.mode === 'light' ? 'rgba(16, 185, 129, 0.02)' : 'rgba(255,255,255,0.02)', borderRadius: '0 8px 8px 0' }}>
-                      <ListItemText
-                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Grade 10-B Geometry</Typography>}
-                        secondary={<Typography variant="caption" color="text.secondary"><ScheduleIcon sx={{ fontSize: 12, verticalAlign: 'text-bottom', mr: 0.5 }} />10:00 AM - 11:00 AM (Room 4)</Typography>}
-                      />
-                      <Button size="small" variant="outlined" onClick={() => navigate('/attendances')}>Record Attendance</Button>
-                    </ListItem>
-                    <ListItem sx={{ borderLeft: '3px solid #f59e0b', pl: 2, mb: 0, bgcolor: (theme) => theme.palette.mode === 'light' ? 'rgba(245, 158, 11, 0.02)' : 'rgba(255,255,255,0.02)', borderRadius: '0 8px 8px 0' }}>
-                      <ListItemText
-                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Office Mentoring Hours</Typography>}
-                        secondary={<Typography variant="caption" color="text.secondary"><ScheduleIcon sx={{ fontSize: 12, verticalAlign: 'text-bottom', mr: 0.5 }} />01:30 PM - 02:30 PM (Faculty Hall)</Typography>}
-                      />
-                    </ListItem>
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Right Workspace: Quick Teacher Actions */}
-            <Grid size={{ xs: 12, lg: 4 }}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyItems: 'space-between' }}>
-                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
-                    Quick Teacher Actions
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12 }}>
-                      <Button variant="contained" fullWidth size="medium" onClick={() => navigate('/attendances')}>
-                        Take Daily Attendance
-                      </Button>
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Button variant="outlined" fullWidth size="medium" onClick={() => navigate('/marks')}>
-                        Enter Grade Book Marks
-                      </Button>
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Button variant="outlined" fullWidth size="medium" onClick={() => navigate('/timetables')}>
-                        View Full Schedule
-                      </Button>
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Button variant="outlined" fullWidth size="medium" onClick={() => navigate('/notifications')}>
-                        Broadcast Class Notice
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-          </>
+          <Grid size={{ xs: 12 }}>
+            <TeacherDashboard />
+          </Grid>
         )}
 
         {/* --- ROLE: STUDENT --- */}
@@ -519,6 +458,7 @@ export const DashboardPage: FC = () => {
                     <ListItem sx={{ py: 2 }}>
                       <Avatar sx={{ width: 44, height: 44, bgcolor: '#6366f1', mr: 2 }}>LR</Avatar>
                       <ListItemText
+                        disableTypography
                         primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Leo Rivera (Grade 6-B)</Typography>}
                         secondary={<Typography variant="caption" color="text.secondary">Attendance Rate: 98% | Next Class: Science (09:00 AM)</Typography>}
                       />
