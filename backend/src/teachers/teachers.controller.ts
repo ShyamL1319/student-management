@@ -31,13 +31,13 @@ export class TeachersController {
   }
 
   @Get()
-  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN, RoleEnum.STAFF)
+  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN, RoleEnum.STAFF, RoleEnum.TEACHER)
   findAll(@Query() query: any) {
     return this.teachersService.findAll(query);
   }
 
   @Get(':id')
-  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN, RoleEnum.STAFF)
+  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN, RoleEnum.STAFF, RoleEnum.TEACHER)
   findOne(@Param('id') id: string) {
     return this.teachersService.findOne(id);
   }

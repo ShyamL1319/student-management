@@ -383,7 +383,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                       <Typography variant="caption" color="text.secondary">{cls.teacher} · {cls.room}</Typography>
                     </Box>
                     <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 600 }} color="text.secondary" display="block">{cls.time}</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 600, display: 'block' }} color="text.secondary" >{cls.time}</Typography>
                       <StatusChip status={cls.status} />
                     </Box>
                     {cls.status === 'current' && (
@@ -739,7 +739,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                 {MOCK_ACHIEVEMENTS.map((ach) => (
                   <Grid size={{ xs: 6 }} key={ach.id}>
                     <Box sx={{ p: 2, borderRadius: 2.5, textAlign: 'center', border: '1px solid', borderColor: 'divider', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' } }}>
-                      <Typography fontSize={32}>{ach.icon}</Typography>
+                      <Typography sx={{ fontSize: 32 }}>{ach.icon}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 700, mt: 0.5 }}>{ach.title}</Typography>
                       <Typography variant="caption" color="text.secondary">{ach.subtitle}</Typography>
                     </Box>
@@ -774,7 +774,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                   { label: 'Wellness Resources', desc: '12 articles available', icon: '🌿' },
                 ].map((h) => (
                   <Box key={h.label} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}>
-                    <Typography fontSize={24}>{h.icon}</Typography>
+                    <Typography sx={{ fontSize: 24 }}>{h.icon}</Typography>
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>{h.label}</Typography>
                       <Typography variant="caption" color="text.secondary">{h.desc}</Typography>
@@ -799,7 +799,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                   { label: 'Career Events', desc: 'Campus drive: Jun 28', icon: '🏛️', badge: '1' },
                 ].map((c) => (
                   <Box key={c.label} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}>
-                    <Typography fontSize={22}>{c.icon}</Typography>
+                    <Typography sx={{ fontSize: 22 }}>{c.icon}</Typography>
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>{c.label}</Typography>
                       <Typography variant="caption" color="text.secondary">{c.desc}</Typography>
@@ -836,7 +836,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                         <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{m.name}</Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>{m.time}</Typography>
                       </Box>
-                      <Typography variant="caption" color="text.secondary" noWrap display="block">{m.msg}</Typography>
+                      <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>{m.msg}</Typography>
                     </Box>
                     {m.unread > 0 && (
                       <Box sx={{ width: 18, height: 18, borderRadius: '50%', bgcolor: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

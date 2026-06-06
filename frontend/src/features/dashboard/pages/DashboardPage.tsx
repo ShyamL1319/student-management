@@ -46,6 +46,8 @@ import {
 } from 'recharts';
 import StudentDashboard from './StudentDashboard';
 import TeacherDashboard from './TeacherDashboard';
+import AdminDashboard from './AdminDashboard';
+import SuperAdminDashboard from './SuperAdminDashboard';
 
 
 export const DashboardPage: FC = () => {
@@ -343,91 +345,18 @@ export const DashboardPage: FC = () => {
 
       {/* 3. Role-Based Central Workspaces */}
       <Grid container spacing={4}>
-        {/* --- ROLE: SUPER_ADMIN & ADMIN --- */}
-        {(role === 'SUPER_ADMIN' || role === 'ADMIN') && (
-          <>
-            {/* Expected vs Actual Revenue Chart */}
-            <Grid size={{ xs: 12, lg: 8 }}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
-                    Tuition Collections Overview
-                  </Typography>
-                  <Box sx={{ height: 320, width: '100%' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={mockChartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-                        <defs>
-                          <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8} />
-                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.15} />
-                          </linearGradient>
-                          <linearGradient id="colorProjected" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#0d9488" stopOpacity={0.8} />
-                            <stop offset="95%" stopColor="#0d9488" stopOpacity={0.15} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                        <XAxis dataKey="name" stroke="#64748b" tickLine={false} style={{ fontSize: '0.8rem' }} />
-                        <YAxis stroke="#64748b" tickLine={false} axisLine={false} style={{ fontSize: '0.8rem' }} />
-                        <RechartsTooltip
-                          contentStyle={{
-                            borderRadius: '8px',
-                            border: '1px solid #e2e8f0',
-                            fontFamily: "'Inter', sans-serif",
-                            fontSize: '0.85rem',
-                          }}
-                        />
-                        <Legend wrapperStyle={{ fontSize: '0.85rem', paddingTop: '10px' }} />
-                        <Bar dataKey="collected" fill="url(#colorCollected)" radius={[4, 4, 0, 0]} name="Actual Collections" />
-                        <Bar dataKey="projected" fill="url(#colorProjected)" radius={[4, 4, 0, 0]} name="Projected Target" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+        {/* --- ROLE: SUPER_ADMIN --- */}
+        {role === 'SUPER_ADMIN' && (
+          <Grid size={{ xs: 12 }}>
+            <SuperAdminDashboard data={data} firstName={firstName} />
+          </Grid>
+        )}
 
-            {/* Recent System Activity log */}
-            <Grid size={{ xs: 12, lg: 4 }}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
-                    Audited Actions History
-                  </Typography>
-                  {recentActivity && recentActivity.length > 0 ? (
-                    <List disablePadding>
-                      {recentActivity.map((activity, i) => (
-                        <ListItem key={i} sx={{ px: 0, py: 1.5, alignItems: 'flex-start' }} divider={i !== recentActivity.length - 1}>
-                          <ListItemIcon sx={{ minWidth: 24, mt: 0.5 }}>
-                            <DotIcon sx={{ fontSize: '10px', color: 'primary.main' }} />
-                          </ListItemIcon>
-                          <ListItemText
-                            disableTypography
-                            primary={
-                              <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4 }}>
-                                {activity.description}
-                              </Typography>
-                            }
-                            secondary={
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                {activity.time}
-                              </Typography>
-                            }
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  ) : (
-                    <Box sx={{ py: 6, textAlign: 'center' }}>
-                      <Typography variant="body2" color="text.secondary">
-                        No recent audited operations detected.
-                      </Typography>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          </>
+        {/* --- ROLE: ADMIN --- */}
+        {role === 'ADMIN' && (
+          <Grid size={{ xs: 12 }}>
+            <AdminDashboard data={data} firstName={firstName} />
+          </Grid>
         )}
 
         {/* --- ROLE: TEACHER --- */}
