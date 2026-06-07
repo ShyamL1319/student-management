@@ -35,7 +35,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { email: user.email, sub: user._id, role: user.role };
+    const payload = {
+      email: user.email,
+      sub: user._id,
+      role: user.role,
+      schoolId: user.schoolId?.toString(),
+    };
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET') || 'supersecret',
       expiresIn: '15m',
@@ -77,7 +82,12 @@ export class AuthService {
       throw new UnauthorizedException('Access Denied');
     }
 
-    const payload = { email: user.email, sub: user._id, role: user.role };
+    const payload = {
+      email: user.email,
+      sub: user._id,
+      role: user.role,
+      schoolId: user.schoolId?.toString(),
+    };
     const newAccessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET') || 'supersecret',
       expiresIn: '15m',
