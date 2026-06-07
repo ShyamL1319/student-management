@@ -1,4 +1,10 @@
-import { IsString, IsEmail, IsOptional, IsPhoneNumber } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsPhoneNumber,
+  IsObject,
+} from 'class-validator';
 
 export class UpdateProfileDto {
   @IsString()
@@ -24,6 +30,10 @@ export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   avatar?: string;
+
+  @IsObject()
+  @IsOptional()
+  schoolId?: string;
 }
 
 export class UpdateUserRoleDto {

@@ -13,11 +13,11 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ email }).populate('role').exec();
+    return this.userModel.findOne({ email }).setOptions({ bypassTenant: true }).populate('role').exec();
   }
 
   async findById(id: string): Promise<UserDocument | null> {
-    return this.userModel.findById(id).populate('role').exec();
+    return this.userModel.findById(id).setOptions({ bypassTenant: true }).populate('role').exec();
   }
 
   async create(userData: Partial<User>): Promise<UserDocument> {
@@ -31,6 +31,7 @@ export class UsersService {
   ): Promise<UserDocument | null> {
     return this.userModel
       .findByIdAndUpdate(id, updateData, { new: true })
+      .setOptions({ bypassTenant: true })
       .populate('role')
       .exec();
   }

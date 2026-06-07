@@ -29,6 +29,9 @@ export class User {
 
   roleType!: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'School', required: false, index: true })
+  schoolId?: Types.ObjectId;
+
   @Prop({ default: true })
   isActive!: boolean;
 

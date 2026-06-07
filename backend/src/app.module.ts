@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await */
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
@@ -27,11 +27,17 @@ import { FeesModule } from './fees/fees.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { ReportsModule } from './reports/reports.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+
+import { TenantModule } from './tenant/tenant.module';
+import { TenantGuard } from './tenant/tenant.guard';
+import { TenantMiddleware } from './tenant/tenant.middleware';
+import { TenantInterceptor } from './tenant/tenant.interceptor';
+import { tenantPlugin } from './common/database/tenant.plugin';
 
 @Module({
   imports: [
@@ -43,9 +49,15 @@ import { DashboardModule } from './dashboard/dashboard.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
+        connectionFactory: (connection) => {
+          // Register dynamic query isolation plugin globally
+          connection.plugin(tenantPlugin);
+          return connection;
+        },
       }),
       inject: [ConfigService],
     }),
+    TenantModule,
     CommonModule,
     UsersModule,
     RolesModule,
@@ -79,6 +91,20 @@ import { DashboardModule } from './dashboard/dashboard.module';
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TenantInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: TenantGuard,
+    },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(TenantMiddleware)
+      .forRoutes('*');
+  }
+}

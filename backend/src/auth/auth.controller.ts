@@ -16,12 +16,14 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Public } from '../common/decorators/public.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('login')
   @ApiOperation({ summary: 'Login user' })
   @HttpCode(HttpStatus.OK)
@@ -51,6 +53,7 @@ export class AuthController {
     return this.authService.refreshTokens(userId, refreshToken);
   }
 
+  @Public()
   @Post('forgot-password')
   @ApiOperation({ summary: 'Forgot password' })
   @HttpCode(HttpStatus.OK)
@@ -58,6 +61,7 @@ export class AuthController {
     return this.authService.forgotPassword(forgotPasswordDto.email);
   }
 
+  @Public()
   @Post('reset-password')
   @ApiOperation({ summary: 'Reset password' })
   @HttpCode(HttpStatus.OK)
