@@ -340,14 +340,14 @@ export const DashboardPage: FC = () => {
         {/* --- ROLE: TEACHER --- */}
         {role === 'TEACHER' && (
           <Grid size={{ xs: 12 }}>
-            <TeacherDashboard />
+            <TeacherDashboard data={data} firstName={firstName} />
           </Grid>
         )}
 
         {/* --- ROLE: STUDENT --- */}
         {role === 'STUDENT' && (
           <Grid size={{ xs: 12 }}>
-            <StudentDashboard firstName={firstName} />
+            <StudentDashboard data={data} firstName={firstName} />
           </Grid>
         )}
 

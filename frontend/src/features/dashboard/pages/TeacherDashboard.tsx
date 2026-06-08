@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../../api/api';
+import type { DashboardResponse } from '../api/dashboardApi';
 import {
   Box,
   Typography,
@@ -146,11 +148,43 @@ const SectionTitle: React.FC<{
   </Box>
 );
 
-const TeacherDashboard: React.FC = () => {
+export interface TeacherDashboardProps {
+  data: DashboardResponse;
+  firstName: string;
+}
+
+const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
   const [selectedClassForAttendance, setSelectedClassForAttendance] = useState<string>('');
+  
+  // Dynamic leave requests state and handlers
+  const [leaveRequests, setLeaveRequests] = useState<any[]>(data.leaveRequests || MOCK_LEAVE_REQUESTS);
+  
+  useEffect(() => {
+    if (data.leaveRequests) {
+      setLeaveRequests(data.leaveRequests);
+    }
+  }, [data]);
+
+  const handleApproveLeave = async (id: string) => {
+    try {
+      await api.patch(`/leave-requests/${id}/status`, { status: 'APPROVED' });
+      setLeaveRequests(prev => prev.filter(r => r.id !== id));
+    } catch (err) {
+      console.error('Failed to approve leave', err);
+    }
+  };
+
+  const handleRejectLeave = async (id: string) => {
+    try {
+      await api.patch(`/leave-requests/${id}/status`, { status: 'REJECTED' });
+      setLeaveRequests(prev => prev.filter(r => r.id !== id));
+    } catch (err) {
+      console.error('Failed to reject leave', err);
+    }
+  };
 
   // Interactive Checklist State
   const [studentsChecklist, setStudentsChecklist] = useState([
@@ -248,17 +282,17 @@ const TeacherDashboard: React.FC = () => {
             <Grid size={{ xs: 12, md: 8 }}>
               <Typography variant="overline" sx={{ opacity: 0.6, letterSpacing: 2, fontWeight: 700 }}>FACULTY PORTAL</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: -0.5, mb: 1, fontFamily: "'Outfit', sans-serif" }}>
-                Welcome back, {MOCK_TEACHER.name} 👋
+                Welcome back, {firstName} 👋
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.8, mb: 2.5, fontFamily: "'Inter', sans-serif" }}>
-                {MOCK_TEACHER.department} Department · Room allocation: Lab 2 / Block B
+                Science Department · Room allocation: Lab 2 / Block B
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                 {[
-                  { label: `${MOCK_TEACHER.classesToday} Classes Today`, color: '#6366f1' },
-                  { label: `${MOCK_TEACHER.totalStudents} Students`, color: '#0d9488' },
-                  { label: `${MOCK_TEACHER.assignmentsPendingReview} To Grade`, color: '#f59e0b' },
-                  { label: `${MOCK_TEACHER.pendingAttendance} Pending Attendance`, color: '#ef4444' },
+                  { label: `${data.widgets?.classesToday ?? 0} Classes Today`, color: '#6366f1' },
+                  { label: `${data.widgets?.totalStudents ?? 0} Students`, color: '#0d9488' },
+                  { label: `${data.widgets?.assignmentsPendingReview ?? 0} To Grade`, color: '#f59e0b' },
+                  { label: `${data.widgets?.pendingAttendance ?? 0} Pending Attendance`, color: '#ef4444' },
                 ].map((item) => (
                   <Chip
                     key={item.label}
@@ -276,11 +310,11 @@ const TeacherDashboard: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
               <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 2, bgcolor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 3, p: 2, backdropFilter: 'blur(10px)' }}>
-                <Avatar sx={{ width: 56, height: 56, bgcolor: '#10b981', fontWeight: 800 }}>SJ</Avatar>
+                <Avatar sx={{ width: 56, height: 56, bgcolor: '#10b981', fontWeight: 800 }}>{firstName[0]}</Avatar>
                 <Box sx={{ textAlign: 'left' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{MOCK_TEACHER.name}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.7, display: 'block' }}>ID: {MOCK_TEACHER.id}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.7, display: 'block' }}>{MOCK_TEACHER.schoolName}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{firstName}</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.7, display: 'block' }}>ID: TCH-{data.widgets?.myClasses || '0'}</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.7, display: 'block' }}>PS Educational Institute</Typography>
                 </Box>
               </Box>
             </Grid>
@@ -349,7 +383,7 @@ const TeacherDashboard: React.FC = () => {
                 }
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {MOCK_TODAY_CLASSES.map((cls) => {
+                {(data.scheduleToday || MOCK_TODAY_CLASSES).map((cls: any) => {
                   const isCurrent = cls.status === 'current';
                   const isCompleted = cls.status === 'completed';
                   return (
@@ -417,12 +451,12 @@ const TeacherDashboard: React.FC = () => {
               <SectionTitle icon={<TrendingUpIcon />} title="Performance Distribution" subtitle="Active Term grades across student registry" />
               <Box sx={{ height: 200, width: '100%', mb: 2 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={[
-                    { name: 'A', count: 18, fill: '#6366f1' },
-                    { name: 'B', count: 32, fill: '#0d9488' },
-                    { name: 'C', count: 25, fill: '#3b82f6' },
-                    { name: 'D', count: 8, fill: '#f59e0b' },
-                    { name: 'F', count: 2, fill: '#ef4444' },
+                  <BarChart data={data.charts?.classPerformance || [
+                    { name: 'Grade A', count: 18, fill: '#6366f1' },
+                    { name: 'Grade B', count: 32, fill: '#0d9488' },
+                    { name: 'Grade C', count: 25, fill: '#3b82f6' },
+                    { name: 'Grade D', count: 8, fill: '#f59e0b' },
+                    { name: 'Grade F', count: 2, fill: '#ef4444' },
                   ]}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis dataKey="name" tickLine={false} style={{ fontSize: '0.75rem' }} />
@@ -462,13 +496,13 @@ const TeacherDashboard: React.FC = () => {
                 <Tab label="Drafts (1)" />
               </Tabs>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {MOCK_ASSIGNMENTS
-                  .filter((a) => {
+                {(data.assignments || MOCK_ASSIGNMENTS)
+                  .filter((a: any) => {
                     if (activeTab === 0) return a.status === 'evaluating' || a.status === 'completed';
                     if (activeTab === 1) return a.status === 'active';
                     return a.status === 'draft';
                   })
-                  .map((a) => (
+                  .map((a: any) => (
                     <Box
                       key={a.id}
                       sx={{
@@ -523,7 +557,7 @@ const TeacherDashboard: React.FC = () => {
                 subtitle="Recent updates from parents & admin"
               />
               <List disablePadding>
-                {MOCK_COMMUNICATIONS.map((c, idx) => (
+                {(data.communications || MOCK_COMMUNICATIONS).map((c: any, idx: number) => (
                   <React.Fragment key={c.name}>
                     <ListItem sx={{ px: 0, py: 1.5, alignItems: 'flex-start' }}>
                       <Avatar sx={{ bgcolor: c.unread ? 'primary.main' : 'text.disabled', mr: 2, width: 36, height: 36, fontSize: '0.85rem' }}>
@@ -646,7 +680,7 @@ const TeacherDashboard: React.FC = () => {
                 subtitle="Pending administrative permissions"
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {MOCK_LEAVE_REQUESTS.map((req) => (
+                {leaveRequests.map((req) => (
                   <Box
                     key={req.id}
                     sx={{
@@ -669,10 +703,10 @@ const TeacherDashboard: React.FC = () => {
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <IconButton size="small" color="success" sx={{ border: '1px solid' }}>
+                      <IconButton size="small" color="success" sx={{ border: '1px solid' }} onClick={() => handleApproveLeave(req.id)}>
                         <CheckIcon fontSize="small" />
                       </IconButton>
-                      <IconButton size="small" color="error" sx={{ border: '1px solid' }}>
+                      <IconButton size="small" color="error" sx={{ border: '1px solid' }} onClick={() => handleRejectLeave(req.id)}>
                         <CloseIcon fontSize="small" />
                       </IconButton>
                     </Box>
@@ -694,7 +728,7 @@ const TeacherDashboard: React.FC = () => {
                 action={<Button size="small" endIcon={<DownloadIcon />} sx={{ textTransform: 'none', fontWeight: 600 }}>Add Resource</Button>}
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {MOCK_RESOURCES.map((res) => (
+                {(data.resources || MOCK_RESOURCES).map((res: any) => (
                   <Box
                     key={res.id}
                     sx={{

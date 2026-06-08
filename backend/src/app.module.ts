@@ -27,6 +27,9 @@ import { FeesModule } from './fees/fees.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ParentsModule } from './parents/parents.module';
+import { LeaveRequestsModule } from './leave-requests/leave-requests.module';
+import { AdmissionsModule } from './admissions/admissions.module';
+import { AssignmentsModule } from './assignments/assignments.module';
 
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -85,6 +88,9 @@ import { tenantPlugin } from './common/database/tenant.plugin';
     ReportsModule,
     AuditLogsModule,
     DashboardModule,
+    LeaveRequestsModule,
+    AdmissionsModule,
+    AssignmentsModule,
   ],
   controllers: [AppController],
   providers: [

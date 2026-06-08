@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SchoolsService } from './schools.service';
@@ -18,6 +19,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum as Role } from '../common/enums/role.enum';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @ApiTags('Schools')
 @ApiBearerAuth()
@@ -38,6 +40,28 @@ export class SchoolsController {
   @ApiOperation({ summary: 'Get all Schools' })
   findAll(@Query() query: PaginationQueryDto) {
     return this.schoolService.findAll(query);
+  }
+
+  @Get('settings')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER, Role.STAFF)
+  @ApiOperation({ summary: 'Get current school settings' })
+  async getSettings(@CurrentUser() user: any) {
+    const schoolId = user.school?.toString();
+    if (!schoolId) {
+      throw new NotFoundException('No school associated with this user');
+    }
+    return this.schoolService.findOne(schoolId);
+  }
+
+  @Patch('settings')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update current school settings' })
+  async updateSettings(@CurrentUser() user: any, @Body() dto: UpdateSchoolDto) {
+    const schoolId = user.school?.toString();
+    if (!schoolId) {
+      throw new NotFoundException('No school associated with this user');
+    }
+    return this.schoolService.update(schoolId, dto);
   }
 
   @Get(':id')

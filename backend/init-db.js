@@ -368,6 +368,9 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
       const dob = getRandomDate(new Date(2005, 0, 1), new Date(2012, 11, 31));
       const sId = new ObjectId();
 
+      const cls = insertedClasses.find((c) => c._id.toString() === section.classId.toString());
+      const clsName = cls ? cls.name.replace(/\s+/g, '') : 'Class';
+
       studentRecords.push({
         _id: sId,
         email,
@@ -379,7 +382,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
         roleType: 'STUDENT',
         isActive: studentCount1 % 15 !== 0, // 1 in 15 inactive
         admissionNumber: `ADM-${currentYear}-${studentCount1.toString().padStart(4, '0')}`,
-        rollNumber: `R-${section.name}-${i + 1}`,
+        rollNumber: `R-${clsName}-${section.name}-${i + 1}`,
         dob,
         gender: Math.random() > 0.5 ? 'Male' : 'Female',
         bloodGroup: ['A+', 'A-', 'B+', 'O+', 'O-', 'AB+'][
@@ -771,6 +774,178 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   console.log('Massive seed completed successfully.');
 }
 
+async function seedNewFeatures(db, schoolId, adminId) {
+  console.log('Checking and seeding new features (Leaves, Admissions, Assignments)...');
+
+  // Fetch basic references
+  const students = await db.collection('users').find({ roleType: 'STUDENT' }).limit(10).toArray();
+  const teachers = await db.collection('users').find({ roleType: 'TEACHER' }).limit(5).toArray();
+
+  if (students.length === 0 || teachers.length === 0) {
+    console.log('No students or teachers found. Skipping new features seeding.');
+    return;
+  }
+
+  const studentIds = students.map(s => s._id);
+  const teacherIds = teachers.map(t => t._id);
+
+  // 1. Leave Requests
+  const leaveCount = await db.collection('leaverequests').countDocuments();
+  if (leaveCount === 0) {
+    console.log('Seeding Leave Requests...');
+    const leaveRequests = [
+      {
+        school: schoolId,
+        requesterId: studentIds[0],
+        requesterType: 'STUDENT',
+        startDate: new Date(Date.now() + 86400000), // tomorrow
+        endDate: new Date(Date.now() + 86400000 * 3),
+        type: 'Sick',
+        reason: 'Suffering from high fever',
+        status: 'PENDING',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        school: schoolId,
+        requesterId: studentIds[1],
+        requesterType: 'STUDENT',
+        startDate: new Date(Date.now() - 86400000 * 5),
+        endDate: new Date(Date.now() - 86400000 * 3),
+        type: 'Casual',
+        reason: 'Family wedding out of town',
+        status: 'APPROVED',
+        approvedBy: adminId,
+        remarks: 'Approved. Please collect handouts when back.',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        school: schoolId,
+        requesterId: teacherIds[0],
+        requesterType: 'TEACHER',
+        startDate: new Date(Date.now() + 86400000 * 2),
+        endDate: new Date(Date.now() + 86400000 * 3),
+        type: 'Casual',
+        reason: 'Personal legal business',
+        status: 'PENDING',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+    await db.collection('leaverequests').insertMany(leaveRequests);
+  }
+
+  // 2. Admission Applications
+  const admissionCount = await db.collection('admissionapplications').countDocuments();
+  if (admissionCount === 0) {
+    console.log('Seeding Admission Applications...');
+    const admissionApplications = [
+      {
+        school: schoolId,
+        applicantName: 'Harry Potter Jr.',
+        gradeLevel: 'Grade 6',
+        entranceScore: 92,
+        status: 'Applied',
+        parentEmail: 'james.potter@wizard.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        school: schoolId,
+        applicantName: 'Hermione Granger Jr.',
+        gradeLevel: 'Grade 7',
+        entranceScore: 99,
+        status: 'Verified',
+        parentEmail: 'grangers@dentist.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        school: schoolId,
+        applicantName: 'Ronald Weasley Jr.',
+        gradeLevel: 'Grade 6',
+        entranceScore: 65,
+        status: 'Interview Scheduled',
+        parentEmail: 'arthur.weasley@ministry.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+    await db.collection('admissionapplications').insertMany(admissionApplications);
+  }
+
+  // 3. Assignments & Submissions
+  const assignmentCount = await db.collection('assignments').countDocuments();
+  if (assignmentCount === 0) {
+    console.log('Seeding Assignments & Submissions...');
+    const classes = await db.collection('classes').find().toArray();
+    const subjects = await db.collection('subjects').find().toArray();
+
+    if (classes.length > 0 && subjects.length > 0) {
+      const assignments = [];
+      const submissions = [];
+
+      for (let idx = 0; idx < Math.min(5, classes.length); idx++) {
+        const cls = classes[idx];
+        const teacherId = cls.classTeacher || teacherIds[0];
+        const subjectId = subjects[idx % subjects.length]._id;
+        const assId = new ObjectId();
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 7);
+
+        assignments.push({
+          _id: assId,
+          school: schoolId,
+          title: `${cls.name} Assignment ${idx + 1}`,
+          description: 'Please read chapter 3 and complete review questions 1-10.',
+          subject: subjectId,
+          class: cls._id,
+          teacher: teacherId,
+          dueDate: dueDate,
+          maxMarks: 100,
+          isPublished: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+        // Find students in this class
+        const classStudents = await db.collection('users').find({
+          roleType: 'STUDENT',
+          class: cls._id,
+        }).toArray();
+
+        for (let sIdx = 0; sIdx < Math.min(3, classStudents.length); sIdx++) {
+          const student = classStudents[sIdx];
+          const status = sIdx === 0 ? 'Graded' : 'Submitted';
+          const marks = status === 'Graded' ? 88 + sIdx * 2 : undefined;
+          const fb = status === 'Graded' ? 'Excellent analysis.' : undefined;
+
+          submissions.push({
+            school: schoolId,
+            assignment: assId,
+            student: student._id,
+            fileUrl: 'https://example.com/submission.pdf',
+            submittedAt: new Date(),
+            status: status,
+            marksObtained: marks,
+            feedback: fb,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+      }
+
+      if (assignments.length > 0) {
+        await db.collection('assignments').insertMany(assignments);
+      }
+      if (submissions.length > 0) {
+        await db.collection('assignmentsubmissions').insertMany(submissions);
+      }
+    }
+  }
+}
+
 async function initDB() {
   console.log('Starting Database Initialization...');
   await mongoose.connect(MONGODB_URI);
@@ -795,6 +970,9 @@ async function initDB() {
       phone: String,
       email: String,
       isActive: { type: Boolean, default: true },
+      emailNotificationsEnabled: { type: Boolean, default: true },
+      smsAlertsEnabled: { type: Boolean, default: false },
+      autoBackupEnabled: { type: Boolean, default: true },
     });
     const School = mongoose.model('School', schoolSchema);
 
@@ -817,6 +995,9 @@ async function initDB() {
         phone: '555-0113',
         email: 'psei@school.com',
         isActive: true,
+        emailNotificationsEnabled: true,
+        smsAlertsEnabled: false,
+        autoBackupEnabled: true,
       });
     } else {
       if (!defaultSchool.tenantId) {
@@ -830,6 +1011,24 @@ async function initDB() {
         }
         defaultSchool.tenantId = defaultTenant._id;
         await defaultSchool.save();
+      }
+      // Ensure existing schools have default settings populated
+      let needsUpdate = false;
+      const updates = {};
+      if (defaultSchool.emailNotificationsEnabled === undefined) {
+        updates.emailNotificationsEnabled = true;
+        needsUpdate = true;
+      }
+      if (defaultSchool.smsAlertsEnabled === undefined) {
+        updates.smsAlertsEnabled = false;
+        needsUpdate = true;
+      }
+      if (defaultSchool.autoBackupEnabled === undefined) {
+        updates.autoBackupEnabled = true;
+        needsUpdate = true;
+      }
+      if (needsUpdate) {
+        await School.updateOne({ _id: defaultSchool._id }, { $set: updates });
       }
     }
     const defaultSchoolId = defaultSchool._id;
@@ -1149,6 +1348,7 @@ async function initDB() {
 
     // --- PART 4: COMPREHENSIVE UI/UX DATA GENERATION ---
     await seedMassiveData(db, defaultSchoolId, roleIds, defaultPasswordHash, adminId);
+    await seedNewFeatures(db, defaultSchoolId, adminId);
   } catch (error) {
     console.error('Initialization error:', error);
     process.exit(1);

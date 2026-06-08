@@ -19,12 +19,14 @@ export interface DashboardWidgets {
   pendingFees?: number;
 
   childrenCount?: number;
+  [key: string]: any;
 }
 
 export interface DashboardResponse {
   widgets: DashboardWidgets;
   charts?: Record<string, any>;
   recentActivity?: any[];
+  [key: string]: any;
 }
 
 export const fetchDashboardData = async (): Promise<DashboardResponse> => {

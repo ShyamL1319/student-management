@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../../api/api';
+import { studentsApi } from '../../students/api/students.api';
+import { teachersApi } from '../../teachers/api/teachers.api';
 import {
   Box,
   Typography,
@@ -142,10 +145,46 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
   const navigate = useNavigate();
 
   // ── States for interactive checklists/workflow items ───────────────────
-  const [leaves, setLeaves] = useState(MOCK_LEAVE_REQUESTS);
+  const [leaves, setLeaves] = useState<any[]>([]);
   const [waivers, setWaivers] = useState(MOCK_WAIVER_REQUESTS);
-  const [admissions, setAdmissions] = useState(MOCK_ADMISSION_APPLICATIONS);
+  const [admissions, setAdmissions] = useState<any[]>([]);
   const [corrections, setCorrections] = useState(MOCK_CORRECTIONS);
+
+  const fetchLeavesAndAdmissions = async () => {
+    try {
+      const leavesRes = await api.get('/leave-requests');
+      if (leavesRes && leavesRes.data) {
+        const mappedLeaves = leavesRes.data.data.map((l: any) => ({
+          id: l._id || l.id,
+          name: l.requesterId ? `${l.requesterId.firstName} ${l.requesterId.lastName}` : 'Unknown Requester',
+          role: l.requesterType ? (l.requesterType === 'TEACHER' ? 'Teacher' : l.requesterType === 'STUDENT' ? 'Student' : 'Staff') : 'Teacher',
+          type: l.type || 'Sick Leave',
+          duration: `${Math.round((new Date(l.endDate).getTime() - new Date(l.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1} Days (${new Date(l.startDate).toLocaleDateString()} - ${new Date(l.endDate).toLocaleDateString()})`,
+          reason: l.reason,
+          docAttached: false,
+        }));
+        setLeaves(mappedLeaves);
+      }
+      
+      const admissionsRes = await api.get('/admissions');
+      if (admissionsRes && admissionsRes.data) {
+        const mappedAdmissions = admissionsRes.data.data.map((a: any) => ({
+          id: a._id || a.id,
+          name: a.applicantName,
+          grade: a.gradeLevel,
+          score: a.entranceScore ? `${a.entranceScore}%` : 'N/A',
+          status: a.status || 'Applied',
+        }));
+        setAdmissions(mappedAdmissions);
+      }
+    } catch (err) {
+      console.error('Failed to load leaves/admissions', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeavesAndAdmissions();
+  }, []);
 
   const [activeWorkflowTab, setActiveWorkflowTab] = useState(0);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState(0);
@@ -187,14 +226,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
   };
 
   // ── Approvals Center Actions handlers ──────────────────────────────────
-  const handleApproveLeave = (id: string) => {
-    setLeaves(prev => prev.filter(l => l.id !== id));
-    showNotification(`Leave request ${id} approved successfully. Substitute notification dispatched.`, 'success');
+  const handleApproveLeave = async (id: string) => {
+    try {
+      await api.patch(`/leave-requests/${id}/status`, { status: 'APPROVED' });
+      showNotification(`Leave request approved successfully. Substitute notification dispatched.`, 'success');
+      fetchLeavesAndAdmissions();
+    } catch (err) {
+      showNotification('Failed to approve leave request.', 'warning');
+    }
   };
 
-  const handleRejectLeave = (id: string) => {
-    setLeaves(prev => prev.filter(l => l.id !== id));
-    showNotification(`Leave request ${id} rejected. Faculty notified.`, 'warning');
+  const handleRejectLeave = async (id: string) => {
+    try {
+      await api.patch(`/leave-requests/${id}/status`, { status: 'REJECTED' });
+      showNotification(`Leave request rejected. Faculty notified.`, 'warning');
+      fetchLeavesAndAdmissions();
+    } catch (err) {
+      showNotification('Failed to reject leave request.', 'warning');
+    }
   };
 
   const handleApproveWaiver = (id: string) => {
@@ -207,14 +256,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
     showNotification(`Fee waiver scholarship request ${id} rejected. Parent notified.`, 'warning');
   };
 
-  const handleApproveAdmission = (id: string) => {
-    setAdmissions(prev => prev.filter(a => a.id !== id));
-    showNotification(`Admission application ${id} approved. Welcome packet and registration ID dispatched.`, 'success');
+  const handleApproveAdmission = async (id: string) => {
+    try {
+      await api.patch(`/admissions/${id}/status`, { status: 'Approved' });
+      showNotification(`Admission application approved. Welcome packet and registration ID dispatched.`, 'success');
+      fetchLeavesAndAdmissions();
+    } catch (err) {
+      showNotification('Failed to approve admission.', 'warning');
+    }
   };
 
-  const handleRejectAdmission = (id: string) => {
-    setAdmissions(prev => prev.filter(a => a.id !== id));
-    showNotification(`Admission application ${id} cataloged as deferred.`, 'info');
+  const handleRejectAdmission = async (id: string) => {
+    try {
+      await api.patch(`/admissions/${id}/status`, { status: 'Rejected' });
+      showNotification(`Admission application cataloged as deferred.`, 'info');
+      fetchLeavesAndAdmissions();
+    } catch (err) {
+      showNotification('Failed to defer admission.', 'warning');
+    }
   };
 
   const handleApproveCorrection = (id: string) => {
@@ -223,37 +282,75 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
   };
 
   // ── Forms Submission Simulation ──────────────────────────────────────
-  const handleAddStudentSubmit = (e: React.FormEvent) => {
+  const handleAddStudentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudent.name || !newStudent.class) {
       showNotification('Please fill in Student Name and Assigned Class.', 'warning');
       return;
     }
-    setStudentDialogOpen(false);
-    showNotification(`Student "${newStudent.name}" enrolled into ${newStudent.class} successfully!`, 'success');
-    setNewStudent({ name: '', class: '', email: '', parentPhone: '' });
+    try {
+      const nameParts = newStudent.name.trim().split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ') || 'Student';
+      await studentsApi.createStudent({
+        firstName,
+        lastName,
+        email: newStudent.email || `${firstName.toLowerCase()}@school.com`,
+        phone: newStudent.parentPhone || '1234567890',
+        isActive: true,
+      });
+      setStudentDialogOpen(false);
+      showNotification(`Student "${newStudent.name}" enrolled successfully!`, 'success');
+      setNewStudent({ name: '', class: '', email: '', parentPhone: '' });
+      fetchLeavesAndAdmissions();
+    } catch (err) {
+      showNotification('Failed to enroll student.', 'warning');
+    }
   };
 
-  const handleAddTeacherSubmit = (e: React.FormEvent) => {
+  const handleAddTeacherSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTeacher.name || !newTeacher.department) {
       showNotification('Please fill in Teacher Name and Department.', 'warning');
       return;
     }
-    setTeacherDialogOpen(false);
-    showNotification(`Educator "${newTeacher.name}" successfully added to ${newTeacher.department}.`, 'success');
-    setNewTeacher({ name: '', department: '', email: '', classAssigned: '' });
+    try {
+      await teachersApi.createTeacher({
+        name: newTeacher.name,
+        email: newTeacher.email || `${newTeacher.name.toLowerCase().replace(/\s+/g, '')}@school.com`,
+        phone: '123-456-7890',
+        isActive: true,
+        subjects: [newTeacher.department],
+      });
+      setTeacherDialogOpen(false);
+      showNotification(`Educator "${newTeacher.name}" successfully added to ${newTeacher.department}.`, 'success');
+      setNewTeacher({ name: '', department: '', email: '', classAssigned: '' });
+      fetchLeavesAndAdmissions();
+    } catch (err) {
+      showNotification('Failed to add teacher.', 'warning');
+    }
   };
 
-  const handleFeeSubmit = (e: React.FormEvent) => {
+  const handleFeeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!feeCollection.studentId || !feeCollection.amount) {
       showNotification('Please fill in Student ID and Collection Amount.', 'warning');
       return;
     }
-    setFeeDialogOpen(false);
-    showNotification(`Tuition payment of $${parseFloat(feeCollection.amount).toLocaleString()} collected successfully!`, 'success');
-    setFeeCollection({ studentId: '', amount: '', paymentMethod: 'Card' });
+    try {
+      await api.post('/fee-collections', {
+        studentId: feeCollection.studentId,
+        amountPaid: parseFloat(feeCollection.amount),
+        paymentMethod: feeCollection.paymentMethod,
+        paymentDate: new Date().toISOString(),
+      });
+      setFeeDialogOpen(false);
+      showNotification(`Tuition payment of $${parseFloat(feeCollection.amount).toLocaleString()} collected successfully!`, 'success');
+      setFeeCollection({ studentId: '', amount: '', paymentMethod: 'Card' });
+      fetchLeavesAndAdmissions();
+    } catch (err) {
+      showNotification('Failed to record fee collection.', 'warning');
+    }
   };
 
   const handleNoticeSubmit = (e: React.FormEvent) => {
@@ -344,7 +441,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
               />
               <Box sx={{ height: 300, width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={MOCK_FINANCIAL_TRENDS} margin={{ top: 10, right: 10, left: -5, bottom: 0 }}>
+                  <AreaChart data={data.charts?.financialTrends || MOCK_FINANCIAL_TRENDS} margin={{ top: 10, right: 10, left: -5, bottom: 0 }}>
                     <defs>
                       <linearGradient id="actualCol" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8} />
@@ -404,7 +501,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
 
               {activeAnalyticsTab === 0 ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {MOCK_ACADEMIC_STATS.map((stat) => (
+                  {(data.charts?.academicStats || MOCK_ACADEMIC_STATS).map((stat: any) => (
                     <Box key={stat.subject}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>{stat.subject}</Typography>
