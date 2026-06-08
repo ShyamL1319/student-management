@@ -4,4 +4,5 @@ export enum RoleEnum {
   TEACHER = 'TEACHER',
   STAFF = 'STAFF',
   STUDENT = 'STUDENT',
+  PARENT = 'PARENT',
 }

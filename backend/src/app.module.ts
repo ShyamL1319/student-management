@@ -26,6 +26,7 @@ import { MarksModule } from './marks/marks.module';
 import { FeesModule } from './fees/fees.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ParentsModule } from './parents/parents.module';
 
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -75,6 +76,7 @@ import { tenantPlugin } from './common/database/tenant.plugin';
     TeachersModule,
     StaffModule,
     StudentsModule,
+    ParentsModule,
     TimetablesModule,
     AttendancesModule,
     FeesModule,

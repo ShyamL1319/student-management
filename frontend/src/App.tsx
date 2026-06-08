@@ -34,13 +34,14 @@ import { NotificationCenter } from './features/notifications/pages/NotificationC
 import { NotificationPreferences } from './features/notifications/pages/NotificationPreferences';
 import { ReportsPage } from './features/reports/pages/ReportsPage';
 import { AuditLogsPage } from './features/audit-logs';
+import ParentDashboard from './features/dashboard/pages/ParentDashboard';
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) => {
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" />;
 
   if (allowedRoles) {
-    const roleName = typeof user?.role === 'string' ? user.role : (user?.role as any)?.name;
+    const roleName = typeof user?.role === 'string' ? user.role : (user?.role as { name?: string })?.name;
     if (!roleName || !allowedRoles.includes(roleName)) {
       return <Navigate to="/" />;
     }
@@ -86,6 +87,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <TeachersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/parents"
+          element={
+            <ProtectedRoute>
+              <ParentDashboard />
             </ProtectedRoute>
           }
         />
