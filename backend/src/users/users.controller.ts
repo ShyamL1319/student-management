@@ -10,7 +10,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get()
   @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN)

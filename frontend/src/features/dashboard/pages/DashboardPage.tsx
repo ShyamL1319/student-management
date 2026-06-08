@@ -8,16 +8,11 @@ import {
   CardContent,
   CardActionArea,
   CircularProgress,
-  Button,
   LinearProgress,
-  Avatar,
   Checkbox,
   FormControlLabel,
-  Divider,
   List,
   ListItem,
-  ListItemText,
-  ListItemIcon,
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -27,27 +22,17 @@ import {
   AccountBalance as AccountBalanceIcon,
   CheckCircleOutlined as CheckCircleIcon,
   AssignmentTurnedIn as AssignmentIcon,
-  Schedule as ScheduleIcon,
-  FiberManualRecord as DotIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { fetchDashboardData } from '../api/dashboardApi';
 import type { DashboardResponse } from '../api/dashboardApi';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+
 import StudentDashboard from './StudentDashboard';
 import TeacherDashboard from './TeacherDashboard';
 import AdminDashboard from './AdminDashboard';
 import SuperAdminDashboard from './SuperAdminDashboard';
+import ParentDashboard from './ParentDashboard';
 
 
 export const DashboardPage: FC = () => {
@@ -106,7 +91,7 @@ export const DashboardPage: FC = () => {
   const userTyped = user as any;
   const roleName = typeof userTyped?.role === 'string' ? userTyped.role : userTyped?.role?.name || '';
   const role = roleName.toUpperCase();
-  const { widgets, recentActivity } = data;
+  const { widgets } = data;
 
   const firstName = typeof userTyped?.firstName === 'string' ? userTyped.firstName : 'User';
 
@@ -213,14 +198,7 @@ export const DashboardPage: FC = () => {
     });
   }
 
-  // Mock data for Admin collection charts
-  const mockChartData = [
-    { name: 'Jan', collected: 14000, projected: 15000 },
-    { name: 'Feb', collected: 18000, projected: 18000 },
-    { name: 'Mar', collected: 25000, projected: 28000 },
-    { name: 'Apr', collected: 22000, projected: 24000 },
-    { name: 'May', collected: 31000, projected: 32000 },
-  ];
+
 
   return (
     <Box>
@@ -362,62 +340,22 @@ export const DashboardPage: FC = () => {
         {/* --- ROLE: TEACHER --- */}
         {role === 'TEACHER' && (
           <Grid size={{ xs: 12 }}>
-            <TeacherDashboard />
+            <TeacherDashboard data={data} firstName={firstName} />
           </Grid>
         )}
 
         {/* --- ROLE: STUDENT --- */}
         {role === 'STUDENT' && (
           <Grid size={{ xs: 12 }}>
-            <StudentDashboard firstName={firstName} />
+            <StudentDashboard data={data} firstName={firstName} />
           </Grid>
         )}
 
         {/* --- ROLE: PARENT --- */}
         {role === 'PARENT' && (
-          <>
-            {/* Left Workspace: Children List */}
-            <Grid size={{ xs: 12, lg: 8 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 3 }}>
-                    Registered Children Status
-                  </Typography>
-                  <List disablePadding>
-                    <ListItem sx={{ py: 2 }}>
-                      <Avatar sx={{ width: 44, height: 44, bgcolor: '#6366f1', mr: 2 }}>LR</Avatar>
-                      <ListItemText
-                        disableTypography
-                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>Leo Rivera (Grade 6-B)</Typography>}
-                        secondary={<Typography variant="caption" color="text.secondary">Attendance Rate: 98% | Next Class: Science (09:00 AM)</Typography>}
-                      />
-                      <Button size="small" variant="outlined" onClick={() => navigate('/timetables')}>Schedule</Button>
-                    </ListItem>
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Right Workspace: Parent Contacts */}
-            <Grid size={{ xs: 12, lg: 4 }}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 2 }}>
-                    Billing & Fees Portal
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Tuition fees invoice for term Fall 2026 is active. Please process payment before the due date.
-                  </Typography>
-                  <Button variant="contained" fullWidth color="error" onClick={() => navigate('/pending-fees')} sx={{ mb: 1.5 }}>
-                    Pay Pending Invoice
-                  </Button>
-                  <Button variant="outlined" fullWidth onClick={() => navigate('/receipts')}>
-                    View Payment Receipts
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          </>
+          <Grid size={{ xs: 12 }}>
+            <ParentDashboard />
+          </Grid>
         )}
 
         {/* --- ROLE: STAFF & OTHERS --- */}

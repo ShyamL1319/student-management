@@ -12,17 +12,34 @@ import { FeeCollection } from '../fees/schemas/fee-collection.schema';
 import { Attendance } from '../attendances/schemas/attendance.schema';
 import { Mark } from '../marks/schemas/mark.schema';
 import { Exam } from '../examinations/schemas/exam.schema';
+import { LeaveRequest } from '../leave-requests/schemas/leave-request.schema';
+import { AdmissionApplication } from '../admissions/schemas/admission.schema';
+import { Assignment } from '../assignments/schemas/assignment.schema';
+import { AssignmentSubmission } from '../assignments/schemas/assignment-submission.schema';
+import { Invoice } from '../fees/schemas/invoice.schema';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
-
-  const mockModel = {
-    countDocuments: jest.fn(),
-    aggregate: jest.fn(),
-    findOne: jest.fn(),
-  };
+  let mockModel: any;
 
   beforeEach(async () => {
+    mockModel = {
+      countDocuments: jest.fn(),
+      aggregate: jest.fn(),
+      findOne: jest.fn().mockReturnThis(),
+      find: jest.fn().mockReturnThis(),
+      populate: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      exec: jest.fn(),
+      db: {
+        collection: jest.fn().mockReturnValue({
+          find: jest.fn().mockReturnThis(),
+          toArray: jest.fn().mockResolvedValue([]),
+          findOne: jest.fn().mockResolvedValue(null),
+        }),
+      },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AnalyticsService,
@@ -35,6 +52,11 @@ describe('AnalyticsService', () => {
         { provide: getModelToken(Attendance.name), useValue: mockModel },
         { provide: getModelToken(Mark.name), useValue: mockModel },
         { provide: getModelToken(Exam.name), useValue: mockModel },
+        { provide: getModelToken(LeaveRequest.name), useValue: mockModel },
+        { provide: getModelToken(AdmissionApplication.name), useValue: mockModel },
+        { provide: getModelToken(Assignment.name), useValue: mockModel },
+        { provide: getModelToken(AssignmentSubmission.name), useValue: mockModel },
+        { provide: getModelToken(Invoice.name), useValue: mockModel },
       ],
     }).compile();
 
@@ -51,6 +73,8 @@ describe('AnalyticsService', () => {
 
   describe('getSuperAdminDashboard', () => {
     it('should return system-wide stats', async () => {
+      mockModel.exec.mockResolvedValueOnce([{ name: 'Hogwarts' }]); // activeSchools
+
       mockModel.countDocuments
         .mockResolvedValueOnce(5) // schools
         .mockResolvedValueOnce(100) // users
@@ -70,11 +94,18 @@ describe('AnalyticsService', () => {
 
   describe('getSchoolAdminDashboard', () => {
     it('should return school-wide stats', async () => {
+      mockModel.exec
+        .mockResolvedValueOnce([]) // outstandingInvoices
+        .mockResolvedValueOnce([]); // attendances
+
       mockModel.countDocuments
         .mockResolvedValueOnce(50) // students
         .mockResolvedValueOnce(20) // teachers
         .mockResolvedValueOnce(10); // classes
-      mockModel.aggregate.mockResolvedValueOnce([{ totalAmount: 500 }]);
+      mockModel.aggregate
+        .mockResolvedValueOnce([{ totalAmount: 500 }]) // collected revenue
+        .mockResolvedValueOnce([]) // collectionsByMonth
+        .mockResolvedValueOnce([]); // marksBySubject
 
       const result = await service.getSchoolAdminDashboard(
         new Types.ObjectId().toString(),
@@ -94,11 +125,15 @@ describe('AnalyticsService', () => {
       const schoolId = new Types.ObjectId();
       mockModel.findOne.mockResolvedValueOnce({
         _id: teacherId,
-        school: schoolId,
+        schoolId,
       });
 
+      mockModel.exec
+        .mockResolvedValueOnce(new Array(3)) // myClasses
+        .mockResolvedValueOnce([]) // assignments
+        .mockResolvedValueOnce([]); // studentLeaves
+
       mockModel.countDocuments
-        .mockResolvedValueOnce(3) // classes
         .mockResolvedValueOnce(100) // students
         .mockResolvedValueOnce(2); // exams
 
@@ -115,12 +150,22 @@ describe('AnalyticsService', () => {
   describe('getStudentDashboard', () => {
     it('should return student stats', async () => {
       const studentId = new Types.ObjectId();
-      mockModel.findOne.mockResolvedValueOnce({ _id: studentId });
+      const schoolId = new Types.ObjectId();
+      
+      mockModel.findOne.mockReturnValue(mockModel);
+      mockModel.find.mockReturnValue(mockModel);
+      
+      mockModel.exec
+        .mockResolvedValueOnce({ _id: studentId, schoolId, class: { _id: new Types.ObjectId() } }) // student
+        .mockResolvedValueOnce(new Array(10)) // myMarks
+        .mockResolvedValueOnce([]) // exams
+        .mockResolvedValueOnce([]) // invoices
+        .mockResolvedValueOnce([]) // assignments
+        .mockResolvedValueOnce([]); // submissions
 
       mockModel.countDocuments
         .mockResolvedValueOnce(200) // total attendance
-        .mockResolvedValueOnce(180) // present
-        .mockResolvedValueOnce(10); // marks
+        .mockResolvedValueOnce(180); // present
 
       const result = await service.getStudentDashboard(
         new Types.ObjectId().toString(),

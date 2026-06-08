@@ -34,4 +34,19 @@ export class CreateSchoolDto {
   @IsNotEmpty()
   @IsOptional()
   isActive: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  emailNotificationsEnabled?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  smsAlertsEnabled?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  autoBackupEnabled?: boolean;
 }

@@ -22,6 +22,15 @@ export class School {
 
   @Prop({ required: false, default: true })
   isActive!: boolean;
+
+  @Prop({ required: false, default: true })
+  emailNotificationsEnabled?: boolean;
+
+  @Prop({ required: false, default: false })
+  smsAlertsEnabled?: boolean;
+
+  @Prop({ required: false, default: true })
+  autoBackupEnabled?: boolean;
 }
 
 export const SchoolSchema = SchemaFactory.createForClass(School);

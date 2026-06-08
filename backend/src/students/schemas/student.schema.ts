@@ -27,6 +27,9 @@ export class Student extends User {
   @Prop({ required: false })
   parent?: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'User', required: false, index: true })
+  parentId?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: 'Class', required: true })
   class!: Types.ObjectId;
 

@@ -185,6 +185,7 @@ export const Sidebar: FC<SidebarProps> = ({ drawerWidth, mobileOpen, onDrawerTog
         </Typography>
         {renderLinkItem('Students', <PeopleIcon fontSize="small" />, '/students', onLinkClick)}
         {renderLinkItem('Teachers', <SchoolIcon fontSize="small" />, '/teachers', onLinkClick)}
+        {renderLinkItem('Parents', <PeopleIcon fontSize="small" />, '/parents', onLinkClick)}
         {checkAccess(['SUPER_ADMIN', 'ADMIN']) && renderLinkItem('Staff', <PeopleIcon fontSize="small" />, '/staff', onLinkClick)}
 
         <Divider sx={{ my: 1.5, mx: 2 }} />

@@ -48,6 +48,7 @@ import {
   AddTask as AddTaskIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import type { DashboardResponse } from '../api/dashboardApi';
 import {
   AreaChart,
   Area,
@@ -198,12 +199,29 @@ const SectionTitle: React.FC<{
 
 // ── Main Component ─────────────────────────────────────
 interface StudentDashboardProps {
+  data: DashboardResponse;
   firstName?: string;
 }
 
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya' }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = 'Priya' }) => {
   const navigate = useNavigate();
   const [assignmentTab, setAssignmentTab] = useState(0);
+
+  const student = {
+    name: firstName || MOCK_STUDENT.name,
+    id: MOCK_STUDENT.id,
+    class: MOCK_STUDENT.class,
+    section: MOCK_STUDENT.section,
+    rollNo: MOCK_STUDENT.rollNo,
+    academicYear: MOCK_STUDENT.academicYear,
+    gpa: data.widgets?.gpa ?? MOCK_STUDENT.gpa,
+    attendancePct: data.widgets?.attendancePercentage ?? MOCK_STUDENT.attendancePct,
+    completedAssignments: data.widgets?.completedAssignments ?? MOCK_STUDENT.completedAssignments,
+    pendingAssignments: data.widgets?.pendingAssignments ?? MOCK_STUDENT.pendingAssignments,
+    upcomingExams: data.widgets?.upcomingExams ?? MOCK_STUDENT.upcomingExams,
+    subjectsEnrolled: data.widgets?.subjectsEnrolled ?? MOCK_STUDENT.subjectsEnrolled,
+    notifications: data.widgets?.notifications ?? MOCK_STUDENT.notifications,
+  };
 
   const now = new Date();
   const greeting = now.getHours() < 12 ? 'Good Morning' : now.getHours() < 17 ? 'Good Afternoon' : 'Good Evening';
@@ -234,14 +252,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                 {greeting}, {firstName}! 👋
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.75, mb: 2.5 }}>
-                Class {MOCK_STUDENT.class} · Roll #{MOCK_STUDENT.rollNo} · {MOCK_STUDENT.academicYear}
+                Class {student.class} · Roll #{student.rollNo} · {student.academicYear}
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {[
-                  { label: `GPA ${MOCK_STUDENT.gpa}`, bg: 'rgba(99,102,241,0.3)', border: 'rgba(99,102,241,0.5)' },
-                  { label: `${MOCK_STUDENT.attendancePct}% Attendance`, bg: 'rgba(13,148,136,0.3)', border: 'rgba(13,148,136,0.5)' },
-                  { label: `${MOCK_STUDENT.pendingAssignments} Pending`, bg: 'rgba(245,158,11,0.25)', border: 'rgba(245,158,11,0.4)' },
-                  { label: `${MOCK_STUDENT.upcomingExams} Exams`, bg: 'rgba(239,68,68,0.25)', border: 'rgba(239,68,68,0.4)' },
+                  { label: `GPA ${student.gpa}`, bg: 'rgba(99,102,241,0.3)', border: 'rgba(99,102,241,0.5)' },
+                  { label: `${student.attendancePct}% Attendance`, bg: 'rgba(13,148,136,0.3)', border: 'rgba(13,148,136,0.5)' },
+                  { label: `${student.pendingAssignments} Pending`, bg: 'rgba(245,158,11,0.25)', border: 'rgba(245,158,11,0.4)' },
+                  { label: `${student.upcomingExams} Exams`, bg: 'rgba(239,68,68,0.25)', border: 'rgba(239,68,68,0.4)' },
                 ].map((p) => (
                   <Box key={p.label} sx={{ px: 1.5, py: 0.5, bgcolor: p.bg, border: `1px solid ${p.border}`, borderRadius: 5, backdropFilter: 'blur(8px)' }}>
                     <Typography variant="caption" sx={{ fontWeight: 700 }}>{p.label}</Typography>
@@ -252,13 +270,13 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
             <Grid size={{ xs: 12, md: 5 }} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
               <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 2, bgcolor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 3, p: 2 }}>
                 <Avatar sx={{ width: 56, height: 56, bgcolor: '#6366f1', fontWeight: 800, fontSize: '1.2rem' }}>
-                  {firstName[0]}S
+                  {firstName[0]}
                 </Avatar>
                 <Box sx={{ textAlign: 'left' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{MOCK_STUDENT.name}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.7 }}>ID: {MOCK_STUDENT.id}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{student.name}</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.7 }}>ID: {student.id}</Typography>
                   <br />
-                  <Typography variant="caption" sx={{ opacity: 0.7 }}>{MOCK_STUDENT.section} Stream</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.7 }}>{student.section} Stream</Typography>
                 </Box>
               </Box>
             </Grid>
@@ -306,14 +324,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
       {/* ═══ 3. SUMMARY STAT CARDS ═══ */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {[
-          { label: 'Attendance', value: `${MOCK_STUDENT.attendancePct}%`, sub: 'This semester', icon: <CheckCircleIcon />, color: '#22c55e', bg: '#f0fdf4', border: '#86efac' },
-          { label: 'Current GPA', value: `${MOCK_STUDENT.gpa}`, sub: 'Out of 4.0', icon: <TrendingUpIcon />, color: '#6366f1', bg: '#f0f0ff', border: '#c4b5fd' },
-          { label: 'Pending', value: `${MOCK_STUDENT.pendingAssignments}`, sub: 'Assignments due', icon: <AssignmentIcon />, color: '#f59e0b', bg: '#fffbeb', border: '#fcd34d' },
-          { label: 'Upcoming Exams', value: `${MOCK_STUDENT.upcomingExams}`, sub: 'This month', icon: <EventIcon />, color: '#ef4444', bg: '#fef2f2', border: '#fca5a5' },
-          { label: 'Completed', value: `${MOCK_STUDENT.completedAssignments}`, sub: 'Assignments done', icon: <AddTaskIcon />, color: '#0d9488', bg: '#f0fdfa', border: '#99f6e4' },
-          { label: 'Subjects', value: `${MOCK_STUDENT.subjectsEnrolled}`, sub: 'Enrolled this term', icon: <SchoolIcon />, color: '#3b82f6', bg: '#eff6ff', border: '#93c5fd' },
-          { label: "Today's Classes", value: `${MOCK_SCHEDULE.length}`, sub: 'Scheduled today', icon: <CalendarIcon />, color: '#8b5cf6', bg: '#faf5ff', border: '#d8b4fe' },
-          { label: 'Notifications', value: `${MOCK_STUDENT.notifications}`, sub: 'Unread alerts', icon: <NotificationsIcon />, color: '#ec4899', bg: '#fdf2f8', border: '#f9a8d4' },
+          { label: 'Attendance', value: `${student.attendancePct}%`, sub: 'This semester', icon: <CheckCircleIcon />, color: '#22c55e', bg: '#f0fdf4', border: '#86efac' },
+          { label: 'Current GPA', value: `${student.gpa}`, sub: 'Out of 4.0', icon: <TrendingUpIcon />, color: '#6366f1', bg: '#f0f0ff', border: '#c4b5fd' },
+          { label: 'Pending', value: `${student.pendingAssignments}`, sub: 'Assignments due', icon: <AssignmentIcon />, color: '#f59e0b', bg: '#fffbeb', border: '#fcd34d' },
+          { label: 'Upcoming Exams', value: `${student.upcomingExams}`, sub: 'This month', icon: <EventIcon />, color: '#ef4444', bg: '#fef2f2', border: '#fca5a5' },
+          { label: 'Completed', value: `${student.completedAssignments}`, sub: 'Assignments done', icon: <AddTaskIcon />, color: '#0d9488', bg: '#f0fdfa', border: '#99f6e4' },
+          { label: 'Subjects', value: `${student.subjectsEnrolled}`, sub: 'Enrolled this term', icon: <SchoolIcon />, color: '#3b82f6', bg: '#eff6ff', border: '#93c5fd' },
+          { label: "Today's Classes", value: `${(data.scheduleToday || MOCK_SCHEDULE).length}`, sub: 'Scheduled today', icon: <CalendarIcon />, color: '#8b5cf6', bg: '#faf5ff', border: '#d8b4fe' },
+          { label: 'Notifications', value: `${student.notifications}`, sub: 'Unread alerts', icon: <NotificationsIcon />, color: '#ec4899', bg: '#fdf2f8', border: '#f9a8d4' },
         ].map((s) => (
           <Grid size={{ xs: 6, sm: 4, md: 3 }} key={s.label}>
             <Card
@@ -357,7 +375,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                 }
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {MOCK_SCHEDULE.map((cls) => (
+                {(data.scheduleToday || MOCK_SCHEDULE).map((cls: any) => (
                   <Box
                     key={cls.id}
                     sx={{
@@ -404,16 +422,16 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
               <SectionTitle icon={<TrendingUpIcon />} title="Academic Progress" subtitle="GPA growth this semester" />
               <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                 <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-                  <CircularProgress variant="determinate" value={(MOCK_STUDENT.gpa / 4) * 100} size={110} thickness={5} sx={{ color: '#6366f1' }} />
+                  <CircularProgress variant="determinate" value={(student.gpa / 4) * 100} size={110} thickness={5} sx={{ color: '#6366f1' }} />
                   <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <Typography variant="h5" sx={{ fontWeight: 800 }} color="#6366f1">{MOCK_STUDENT.gpa}</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 800 }} color="#6366f1">{student.gpa}</Typography>
                     <Typography variant="caption" color="text.secondary">GPA</Typography>
                   </Box>
                 </Box>
               </Box>
               <Box sx={{ height: 100, mb: 2 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={MOCK_GROWTH} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <AreaChart data={data.charts?.gpaGrowth || MOCK_GROWTH} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="gpaGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
@@ -429,16 +447,16 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                 </ResponsiveContainer>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {MOCK_SUBJECTS.map((s) => (
+                {(data.charts?.subjectsScores || MOCK_SUBJECTS).map((s: any) => (
                   <Box key={s.name}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.25 }}>
                       <Typography variant="caption" sx={{ fontWeight: 600 }}>{s.name}</Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: s.color }}>{s.score}%</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: s.color || '#6366f1' }}>{s.score}%</Typography>
                     </Box>
                     <LinearProgress
                       variant="determinate"
                       value={s.score}
-                      sx={{ height: 5, borderRadius: 3, bgcolor: `${s.color}20`, '& .MuiLinearProgress-bar': { bgcolor: s.color, borderRadius: 3 } }}
+                      sx={{ height: 5, borderRadius: 3, bgcolor: `${s.color || '#6366f1'}20`, '& .MuiLinearProgress-bar': { bgcolor: s.color || '#6366f1', borderRadius: 3 } }}
                     />
                   </Box>
                 ))}
@@ -468,18 +486,18 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                 onChange={(_, v) => setAssignmentTab(v)}
                 sx={{ mb: 2, '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, minHeight: 36, fontSize: '0.8rem' } }}
               >
-                <Tab label="Pending (4)" />
+                <Tab label={`Pending (${(data.assignments || MOCK_ASSIGNMENTS).filter((a: any) => a.status === 'pending').length})`} />
                 <Tab label="Submitted" />
                 <Tab label="Graded" />
               </Tabs>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {MOCK_ASSIGNMENTS
-                  .filter((a) => {
+                {(data.assignments || MOCK_ASSIGNMENTS)
+                  .filter((a: any) => {
                     if (assignmentTab === 0) return a.status === 'pending';
                     if (assignmentTab === 1) return a.status === 'submitted';
                     return a.status === 'graded';
                   })
-                  .map((a) => {
+                  .map((a: any) => {
                     const priorityColor = a.priority === 'high' ? '#ef4444' : a.priority === 'medium' ? '#f59e0b' : '#22c55e';
                     return (
                       <Box
@@ -528,7 +546,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                 }
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {MOCK_EXAMS.map((exam) => (
+                {(data.exams || MOCK_EXAMS).map((exam: any) => (
                   <Box
                     key={exam.id}
                     sx={{ p: 2, borderRadius: 2.5, background: 'linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%)', border: '1px solid #fca5a5' }}
@@ -548,7 +566,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                     </Box>
                     <LinearProgress
                       variant="determinate"
-                      value={100 - (exam.countdown / 30) * 100}
+                      value={Math.max(0, 100 - (exam.countdown / 30) * 100)}
                       sx={{ mt: 1.5, height: 4, borderRadius: 2, bgcolor: '#fecaca', '& .MuiLinearProgress-bar': { bgcolor: '#ef4444' } }}
                     />
                   </Box>
@@ -577,7 +595,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
             }
           />
           <Grid container spacing={2}>
-            {MOCK_ATTENDANCE.map((att) => {
+            {(data.attendanceBreakdown || MOCK_ATTENDANCE).map((att: any) => {
               const warn = att.pct < 75;
               const caution = att.pct < 85 && att.pct >= 75;
               const barColor = warn ? '#ef4444' : caution ? '#f59e0b' : '#22c55e';
@@ -609,41 +627,48 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, height: '100%' }}>
             <CardContent>
               <SectionTitle icon={<AccountBalanceIcon />} title="Fees & Payments" subtitle="Track dues and payment history" />
-              {MOCK_FEES.outstanding > 0 && (
-                <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
-                  <strong>₹{MOCK_FEES.outstanding.toLocaleString()}</strong> outstanding · Due: {MOCK_FEES.dueDate}
-                </Alert>
-              )}
-              <Box sx={{ display: 'flex', gap: 1.5, mb: 2.5 }}>
-                <Box sx={{ flex: 1, p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #86efac', borderRadius: 2.5, textAlign: 'center' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 800 }} color="#22c55e">₹{MOCK_FEES.paid.toLocaleString()}</Typography>
-                  <Typography variant="caption" color="text.secondary">Paid</Typography>
-                </Box>
-                <Box sx={{ flex: 1, p: 1.5, bgcolor: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 2.5, textAlign: 'center' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 800 }} color="#ef4444">₹{MOCK_FEES.outstanding.toLocaleString()}</Typography>
-                  <Typography variant="caption" color="text.secondary">Outstanding</Typography>
-                </Box>
-              </Box>
-              <List disablePadding dense>
-                {MOCK_FEES.history.map((h, i) => (
-                  <React.Fragment key={i}>
-                    <ListItem sx={{ px: 0, py: 1 }}>
-                      <ListItemIcon sx={{ minWidth: 28 }}>
-                        <DotIcon sx={{ fontSize: 8, color: h.status === 'paid' ? '#22c55e' : '#f59e0b' }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{h.desc}</Typography>}
-                        secondary={h.date}
-                      />
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{h.amount.toLocaleString()}</Typography>
-                        <Chip label={h.status} size="small" color={h.status === 'paid' ? 'success' : 'warning'} sx={{ height: 16, fontSize: '0.6rem' }} />
+              {(() => {
+                const feesObj = data.fees || MOCK_FEES;
+                return (
+                  <>
+                    {feesObj.outstanding > 0 && (
+                      <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
+                        <strong>₹{feesObj.outstanding.toLocaleString()}</strong> outstanding · Due: {feesObj.dueDate}
+                      </Alert>
+                    )}
+                    <Box sx={{ display: 'flex', gap: 1.5, mb: 2.5 }}>
+                      <Box sx={{ flex: 1, p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #86efac', borderRadius: 2.5, textAlign: 'center' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800 }} color="#22c55e">₹{feesObj.paid.toLocaleString()}</Typography>
+                        <Typography variant="caption" color="text.secondary">Paid</Typography>
                       </Box>
-                    </ListItem>
-                    {i < MOCK_FEES.history.length - 1 && <Divider />}
-                  </React.Fragment>
-                ))}
-              </List>
+                      <Box sx={{ flex: 1, p: 1.5, bgcolor: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 2.5, textAlign: 'center' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800 }} color="#ef4444">₹{feesObj.outstanding.toLocaleString()}</Typography>
+                        <Typography variant="caption" color="text.secondary">Outstanding</Typography>
+                      </Box>
+                    </Box>
+                    <List disablePadding dense>
+                      {(feesObj.history || []).map((h: any, i: number) => (
+                        <React.Fragment key={i}>
+                          <ListItem sx={{ px: 0, py: 1 }}>
+                            <ListItemIcon sx={{ minWidth: 28 }}>
+                              <DotIcon sx={{ fontSize: 8, color: h.status === 'paid' ? '#22c55e' : '#f59e0b' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{h.desc}</Typography>}
+                              secondary={h.date}
+                            />
+                            <Box sx={{ textAlign: 'right' }}>
+                              <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{h.amount.toLocaleString()}</Typography>
+                              <Chip label={h.status} size="small" color={h.status === 'paid' ? 'success' : 'warning'} sx={{ height: 16, fontSize: '0.6rem' }} />
+                            </Box>
+                          </ListItem>
+                          {feesObj.history && i < feesObj.history.length - 1 && <Divider />}
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  </>
+                );
+              })()}
               <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                 <Button variant="contained" disableElevation fullWidth sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }} onClick={() => navigate('/fees')}>Pay Now</Button>
                 <Button variant="outlined" fullWidth sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }} startIcon={<DownloadIcon />}>Receipt</Button>
@@ -662,7 +687,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
                 action={<Button size="small" endIcon={<ArrowIcon />} sx={{ textTransform: 'none', fontWeight: 600 }}>View All</Button>}
               />
               <Grid container spacing={2}>
-                {MOCK_RESOURCES.map((r) => {
+                {(data.resources || MOCK_RESOURCES).map((r: any) => {
                   const isVideo = r.type === 'Video';
                   return (
                     <Grid size={{ xs: 12, sm: 6 }} key={r.id}>
@@ -704,7 +729,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
             <CardContent>
               <SectionTitle icon={<NotificationsIcon />} title="Announcements & Notices" subtitle="School-wide alerts and department notices" />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {MOCK_ANNOUNCEMENTS.map((a) => {
+                {(data.announcements || MOCK_ANNOUNCEMENTS).map((a: any) => {
                   const typeColor = a.type === 'exam' ? '#ef4444' : a.type === 'event' ? '#8b5cf6' : '#0d9488';
                   const typeBg = a.type === 'exam' ? '#fef2f2' : a.type === 'event' ? '#faf5ff' : '#f0fdfa';
                   return (
@@ -736,7 +761,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ firstName = 'Priya'
             <CardContent>
               <SectionTitle icon={<TrophyIcon />} title="Achievements & Rewards" subtitle="Badges, certifications and awards" />
               <Grid container spacing={2} sx={{ mb: 2 }}>
-                {MOCK_ACHIEVEMENTS.map((ach) => (
+                {(data.achievements || MOCK_ACHIEVEMENTS).map((ach: any) => (
                   <Grid size={{ xs: 6 }} key={ach.id}>
                     <Box sx={{ p: 2, borderRadius: 2.5, textAlign: 'center', border: '1px solid', borderColor: 'divider', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' } }}>
                       <Typography sx={{ fontSize: 32 }}>{ach.icon}</Typography>
