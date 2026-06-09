@@ -78,7 +78,7 @@ export class AssignmentsService {
       action: AuditAction.CREATE,
       entityType: 'Assignment',
       entityId: assignment._id.toString(),
-      performedBy: new Types.ObjectId(teacherId),
+      performedBy: teacherId,
       status: AuditStatus.SUCCESS,
       changes: dto,
     });
@@ -128,7 +128,7 @@ export class AssignmentsService {
       this.assignmentModel.countDocuments(filter).exec(),
     ]);
 
-    let data = rawAssignments.map(a => a.toObject());
+    let data: any[] = rawAssignments.map(a => a.toObject());
     if (role === RoleEnum.STUDENT) {
       const assignmentIds = data.map(a => a._id);
       const studentSubmissions = await this.submissionModel.find({
@@ -162,7 +162,7 @@ export class AssignmentsService {
       throw new ForbiddenException('Draft assignments are not accessible to students');
     }
 
-    const result = item.toObject();
+    const result: any = item.toObject();
 
     if (role === RoleEnum.STUDENT) {
       const sub = await this.submissionModel.findOne({
@@ -217,7 +217,7 @@ export class AssignmentsService {
       action: AuditAction.UPDATE,
       entityType: 'Assignment',
       entityId: saved._id.toString(),
-      performedBy: new Types.ObjectId(teacherId),
+      performedBy: teacherId,
       status: AuditStatus.SUCCESS,
       changes: dto,
     });
@@ -301,19 +301,19 @@ export class AssignmentsService {
       action: AuditAction.UPDATE,
       entityType: 'AssignmentSubmission',
       entityId: submission._id.toString(),
-      performedBy: new Types.ObjectId(studentId),
+      performedBy: studentId,
       status: AuditStatus.SUCCESS,
       changes: { fileUrl: dto.fileUrl, fileName: dto.fileName, isLate },
     });
 
     await this.notificationService.create({
-      recipientId: assignment.teacher,
+      recipientId: assignment.teacher?.toString() || '',
       eventType: NotificationEventType.ANNOUNCEMENT,
       channel: NotificationChannel.IN_APP,
       subject: 'New Assignment Submission',
       message: `A student submitted work for: "${assignment.title}"`,
       templateData: { assignmentId: assignment._id.toString() },
-      relatedEntityId: submission._id,
+      relatedEntityId: submission._id.toString(),
       relatedEntityType: 'AssignmentSubmission',
     });
 
@@ -375,13 +375,13 @@ export class AssignmentsService {
     );
 
     await this.notificationService.create({
-      recipientId: submission.student,
+      recipientId: submission.student.toString(),
       eventType: NotificationEventType.RESULT_ALERT,
       channel: NotificationChannel.IN_APP,
       subject: 'Assignment Graded',
       message: `Your assignment "${assignment.title}" has been evaluated. Score: ${finalScore}/${assignment.maxMarks}.`,
       templateData: { marks: finalScore, maxMarks: assignment.maxMarks },
-      relatedEntityId: submission._id,
+      relatedEntityId: submission._id.toString(),
       relatedEntityType: 'AssignmentSubmission',
     });
 
@@ -401,7 +401,7 @@ export class AssignmentsService {
           marksObtained: item.marksObtained,
           feedback: item.feedback,
         });
-        results.push({ submissionId: item.submissionId, status: 'Success', id: graded._id });
+        results.push({ submissionId: item.submissionId, status: 'Success', id: (graded as any)._id });
       } catch (err: any) {
         results.push({ submissionId: item.submissionId, status: 'Failed', reason: err.message });
       }
@@ -496,7 +496,7 @@ export class AssignmentsService {
       action: AuditAction.DELETE,
       entityType: 'Assignment',
       entityId: id,
-      performedBy: new Types.ObjectId(teacherId),
+      performedBy: teacherId,
       status: AuditStatus.SUCCESS,
     });
   }
@@ -562,13 +562,13 @@ export class AssignmentsService {
     const mockStudentId = new Types.ObjectId(); // Mock recipient since dynamic database query is scoped
     
     await this.notificationService.create({
-      recipientId: mockStudentId,
+      recipientId: mockStudentId.toString(),
       eventType: NotificationEventType.ANNOUNCEMENT,
       channel: NotificationChannel.EMAIL,
       subject: 'New Assignment Published',
       message: `A new assignment "${assignment.title}" has been published. Due date: ${assignment.dueDate.toLocaleDateString()}`,
       templateData: { assignmentId: (assignment as any)._id.toString() },
-      relatedEntityId: (assignment as any)._id,
+      relatedEntityId: (assignment as any)._id.toString(),
       relatedEntityType: 'Assignment',
     });
   }

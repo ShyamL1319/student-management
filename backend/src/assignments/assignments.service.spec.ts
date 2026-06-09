@@ -91,6 +91,7 @@ describe('AssignmentsService', () => {
     const mockAssignmentId = new Types.ObjectId().toString();
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() - 2); // 2 days late
+    dueDate.setMinutes(dueDate.getMinutes() + 5); // ensures it is slightly less than 2 full days late (e.g. 1.99 days late)
 
     const mockAssignment = {
       _id: mockAssignmentId,
@@ -149,6 +150,7 @@ describe('AssignmentsService', () => {
         penaltyPercentagePerDay: 5,
         maxPenaltyPercentage: 50,
       },
+      teacher: new Types.ObjectId(),
     };
 
     assignmentModelMock.findOne.mockReturnValue({
