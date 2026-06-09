@@ -36,6 +36,8 @@ import { ReportsPage } from './features/reports/pages/ReportsPage';
 import { AuditLogsPage } from './features/audit-logs';
 import ParentDashboard from './features/dashboard/pages/ParentDashboard';
 import { LeavesPage } from './features/leaves/pages/LeavesPage';
+import { AssignmentsPage } from './features/assignments/pages/AssignmentsPage';
+
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) => {
   const { isAuthenticated, user } = useAuth();
@@ -196,6 +198,15 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/assignments"
+          element={
+            <ProtectedRoute>
+              <AssignmentsPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/timetables"
           element={

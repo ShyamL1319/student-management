@@ -35,6 +35,7 @@ import {
   AdminPanelSettings as AdminPanelSettingsIcon,
   ExpandLess,
   ExpandMore,
+  Assignment as AssignmentIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -44,6 +45,7 @@ interface SidebarProps {
   mobileOpen: boolean;
   onDrawerToggle: () => void;
 }
+
 
 export const Sidebar: FC<SidebarProps> = ({ drawerWidth, mobileOpen, onDrawerToggle }) => {
   const navigate = useNavigate();
@@ -137,7 +139,9 @@ export const Sidebar: FC<SidebarProps> = ({ drawerWidth, mobileOpen, onDrawerTog
         </Typography>
         {renderLinkItem('Dashboard', <DashboardIcon fontSize="small" />, '/', onLinkClick)}
         {renderLinkItem('Notifications', <NotificationsIcon fontSize="small" />, '/notifications', onLinkClick)}
+        {renderLinkItem('Assignments', <AssignmentIcon fontSize="small" />, '/assignments', onLinkClick)}
         {renderLinkItem('Settings', <SettingsIcon fontSize="small" />, '/settings', onLinkClick)}
+
 
         <Divider sx={{ my: 1.5, mx: 2 }} />
 
