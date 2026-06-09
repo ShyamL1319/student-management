@@ -1,28 +1,34 @@
-import { 
-  Injectable, 
-  NotFoundException, 
-  BadRequestException, 
-  ForbiddenException 
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Assignment, AssignmentDocument } from './schemas/assignment.schema';
-import { 
-  AssignmentSubmission, 
-  AssignmentSubmissionDocument 
+import {
+  AssignmentSubmission,
+  AssignmentSubmissionDocument,
 } from './schemas/assignment-submission.schema';
-import { 
-  CreateAssignmentDto, 
+import {
+  CreateAssignmentDto,
   UpdateAssignmentDto,
-  SubmitAssignmentDto, 
+  SubmitAssignmentDto,
   GradeSubmissionDto,
-  BulkGradeSubmissionDto 
+  BulkGradeSubmissionDto,
 } from './dto/assignment.dto';
 import { RoleEnum } from '../common/enums/role.enum';
 import { NotificationService } from '../notifications/services/notification.service';
-import { NotificationEventType, NotificationChannel } from '../notifications/schemas/notification.schema';
+import {
+  NotificationEventType,
+  NotificationChannel,
+} from '../notifications/schemas/notification.schema';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
-import { AuditAction, AuditStatus } from '../audit-logs/schemas/audit-log.schema';
+import {
+  AuditAction,
+  AuditStatus,
+} from '../audit-logs/schemas/audit-log.schema';
 import { Mark, MarkDocument } from '../marks/schemas/mark.schema';
 
 // Helper mock S3 client for presigned URL generation since S3 client package is not installed
@@ -36,7 +42,7 @@ class LocalPresignedUrlGenerator {
         AWSAccessKeyId: 'mockKey',
         policy: 'mockPolicy',
         signature: 'mockSignature',
-      }
+      },
     };
   }
 }
@@ -46,14 +52,20 @@ export class AssignmentsService {
   private s3Generator = new LocalPresignedUrlGenerator();
 
   constructor(
-    @InjectModel(Assignment.name) private assignmentModel: Model<AssignmentDocument>,
-    @InjectModel(AssignmentSubmission.name) private submissionModel: Model<AssignmentSubmissionDocument>,
+    @InjectModel(Assignment.name)
+    private assignmentModel: Model<AssignmentDocument>,
+    @InjectModel(AssignmentSubmission.name)
+    private submissionModel: Model<AssignmentSubmissionDocument>,
     @InjectModel(Mark.name) private markModel: Model<MarkDocument>,
     private readonly notificationService: NotificationService,
     private readonly auditLogsService: AuditLogsService,
   ) {}
 
-  async create(teacherId: string, schoolId: string, dto: CreateAssignmentDto): Promise<Assignment> {
+  async create(
+    teacherId: string,
+    schoolId: string,
+    dto: CreateAssignmentDto,
+  ): Promise<Assignment> {
     const assignment = await this.assignmentModel.create({
       school: new Types.ObjectId(schoolId),
       title: dto.title,
@@ -91,17 +103,19 @@ export class AssignmentsService {
   }
 
   async findAll(
-    schoolId: string, 
-    query: any, 
-    userId: string, 
-    role: string
+    schoolId: string,
+    query: any,
+    userId: string,
+    role: string,
   ): Promise<{ data: any[]; total: number }> {
     const page = query.page ? parseInt(query.page, 10) : 1;
     const limit = query.limit ? parseInt(query.limit, 10) : 10;
     const skip = (page - 1) * limit;
 
-    const filter: Record<string, any> = { school: new Types.ObjectId(schoolId) };
-    
+    const filter: Record<string, any> = {
+      school: new Types.ObjectId(schoolId),
+    };
+
     if (query.classId) {
       filter.class = new Types.ObjectId(query.classId);
     }
@@ -128,16 +142,20 @@ export class AssignmentsService {
       this.assignmentModel.countDocuments(filter).exec(),
     ]);
 
-    let data: any[] = rawAssignments.map(a => a.toObject());
+    let data: any[] = rawAssignments.map((a) => a.toObject());
     if (role === RoleEnum.STUDENT) {
-      const assignmentIds = data.map(a => a._id);
-      const studentSubmissions = await this.submissionModel.find({
-        student: new Types.ObjectId(userId),
-        assignment: { $in: assignmentIds },
-      }).exec();
+      const assignmentIds = data.map((a) => a._id);
+      const studentSubmissions = await this.submissionModel
+        .find({
+          student: new Types.ObjectId(userId),
+          assignment: { $in: assignmentIds },
+        })
+        .exec();
 
-      const submissionMap = new Map(studentSubmissions.map(s => [s.assignment.toString(), s]));
-      data = data.map(a => ({
+      const submissionMap = new Map(
+        studentSubmissions.map((s) => [s.assignment.toString(), s]),
+      );
+      data = data.map((a) => ({
         ...a,
         submission: submissionMap.get(a._id.toString()) || null,
       }));
@@ -146,9 +164,17 @@ export class AssignmentsService {
     return { data, total };
   }
 
-  async findOne(id: string, schoolId: string, userId: string, role: string): Promise<any> {
+  async findOne(
+    id: string,
+    schoolId: string,
+    userId: string,
+    role: string,
+  ): Promise<any> {
     const item = await this.assignmentModel
-      .findOne({ _id: new Types.ObjectId(id), school: new Types.ObjectId(schoolId) })
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
       .populate('subject', 'name code')
       .populate('class', 'name')
       .populate('teacher', 'firstName lastName')
@@ -159,16 +185,20 @@ export class AssignmentsService {
     }
 
     if (!item.isPublished && role === RoleEnum.STUDENT) {
-      throw new ForbiddenException('Draft assignments are not accessible to students');
+      throw new ForbiddenException(
+        'Draft assignments are not accessible to students',
+      );
     }
 
     const result: any = item.toObject();
 
     if (role === RoleEnum.STUDENT) {
-      const sub = await this.submissionModel.findOne({
-        student: new Types.ObjectId(userId),
-        assignment: item._id,
-      }).exec();
+      const sub = await this.submissionModel
+        .findOne({
+          student: new Types.ObjectId(userId),
+          assignment: item._id,
+        })
+        .exec();
       result.submission = sub || null;
     }
 
@@ -176,22 +206,27 @@ export class AssignmentsService {
   }
 
   async update(
-    id: string, 
-    schoolId: string, 
-    teacherId: string, 
-    role: string, 
-    dto: UpdateAssignmentDto
+    id: string,
+    schoolId: string,
+    teacherId: string,
+    role: string,
+    dto: UpdateAssignmentDto,
   ): Promise<Assignment> {
-    const assignment = await this.assignmentModel.findOne({
-      _id: new Types.ObjectId(id),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+    const assignment = await this.assignmentModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!assignment) {
       throw new NotFoundException('Assignment not found');
     }
 
-    if (role === RoleEnum.TEACHER && assignment.teacher.toString() !== teacherId) {
+    if (
+      role === RoleEnum.TEACHER &&
+      assignment.teacher.toString() !== teacherId
+    ) {
       throw new ForbiddenException('You can only edit your own assignments');
     }
 
@@ -229,20 +264,29 @@ export class AssignmentsService {
     return saved;
   }
 
-  async publish(id: string, schoolId: string, teacherId: string, role: string): Promise<Assignment> {
-    return this.update(id, schoolId, teacherId, role, { isPublished: true } as any);
+  async publish(
+    id: string,
+    schoolId: string,
+    teacherId: string,
+    role: string,
+  ): Promise<Assignment> {
+    return this.update(id, schoolId, teacherId, role, {
+      isPublished: true,
+    });
   }
 
   async submit(
-    studentId: string, 
-    schoolId: string, 
-    assignmentId: string, 
-    dto: SubmitAssignmentDto
+    studentId: string,
+    schoolId: string,
+    assignmentId: string,
+    dto: SubmitAssignmentDto,
   ): Promise<AssignmentSubmission> {
-    const assignment = await this.assignmentModel.findOne({
-      _id: new Types.ObjectId(assignmentId),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+    const assignment = await this.assignmentModel
+      .findOne({
+        _id: new Types.ObjectId(assignmentId),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!assignment) {
       throw new NotFoundException('Assignment not found');
@@ -253,10 +297,15 @@ export class AssignmentsService {
     }
 
     const now = new Date();
-    const isLate = now.getTime() > (assignment.dueDate.getTime() + (assignment.latePolicy.gracePeriodMinutes * 60 * 1000));
+    const isLate =
+      now.getTime() >
+      assignment.dueDate.getTime() +
+        assignment.latePolicy.gracePeriodMinutes * 60 * 1000;
 
     if (isLate && !assignment.latePolicy.allowLate) {
-      throw new BadRequestException('Submissions are closed. Late submissions are not allowed for this assignment.');
+      throw new BadRequestException(
+        'Submissions are closed. Late submissions are not allowed for this assignment.',
+      );
     }
 
     const newAttempt = {
@@ -267,10 +316,12 @@ export class AssignmentsService {
       isLate,
     };
 
-    let submission = await this.submissionModel.findOne({
-      assignment: assignment._id,
-      student: new Types.ObjectId(studentId),
-    }).exec();
+    let submission = await this.submissionModel
+      .findOne({
+        assignment: assignment._id,
+        student: new Types.ObjectId(studentId),
+      })
+      .exec();
 
     if (submission) {
       submission.fileUrl = dto.fileUrl;
@@ -280,7 +331,7 @@ export class AssignmentsService {
       submission.isLate = isLate;
       submission.status = 'Submitted';
       submission.attempts.push(newAttempt);
-      
+
       submission = await submission.save();
     } else {
       submission = await this.submissionModel.create({
@@ -321,13 +372,16 @@ export class AssignmentsService {
   }
 
   async grade(
-    teacherId: string, 
-    schoolId: string, 
-    submissionId: string, 
-    dto: GradeSubmissionDto
+    teacherId: string,
+    schoolId: string,
+    submissionId: string,
+    dto: GradeSubmissionDto,
   ): Promise<AssignmentSubmission> {
     const submission = await this.submissionModel
-      .findOne({ _id: new Types.ObjectId(submissionId), school: new Types.ObjectId(schoolId) })
+      .findOne({
+        _id: new Types.ObjectId(submissionId),
+        school: new Types.ObjectId(schoolId),
+      })
       .populate('assignment')
       .exec();
 
@@ -337,21 +391,27 @@ export class AssignmentsService {
 
     const assignment = submission.assignment as any as Assignment;
     if (dto.marksObtained > assignment.maxMarks) {
-      throw new BadRequestException(`Marks obtained (${dto.marksObtained}) cannot exceed max marks of ${assignment.maxMarks}`);
+      throw new BadRequestException(
+        `Marks obtained (${dto.marksObtained}) cannot exceed max marks of ${assignment.maxMarks}`,
+      );
     }
 
     let finalScore = dto.marksObtained;
     let penaltyAmount = 0;
 
-    if (submission.isLate && assignment.latePolicy.penaltyPercentagePerDay > 0) {
-      const timeDiffMs = submission.submittedAt.getTime() - assignment.dueDate.getTime();
+    if (
+      submission.isLate &&
+      assignment.latePolicy.penaltyPercentagePerDay > 0
+    ) {
+      const timeDiffMs =
+        submission.submittedAt.getTime() - assignment.dueDate.getTime();
       const daysLate = Math.ceil(timeDiffMs / (1000 * 60 * 60 * 24));
-      
+
       const penaltyPercent = Math.min(
-        daysLate * assignment.latePolicy.penaltyPercentagePerDay, 
-        assignment.latePolicy.maxPenaltyPercentage
+        daysLate * assignment.latePolicy.penaltyPercentagePerDay,
+        assignment.latePolicy.maxPenaltyPercentage,
       );
-      
+
       penaltyAmount = Math.round((assignment.maxMarks * penaltyPercent) / 100);
       finalScore = Math.max(0, finalScore - penaltyAmount);
     }
@@ -366,12 +426,12 @@ export class AssignmentsService {
     const saved = await submission.save();
 
     await this.syncToGradebook(
-      schoolId, 
-      submission.student.toString(), 
-      assignment.subject.toString(), 
-      (assignment as any)._id.toString(), 
-      finalScore, 
-      assignment.maxMarks
+      schoolId,
+      submission.student.toString(),
+      assignment.subject.toString(),
+      (assignment as any)._id.toString(),
+      finalScore,
+      assignment.maxMarks,
     );
 
     await this.notificationService.create({
@@ -389,66 +449,90 @@ export class AssignmentsService {
   }
 
   async bulkGrade(
-    teacherId: string, 
-    schoolId: string, 
-    assignmentId: string, 
-    dto: BulkGradeSubmissionDto
+    teacherId: string,
+    schoolId: string,
+    assignmentId: string,
+    dto: BulkGradeSubmissionDto,
   ): Promise<any> {
     const results = [];
     for (const item of dto.grades) {
       try {
-        const graded = await this.grade(teacherId, schoolId, item.submissionId, {
-          marksObtained: item.marksObtained,
-          feedback: item.feedback,
+        const graded = await this.grade(
+          teacherId,
+          schoolId,
+          item.submissionId,
+          {
+            marksObtained: item.marksObtained,
+            feedback: item.feedback,
+          },
+        );
+        results.push({
+          submissionId: item.submissionId,
+          status: 'Success',
+          id: (graded as any)._id,
         });
-        results.push({ submissionId: item.submissionId, status: 'Success', id: (graded as any)._id });
       } catch (err: any) {
-        results.push({ submissionId: item.submissionId, status: 'Failed', reason: err.message });
+        results.push({
+          submissionId: item.submissionId,
+          status: 'Failed',
+          reason: err.message,
+        });
       }
     }
     return { results };
   }
 
   async getSubmissions(
-    schoolId: string, 
-    assignmentId: string, 
-    userId: string, 
-    role: string
+    schoolId: string,
+    assignmentId: string,
+    userId: string,
+    role: string,
   ): Promise<AssignmentSubmission[]> {
-    const assignment = await this.assignmentModel.findOne({
-      _id: new Types.ObjectId(assignmentId),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+    const assignment = await this.assignmentModel
+      .findOne({
+        _id: new Types.ObjectId(assignmentId),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!assignment) {
       throw new NotFoundException('Assignment not found');
     }
 
     if (role === RoleEnum.TEACHER && assignment.teacher.toString() !== userId) {
-      throw new ForbiddenException('You can only view submissions for your own assignments');
+      throw new ForbiddenException(
+        'You can only view submissions for your own assignments',
+      );
     }
 
     return this.submissionModel
-      .find({ assignment: assignment._id, school: new Types.ObjectId(schoolId) })
+      .find({
+        assignment: assignment._id,
+        school: new Types.ObjectId(schoolId),
+      })
       .populate('student', 'firstName lastName email')
       .sort({ submittedAt: -1 })
       .exec();
   }
 
   async getAnalytics(assignmentId: string, schoolId: string): Promise<any> {
-    const assignment = await this.assignmentModel.findOne({
-      _id: new Types.ObjectId(assignmentId),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+    const assignment = await this.assignmentModel
+      .findOne({
+        _id: new Types.ObjectId(assignmentId),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!assignment) {
       throw new NotFoundException('Assignment not found');
     }
 
-    const submissions = await this.submissionModel.find({
-      assignment: assignment._id,
-      status: 'Graded',
-    }).exec();
+    const submissions = await this.submissionModel
+      .find({
+        assignment: assignment._id,
+        status: 'Graded',
+      })
+      .exec();
 
     if (submissions.length === 0) {
       return {
@@ -460,27 +544,40 @@ export class AssignmentsService {
       };
     }
 
-    const scores = submissions.map(s => s.marksObtained || 0);
+    const scores = submissions.map((s) => s.marksObtained || 0);
     const sum = scores.reduce((a, b) => a + b, 0);
     const highest = Math.max(...scores);
     const lowest = Math.min(...scores);
     const avg = Math.round((sum / scores.length) * 100) / 100;
 
-    const totalStudents = await this.submissionModel.countDocuments({
-      assignment: assignment._id,
-    }).exec();
+    const totalStudents = await this.submissionModel
+      .countDocuments({
+        assignment: assignment._id,
+      })
+      .exec();
 
     return {
       totalEvaluated: submissions.length,
       averageScore: avg,
       highestScore: highest,
       lowestScore: lowest,
-      submissionRate: totalStudents > 0 ? Math.round((submissions.length / totalStudents) * 100) : 0,
+      submissionRate:
+        totalStudents > 0
+          ? Math.round((submissions.length / totalStudents) * 100)
+          : 0,
     };
   }
 
-  async remove(id: string, schoolId: string, teacherId: string, role: string): Promise<void> {
-    const query: Record<string, any> = { _id: new Types.ObjectId(id), school: new Types.ObjectId(schoolId) };
+  async remove(
+    id: string,
+    schoolId: string,
+    teacherId: string,
+    role: string,
+  ): Promise<void> {
+    const query: Record<string, any> = {
+      _id: new Types.ObjectId(id),
+      school: new Types.ObjectId(schoolId),
+    };
     if (role === RoleEnum.TEACHER) {
       query.teacher = new Types.ObjectId(teacherId);
     }
@@ -502,14 +599,14 @@ export class AssignmentsService {
   }
 
   async generatePresignedUploadUrl(
-    schoolId: string, 
-    assignmentId: string, 
-    userId: string, 
-    fileName: string
+    schoolId: string,
+    assignmentId: string,
+    userId: string,
+    fileName: string,
   ): Promise<any> {
     const key = `tenants/${schoolId}/assignments/${assignmentId}/students/${userId}/${Date.now()}-${fileName}`;
     const contentType = this.getContentTypeByFileName(fileName);
-    
+
     return this.s3Generator.getPresignedPostUrl(key, contentType);
   }
 
@@ -523,29 +620,31 @@ export class AssignmentsService {
   }
 
   private async syncToGradebook(
-    schoolId: string, 
-    studentId: string, 
-    subjectId: string, 
-    assignmentId: string, 
-    marks: number, 
-    maxMarks: number
+    schoolId: string,
+    studentId: string,
+    subjectId: string,
+    assignmentId: string,
+    marks: number,
+    maxMarks: number,
   ) {
-    await this.markModel.updateOne(
-      {
-        studentId,
-        subjectId,
-        examId: `assignment-${assignmentId}`,
-      },
-      {
-        studentId,
-        subjectId,
-        examId: `assignment-${assignmentId}`,
-        marksObtained: marks,
-        maxMarks,
-        grade: this.calculateGrade(marks, maxMarks),
-      },
-      { upsert: true }
-    ).exec();
+    await this.markModel
+      .updateOne(
+        {
+          studentId,
+          subjectId,
+          examId: `assignment-${assignmentId}`,
+        },
+        {
+          studentId,
+          subjectId,
+          examId: `assignment-${assignmentId}`,
+          marksObtained: marks,
+          maxMarks,
+          grade: this.calculateGrade(marks, maxMarks),
+        },
+        { upsert: true },
+      )
+      .exec();
   }
 
   private calculateGrade(score: number, max: number): string {
@@ -560,7 +659,7 @@ export class AssignmentsService {
 
   private async triggerPublishNotifications(assignment: Assignment) {
     const mockStudentId = new Types.ObjectId(); // Mock recipient since dynamic database query is scoped
-    
+
     await this.notificationService.create({
       recipientId: mockStudentId.toString(),
       eventType: NotificationEventType.ANNOUNCEMENT,
@@ -573,4 +672,3 @@ export class AssignmentsService {
     });
   }
 }
-

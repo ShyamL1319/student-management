@@ -8,15 +8,20 @@ import * as bcrypt from 'bcrypt';
 export class TeachersService {
   constructor(
     @InjectModel(Teacher.name) private teacherModel: Model<TeacherDocument>,
-  ) { }
+  ) {}
 
   async create(data: any) {
     const RoleModel = this.teacherModel.db.model('Role');
-    const teacherRole = await RoleModel.findOne({ name: 'TEACHER' }).lean().exec() as { _id: any } | null;
+    const teacherRole = (await RoleModel.findOne({ name: 'TEACHER' })
+      .lean()
+      .exec()) as { _id: any } | null;
     if (!teacherRole) throw new NotFoundException('TEACHER role not found');
 
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(process.env.DEFAULT_PASSWORD || 'ChangeMe123!', salt);
+    const passwordHash = await bcrypt.hash(
+      process.env.DEFAULT_PASSWORD || 'ChangeMe123!',
+      salt,
+    );
 
     const teacherData: Partial<Teacher> = {
       ...data,

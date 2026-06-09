@@ -101,7 +101,11 @@ describe('UsersService', () => {
 
     it('should successfully update role to SUPER_ADMIN if requester is SUPER_ADMIN', async () => {
       const requester = { roleType: 'SUPER_ADMIN' };
-      await service.updateUserRole('targetUserId', 'superAdminRoleId', requester);
+      await service.updateUserRole(
+        'targetUserId',
+        'superAdminRoleId',
+        requester,
+      );
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'targetUserId',
         { role: 'superAdminRoleId', roleType: 'SUPER_ADMIN' },

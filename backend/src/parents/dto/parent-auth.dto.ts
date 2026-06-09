@@ -1,13 +1,26 @@
-import { IsEmail, IsString, IsNotEmpty, MinLength, IsOptional, IsDateString } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsNotEmpty,
+  MinLength,
+  IsOptional,
+  IsDateString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterParentDto {
-  @ApiProperty({ example: 'parent@example.com', description: 'Unique email address for parent registration' })
+  @ApiProperty({
+    example: 'parent@example.com',
+    description: 'Unique email address for parent registration',
+  })
   @IsEmail()
   @IsNotEmpty()
   email!: string;
 
-  @ApiProperty({ example: 'password123', description: 'Parent account password (min 6 characters)' })
+  @ApiProperty({
+    example: 'password123',
+    description: 'Parent account password (min 6 characters)',
+  })
   @IsString()
   @MinLength(6)
   @IsNotEmpty()
@@ -23,41 +36,65 @@ export class RegisterParentDto {
   @IsNotEmpty()
   lastName!: string;
 
-  @ApiProperty({ example: '+1234567890', required: false, description: 'Optional phone number' })
+  @ApiProperty({
+    example: '+1234567890',
+    required: false,
+    description: 'Optional phone number',
+  })
   @IsString()
   @IsOptional()
   phone?: string;
 
-  @ApiProperty({ example: 'Father', required: false, description: 'Relationship designation' })
+  @ApiProperty({
+    example: 'Father',
+    required: false,
+    description: 'Relationship designation',
+  })
   @IsString()
   @IsOptional()
   relationshipType?: string;
 }
 
 export class LinkChildDto {
-  @ApiProperty({ example: 'ADM-2026-000001', description: 'Admission number of the student child' })
+  @ApiProperty({
+    example: 'ADM-2026-000001',
+    description: 'Admission number of the student child',
+  })
   @IsString()
   @IsNotEmpty()
   admissionNumber!: string;
 
-  @ApiProperty({ example: '2015-05-15', description: 'Child Date of Birth matching records exactly' })
+  @ApiProperty({
+    example: '2015-05-15',
+    description: 'Child Date of Birth matching records exactly',
+  })
   @IsDateString()
   @IsNotEmpty()
   dob!: string;
 }
 
 export class SendParentMessageDto {
-  @ApiProperty({ example: 'teacherId123', description: 'ObjectId of the staff/teacher recipient' })
+  @ApiProperty({
+    example: 'teacherId123',
+    description: 'ObjectId of the staff/teacher recipient',
+  })
   @IsString()
   @IsNotEmpty()
   recipientId!: string;
 
-  @ApiProperty({ example: 'Absence notification', required: false, description: 'Message subject line' })
+  @ApiProperty({
+    example: 'Absence notification',
+    required: false,
+    description: 'Message subject line',
+  })
   @IsString()
   @IsOptional()
   subject?: string;
 
-  @ApiProperty({ example: 'Leo will be absent tomorrow.', description: 'Body text content of the message' })
+  @ApiProperty({
+    example: 'Leo will be absent tomorrow.',
+    description: 'Body text content of the message',
+  })
   @IsString()
   @IsNotEmpty()
   content!: string;

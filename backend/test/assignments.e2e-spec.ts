@@ -45,14 +45,14 @@ describe('AssignmentsController (e2e)', () => {
         },
       ],
     })
-    .overrideGuard(JwtAuthGuard)
-    .useValue({ canActivate: () => true })
-    .overrideGuard(RolesGuard)
-    .useValue({ canActivate: () => true })
-    .compile();
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Inject mock authenticated user into request object
     app.use((req: any, res: any, next: any) => {
       req.user = mockUser;
@@ -77,7 +77,10 @@ describe('AssignmentsController (e2e)', () => {
       isPublished: false,
     };
 
-    mockAssignmentsService.create.mockResolvedValue({ _id: 'assignment-id', ...dto });
+    mockAssignmentsService.create.mockResolvedValue({
+      _id: 'assignment-id',
+      ...dto,
+    });
 
     const response = await request(app.getHttpServer())
       .post('/assignments')

@@ -111,7 +111,12 @@ export class AdmissionApplication {
   @Prop({ required: true })
   gradeLevel!: string;
 
-  @Prop({ required: true, enum: AdmissionStage, default: AdmissionStage.SUBMITTED, index: true })
+  @Prop({
+    required: true,
+    enum: AdmissionStage,
+    default: AdmissionStage.SUBMITTED,
+    index: true,
+  })
   status!: AdmissionStage;
 
   @Prop({ type: [DocumentUpload], default: [] })
@@ -133,9 +138,13 @@ export class AdmissionApplication {
   createdInvoiceId?: Types.ObjectId;
 }
 
-export const AdmissionApplicationSchema = SchemaFactory.createForClass(AdmissionApplication);
+export const AdmissionApplicationSchema =
+  SchemaFactory.createForClass(AdmissionApplication);
 
 // Compound indexes for search optimization
 AdmissionApplicationSchema.index({ school: 1, status: 1 });
-AdmissionApplicationSchema.index({ school: 1, 'studentInfo.lastName': 1, 'studentInfo.firstName': 1 });
-
+AdmissionApplicationSchema.index({
+  school: 1,
+  'studentInfo.lastName': 1,
+  'studentInfo.firstName': 1,
+});

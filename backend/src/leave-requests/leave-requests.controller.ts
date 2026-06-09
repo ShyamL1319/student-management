@@ -1,7 +1,21 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LeaveRequestsService } from './leave-requests.service';
-import { CreateLeaveRequestDto, UpdateLeaveRequestStatusDto, AllocateLeaveBalanceDto } from './dto/leave-request.dto';
+import {
+  CreateLeaveRequestDto,
+  UpdateLeaveRequestStatusDto,
+  AllocateLeaveBalanceDto,
+} from './dto/leave-request.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -16,7 +30,13 @@ export class LeaveRequestsController {
   constructor(private readonly leaveRequestsService: LeaveRequestsService) {}
 
   @Get('balances')
-  @Roles(RoleEnum.STUDENT, RoleEnum.TEACHER, RoleEnum.STAFF, RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN)
+  @Roles(
+    RoleEnum.STUDENT,
+    RoleEnum.TEACHER,
+    RoleEnum.STAFF,
+    RoleEnum.ADMIN,
+    RoleEnum.SUPER_ADMIN,
+  )
   @ApiOperation({ summary: 'Get leave balances for the authenticated user' })
   async getBalances(@CurrentUser() user: any) {
     const schoolId = user.schoolId?.toString() || user.school?.toString() || '';
@@ -25,8 +45,13 @@ export class LeaveRequestsController {
 
   @Post('balances/allocate')
   @Roles(RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Allocate leave balance to a user (Admin/Super Admin only)' })
-  async allocateBalance(@CurrentUser() user: any, @Body() dto: AllocateLeaveBalanceDto) {
+  @ApiOperation({
+    summary: 'Allocate leave balance to a user (Admin/Super Admin only)',
+  })
+  async allocateBalance(
+    @CurrentUser() user: any,
+    @Body() dto: AllocateLeaveBalanceDto,
+  ) {
     const schoolId = user.schoolId?.toString() || user.school?.toString() || '';
     return this.leaveRequestsService.allocateBalance(schoolId, dto);
   }
@@ -44,11 +69,22 @@ export class LeaveRequestsController {
   @ApiOperation({ summary: 'Submit a new leave request' })
   async create(@CurrentUser() user: any, @Body() dto: CreateLeaveRequestDto) {
     const schoolId = user.schoolId?.toString() || user.school?.toString() || '';
-    return this.leaveRequestsService.create(user._id.toString(), schoolId, user.roleType, dto);
+    return this.leaveRequestsService.create(
+      user._id.toString(),
+      schoolId,
+      user.roleType,
+      dto,
+    );
   }
 
   @Get()
-  @Roles(RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN, RoleEnum.TEACHER, RoleEnum.STAFF, RoleEnum.STUDENT)
+  @Roles(
+    RoleEnum.ADMIN,
+    RoleEnum.SUPER_ADMIN,
+    RoleEnum.TEACHER,
+    RoleEnum.STAFF,
+    RoleEnum.STUDENT,
+  )
   @ApiOperation({ summary: 'List leave requests' })
   async findAll(@CurrentUser() user: any, @Query() query: any) {
     const schoolId = user.schoolId?.toString() || user.school?.toString() || '';
@@ -61,7 +97,13 @@ export class LeaveRequestsController {
   }
 
   @Get(':id')
-  @Roles(RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN, RoleEnum.TEACHER, RoleEnum.STAFF, RoleEnum.STUDENT)
+  @Roles(
+    RoleEnum.ADMIN,
+    RoleEnum.SUPER_ADMIN,
+    RoleEnum.TEACHER,
+    RoleEnum.STAFF,
+    RoleEnum.STUDENT,
+  )
   @ApiOperation({ summary: 'Get details of a leave request' })
   async findOne(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString() || '';
@@ -77,7 +119,12 @@ export class LeaveRequestsController {
     @Body() dto: UpdateLeaveRequestStatusDto,
   ) {
     const schoolId = user.schoolId?.toString() || user.school?.toString() || '';
-    return this.leaveRequestsService.updateStatus(id, schoolId, user._id.toString(), dto);
+    return this.leaveRequestsService.updateStatus(
+      id,
+      schoolId,
+      user._id.toString(),
+      dto,
+    );
   }
 
   @Post(':id/cancel')
@@ -90,7 +137,10 @@ export class LeaveRequestsController {
 
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Delete a leave request and revert balances/attendance (Admin/Super Admin only)' })
+  @ApiOperation({
+    summary:
+      'Delete a leave request and revert balances/attendance (Admin/Super Admin only)',
+  })
   async remove(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString() || '';
     return this.leaveRequestsService.remove(id, schoolId);

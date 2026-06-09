@@ -1,22 +1,42 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { AdmissionApplication, AdmissionApplicationDocument, AdmissionStage } from './schemas/admission.schema';
-import { CreateAdmissionDto, ScheduleInterviewDto, EvaluateApplicationDto, UpdateAdmissionStatusDto } from './dto/admission.dto';
+import {
+  AdmissionApplication,
+  AdmissionApplicationDocument,
+  AdmissionStage,
+} from './schemas/admission.schema';
+import {
+  CreateAdmissionDto,
+  ScheduleInterviewDto,
+  EvaluateApplicationDto,
+  UpdateAdmissionStatusDto,
+} from './dto/admission.dto';
 import { StudentsService } from '../students/students.service';
 import { ParentsService } from '../parents/parents.service';
 import { InvoiceService } from '../fees/invoice.service';
 import { NotificationService } from '../notifications/services/notification.service';
-import { NotificationEventType, NotificationChannel } from '../notifications/schemas/notification.schema';
+import {
+  NotificationEventType,
+  NotificationChannel,
+} from '../notifications/schemas/notification.schema';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
-import { AuditAction, AuditStatus } from '../audit-logs/schemas/audit-log.schema';
+import {
+  AuditAction,
+  AuditStatus,
+} from '../audit-logs/schemas/audit-log.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { Role, RoleDocument } from '../roles/schemas/role.schema';
 
 @Injectable()
 export class AdmissionsService {
   constructor(
-    @InjectModel(AdmissionApplication.name) private admissionModel: Model<AdmissionApplicationDocument>,
+    @InjectModel(AdmissionApplication.name)
+    private admissionModel: Model<AdmissionApplicationDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
     private readonly studentsService: StudentsService,
@@ -26,7 +46,10 @@ export class AdmissionsService {
     private readonly auditLogsService: AuditLogsService,
   ) {}
 
-  private isValidTransition(current: AdmissionStage, next: AdmissionStage): boolean {
+  private isValidTransition(
+    current: AdmissionStage,
+    next: AdmissionStage,
+  ): boolean {
     if (next === AdmissionStage.REJECTION) {
       return [
         AdmissionStage.SUBMITTED,
@@ -53,7 +76,10 @@ export class AdmissionsService {
     }
   }
 
-  async create(schoolId: string, dto: CreateAdmissionDto): Promise<AdmissionApplication> {
+  async create(
+    schoolId: string,
+    dto: CreateAdmissionDto,
+  ): Promise<AdmissionApplication> {
     const application = await this.admissionModel.create({
       school: new Types.ObjectId(schoolId),
       studentInfo: {
@@ -95,12 +121,17 @@ export class AdmissionsService {
     return application;
   }
 
-  async findAll(schoolId: string, query: any): Promise<{ data: AdmissionApplication[]; total: number }> {
+  async findAll(
+    schoolId: string,
+    query: any,
+  ): Promise<{ data: AdmissionApplication[]; total: number }> {
     const page = query.page ? parseInt(query.page, 10) : 1;
     const limit = query.limit ? parseInt(query.limit, 10) : 10;
     const skip = (page - 1) * limit;
 
-    const filter: Record<string, any> = { school: new Types.ObjectId(schoolId) };
+    const filter: Record<string, any> = {
+      school: new Types.ObjectId(schoolId),
+    };
     if (query.status) {
       filter.status = query.status;
     }
@@ -130,7 +161,10 @@ export class AdmissionsService {
 
   async findOne(id: string, schoolId: string): Promise<AdmissionApplication> {
     const item = await this.admissionModel
-      .findOne({ _id: new Types.ObjectId(id), school: new Types.ObjectId(schoolId) })
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
       .exec();
     if (!item) {
       throw new NotFoundException('Admission application not found');
@@ -144,10 +178,12 @@ export class AdmissionsService {
     userId: string,
     dto: UpdateAdmissionStatusDto,
   ): Promise<AdmissionApplication> {
-    const item = await this.admissionModel.findOne({
-      _id: new Types.ObjectId(id),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+    const item = await this.admissionModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!item) {
       throw new NotFoundException('Admission application not found');
@@ -181,20 +217,26 @@ export class AdmissionsService {
     userId: string,
     dto: ScheduleInterviewDto,
   ): Promise<AdmissionApplication> {
-    const item = await this.admissionModel.findOne({
-      _id: new Types.ObjectId(id),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+    const item = await this.admissionModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!item) {
       throw new NotFoundException('Admission application not found');
     }
 
     if (item.status !== AdmissionStage.VERIFICATION) {
-      throw new BadRequestException('Interview scheduling requires application to be in Verification stage');
+      throw new BadRequestException(
+        'Interview scheduling requires application to be in Verification stage',
+      );
     }
 
-    const panelMembersMapped = (dto.panelMembers || []).map(m => new Types.ObjectId(m));
+    const panelMembersMapped = (dto.panelMembers || []).map(
+      (m) => new Types.ObjectId(m),
+    );
 
     item.interviewDetails = {
       scheduledDate: new Date(dto.scheduledDate),
@@ -236,17 +278,21 @@ export class AdmissionsService {
     userId: string,
     dto: EvaluateApplicationDto,
   ): Promise<AdmissionApplication> {
-    const item = await this.admissionModel.findOne({
-      _id: new Types.ObjectId(id),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+    const item = await this.admissionModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!item) {
       throw new NotFoundException('Admission application not found');
     }
 
     if (item.status !== AdmissionStage.INTERVIEW) {
-      throw new BadRequestException('Evaluation requires application to be in Interview stage');
+      throw new BadRequestException(
+        'Evaluation requires application to be in Interview stage',
+      );
     }
 
     const total = dto.documentScore + dto.interviewScore + dto.entranceScore;
@@ -274,43 +320,66 @@ export class AdmissionsService {
     return saved;
   }
 
-  async enroll(id: string, schoolId: string, userId: string): Promise<AdmissionApplication> {
-    const application = await this.admissionModel.findOne({
-      _id: new Types.ObjectId(id),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+  async enroll(
+    id: string,
+    schoolId: string,
+    userId: string,
+  ): Promise<AdmissionApplication> {
+    const application = await this.admissionModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!application) {
       throw new NotFoundException('Admission application not found');
     }
 
-    if (application.status !== AdmissionStage.APPROVAL && application.status !== AdmissionStage.EVALUATION) {
-      throw new BadRequestException('Enrollment requires application to be Approved or Evaluated first');
+    if (
+      application.status !== AdmissionStage.APPROVAL &&
+      application.status !== AdmissionStage.EVALUATION
+    ) {
+      throw new BadRequestException(
+        'Enrollment requires application to be Approved or Evaluated first',
+      );
     }
 
     if (application.createdStudentId) {
-      throw new BadRequestException('This application has already been enrolled');
+      throw new BadRequestException(
+        'This application has already been enrolled',
+      );
     }
 
     // Determine target class
     const ClassModel = this.userModel.db.model('Class');
-    let targetClass = await ClassModel.findOne({ name: { $regex: new RegExp(`^${application.gradeLevel}$`, 'i') } }).exec();
+    let targetClass = await ClassModel.findOne({
+      name: { $regex: new RegExp(`^${application.gradeLevel}$`, 'i') },
+    }).exec();
     if (!targetClass) {
       targetClass = await ClassModel.findOne().exec();
     }
     if (!targetClass) {
-      throw new BadRequestException('No school classes found in database to map candidate gradeLevel');
+      throw new BadRequestException(
+        'No school classes found in database to map candidate gradeLevel',
+      );
     }
 
     // Determine active academic year
     const AcademicYearModel = this.userModel.db.model('AcademicYear');
-    const activeYear = await AcademicYearModel.findOne({ isActive: true }).exec();
+    const activeYear = await AcademicYearModel.findOne({
+      isActive: true,
+    }).exec();
     if (!activeYear) {
-      throw new BadRequestException('No active Academic Year found for invoicing enrollment fees');
+      throw new BadRequestException(
+        'No active Academic Year found for invoicing enrollment fees',
+      );
     }
 
     // Check parent email registration
-    let parentUser: any = await this.userModel.findOne({ email: application.parentInfo.email.toLowerCase() }).exec();
+    let parentUser: any = await this.userModel
+      .findOne({ email: application.parentInfo.email.toLowerCase() })
+      .exec();
     const defaultPassword = process.env.DEFAULT_PASSWORD || 'Welcome123!';
 
     if (!parentUser) {
@@ -342,9 +411,11 @@ export class AdmissionsService {
     });
 
     // Link parent and student
-    await this.userModel.findByIdAndUpdate(parentUser._id, {
-      $addToSet: { children: studentUser._id },
-    }).exec();
+    await this.userModel
+      .findByIdAndUpdate(parentUser._id, {
+        $addToSet: { children: studentUser._id },
+      })
+      .exec();
 
     // Create Enrollment Fee Invoice
     const invoice = await this.invoiceService.create({
@@ -413,18 +484,18 @@ export class AdmissionsService {
 
     const normalizeStatus = (status: string): string => {
       const map: Record<string, string> = {
-        'Applied': 'Submitted',
-        'Verified': 'Verification',
+        Applied: 'Submitted',
+        Verified: 'Verification',
         'Interview Scheduled': 'Interview',
         'Under Review': 'Evaluation',
-        'Approved': 'Approval',
-        'Deferred': 'Approval',
-        'Rejected': 'Rejection',
+        Approved: 'Approval',
+        Deferred: 'Approval',
+        Rejected: 'Rejection',
       };
       return map[status] || status;
     };
 
-    allApplications.forEach(app => {
+    allApplications.forEach((app) => {
       const normalized = normalizeStatus(app.status);
       if (byStatus[normalized] !== undefined) {
         byStatus[normalized]++;
@@ -433,9 +504,23 @@ export class AdmissionsService {
 
     const total = allApplications.length;
 
-    const interviewProgress = total > 0 ? Math.round(((byStatus.Interview + byStatus.Evaluation + byStatus.Approval + byStatus.Enrollment) / total) * 100) : 0;
-    const approvalProgress = total > 0 ? Math.round(((byStatus.Approval + byStatus.Enrollment) / total) * 100) : 0;
-    const enrollmentProgress = total > 0 ? Math.round((byStatus.Enrollment / total) * 100) : 0;
+    const interviewProgress =
+      total > 0
+        ? Math.round(
+            ((byStatus.Interview +
+              byStatus.Evaluation +
+              byStatus.Approval +
+              byStatus.Enrollment) /
+              total) *
+              100,
+          )
+        : 0;
+    const approvalProgress =
+      total > 0
+        ? Math.round(((byStatus.Approval + byStatus.Enrollment) / total) * 100)
+        : 0;
+    const enrollmentProgress =
+      total > 0 ? Math.round((byStatus.Enrollment / total) * 100) : 0;
 
     return {
       totalApplications: total,
@@ -457,9 +542,12 @@ export class AdmissionsService {
       filter.gradeLevel = query.gradeLevel;
     }
 
-    const data = await this.admissionModel.find(filter).sort({ createdAt: -1 }).exec();
+    const data = await this.admissionModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .exec();
 
-    return data.map(app => {
+    return data.map((app) => {
       const studentName = app.studentInfo
         ? `${app.studentInfo.firstName} ${app.studentInfo.lastName}`
         : (app as any).applicantName || 'N/A';
@@ -472,9 +560,7 @@ export class AdmissionsService {
         ? app.parentInfo.email
         : (app as any).parentEmail || 'N/A';
 
-      const parentPhone = app.parentInfo
-        ? app.parentInfo.phone
-        : 'N/A';
+      const parentPhone = app.parentInfo ? app.parentInfo.phone : 'N/A';
 
       return {
         applicationId: app._id.toString(),
@@ -494,7 +580,10 @@ export class AdmissionsService {
 
   async remove(id: string, schoolId: string): Promise<void> {
     const result = await this.admissionModel
-      .findOneAndDelete({ _id: new Types.ObjectId(id), school: new Types.ObjectId(schoolId) })
+      .findOneAndDelete({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
       .exec();
     if (!result) {
       throw new NotFoundException('Admission application not found');

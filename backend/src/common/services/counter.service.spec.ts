@@ -80,7 +80,10 @@ describe('CounterService', () => {
 
       const classId = '60783f2a';
       const academicYearId = '2026';
-      const rollNumber = await service.generateRollNumber(classId, academicYearId);
+      const rollNumber = await service.generateRollNumber(
+        classId,
+        academicYearId,
+      );
       expect(rollNumber).toBe('PSEIGEN783F2A000012');
       expect(mockCounterModel.findOneAndUpdate).toHaveBeenCalledWith(
         { _id: `roll_number:${classId}:${academicYearId}` },

@@ -8,10 +8,22 @@ export class Tenant {
   @Prop({ required: true })
   name!: string;
 
-  @Prop({ required: true, unique: true, lowercase: true, trim: true, index: true })
+  @Prop({
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+    index: true,
+  })
   subdomain!: string;
 
-  @Prop({ required: false, unique: true, lowercase: true, trim: true, sparse: true })
+  @Prop({
+    required: false,
+    unique: true,
+    lowercase: true,
+    trim: true,
+    sparse: true,
+  })
   customDomain?: string;
 
   @Prop({ default: true })

@@ -9,7 +9,7 @@ import { RolesGuard } from '../src/common/guards/roles.guard';
 
 describe('ParentsController (e2e)', () => {
   let app: INestApplication;
-  
+
   const mockParentsService = {
     register: jest.fn(),
     linkChild: jest.fn(),
@@ -38,11 +38,11 @@ describe('ParentsController (e2e)', () => {
         },
       ],
     })
-    .overrideGuard(JwtAuthGuard)
-    .useValue({ canActivate: () => true })
-    .overrideGuard(RolesGuard)
-    .useValue({ canActivate: () => true })
-    .compile();
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.use((req: any, res: any, next: any) => {
@@ -63,14 +63,22 @@ describe('ParentsController (e2e)', () => {
       firstName: 'John',
       lastName: 'Doe',
     };
-    mockParentsService.register.mockResolvedValue({ _id: 'parent-id', email: dto.email, roleType: 'PARENT' });
+    mockParentsService.register.mockResolvedValue({
+      _id: 'parent-id',
+      email: dto.email,
+      roleType: 'PARENT',
+    });
 
     const response = await request(app.getHttpServer())
       .post('/parents/register')
       .send(dto);
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual({ _id: 'parent-id', email: dto.email, roleType: 'PARENT' });
+    expect(response.body).toEqual({
+      _id: 'parent-id',
+      email: dto.email,
+      roleType: 'PARENT',
+    });
   });
 
   it('GET /parents/dashboard should return dashboard summaries', async () => {
@@ -80,8 +88,9 @@ describe('ParentsController (e2e)', () => {
     };
     mockParentsService.getDashboard.mockResolvedValue(dashboardData);
 
-    const response = await request(app.getHttpServer())
-      .get('/parents/dashboard');
+    const response = await request(app.getHttpServer()).get(
+      '/parents/dashboard',
+    );
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual(dashboardData);

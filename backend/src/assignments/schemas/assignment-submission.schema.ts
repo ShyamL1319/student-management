@@ -26,7 +26,12 @@ export class AssignmentSubmission {
   @Prop({ type: Types.ObjectId, ref: 'School', required: true, index: true })
   school!: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Assignment', required: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Assignment',
+    required: true,
+    index: true,
+  })
   assignment!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
@@ -69,8 +74,11 @@ export class AssignmentSubmission {
   attempts!: SubmissionAttempt[];
 }
 
-export const AssignmentSubmissionSchema = SchemaFactory.createForClass(AssignmentSubmission);
+export const AssignmentSubmissionSchema =
+  SchemaFactory.createForClass(AssignmentSubmission);
 
 // Prevent a student from having multiple submission documents for a single assignment
-AssignmentSubmissionSchema.index({ assignment: 1, student: 1 }, { unique: true });
-
+AssignmentSubmissionSchema.index(
+  { assignment: 1, student: 1 },
+  { unique: true },
+);

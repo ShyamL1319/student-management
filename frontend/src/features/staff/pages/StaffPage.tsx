@@ -121,7 +121,7 @@ export const StaffPage: FC = () => {
               ) : data?.data?.length ? (
                 data.data.map((item: any) => (
                   <TableRow key={item._id || item.id}>
-                    <TableCell>{item.name}</TableCell>
+                    <TableCell>{item.firstName + ' ' + item.lastName}</TableCell>
                     <TableCell>{item.email || '—'}</TableCell>
                     <TableCell>{item.phone || '—'}</TableCell>
                     <TableCell>{item.department?.name || item.department || 'N/A'}</TableCell>

@@ -1,4 +1,9 @@
-import { Injectable, NestMiddleware, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NestMiddleware,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -24,7 +29,11 @@ export class TenantMiddleware implements NestMiddleware {
       const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(headerTenant);
       if (!isIP && !Types.ObjectId.isValid(headerTenant)) {
         const parts = headerTenant.split('.');
-        if (parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost') {
+        if (
+          parts.length > 1 &&
+          parts[0] !== 'www' &&
+          parts[0] !== 'localhost'
+        ) {
           resolvedIdentifier = parts[0];
         } else {
           resolvedIdentifier = headerTenant;
@@ -42,7 +51,11 @@ export class TenantMiddleware implements NestMiddleware {
 
       if (!isIP) {
         const parts = hostname.split('.');
-        if (parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost') {
+        if (
+          parts.length > 1 &&
+          parts[0] !== 'www' &&
+          parts[0] !== 'localhost'
+        ) {
           resolvedIdentifier = parts[0];
         }
       }
@@ -54,7 +67,7 @@ export class TenantMiddleware implements NestMiddleware {
       if (authHeader && authHeader.startsWith('Bearer ')) {
         try {
           const token = authHeader.split(' ')[1];
-          const decoded = this.jwtService.decode(token) as any;
+          const decoded = this.jwtService.decode(token);
           // In the database user record, we'll store schoolId. If they are authenticated, their claims will contain schoolId
           if (decoded && decoded.schoolId) {
             resolvedIdentifier = decoded.schoolId;
@@ -89,13 +102,15 @@ export class TenantMiddleware implements NestMiddleware {
         tenant = await this.tenantModel.findOne({
           $or: [
             { subdomain: resolvedIdentifier.toLowerCase() },
-            { customDomain: resolvedIdentifier.toLowerCase() }
-          ]
+            { customDomain: resolvedIdentifier.toLowerCase() },
+          ],
         });
       }
 
       if (!tenant) {
-        throw new NotFoundException(`Tenant not found for identifier: ${resolvedIdentifier}`);
+        throw new NotFoundException(
+          `Tenant not found for identifier: ${resolvedIdentifier}`,
+        );
       }
 
       if (!tenant.isActive) {
@@ -104,7 +119,9 @@ export class TenantMiddleware implements NestMiddleware {
 
       const school = await this.schoolModel.findOne({ tenantId: tenant._id });
       if (!school) {
-        throw new NotFoundException(`School record missing for tenant: ${tenant.name}`);
+        throw new NotFoundException(
+          `School record missing for tenant: ${tenant.name}`,
+        );
       }
 
       TenantContext.run(

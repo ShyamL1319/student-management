@@ -1,4 +1,14 @@
-import { IsString, IsNotEmpty, IsEmail, IsDateString, IsEnum, IsOptional, IsNumber, ValidateNested, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEmail,
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  ValidateNested,
+  IsArray,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { AdmissionStage } from '../schemas/admission.schema';
@@ -153,4 +163,3 @@ export class UpdateAdmissionStatusDto {
   @IsEnum(AdmissionStage)
   status: AdmissionStage;
 }
-

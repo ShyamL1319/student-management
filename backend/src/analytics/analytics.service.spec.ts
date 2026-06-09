@@ -17,6 +17,11 @@ import { AdmissionApplication } from '../admissions/schemas/admission.schema';
 import { Assignment } from '../assignments/schemas/assignment.schema';
 import { AssignmentSubmission } from '../assignments/schemas/assignment-submission.schema';
 import { Invoice } from '../fees/schemas/invoice.schema';
+import { Message } from '../parents/schemas/message.schema';
+import { AuditLog } from '../audit-logs/schemas/audit-log.schema';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { LeaveRequestsService } from '../leave-requests/leave-requests.service';
+import { ParentsService } from '../parents/parents.service';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
@@ -30,7 +35,10 @@ describe('AnalyticsService', () => {
       find: jest.fn().mockReturnThis(),
       populate: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      exec: jest.fn(),
+      sort: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue([]),
       db: {
         collection: jest.fn().mockReturnValue({
           find: jest.fn().mockReturnThis(),
@@ -53,10 +61,39 @@ describe('AnalyticsService', () => {
         { provide: getModelToken(Mark.name), useValue: mockModel },
         { provide: getModelToken(Exam.name), useValue: mockModel },
         { provide: getModelToken(LeaveRequest.name), useValue: mockModel },
-        { provide: getModelToken(AdmissionApplication.name), useValue: mockModel },
+        {
+          provide: getModelToken(AdmissionApplication.name),
+          useValue: mockModel,
+        },
         { provide: getModelToken(Assignment.name), useValue: mockModel },
-        { provide: getModelToken(AssignmentSubmission.name), useValue: mockModel },
+        {
+          provide: getModelToken(AssignmentSubmission.name),
+          useValue: mockModel,
+        },
         { provide: getModelToken(Invoice.name), useValue: mockModel },
+        { provide: getModelToken(Message.name), useValue: mockModel },
+        { provide: getModelToken(AuditLog.name), useValue: mockModel },
+        {
+          provide: AuditLogsService,
+          useValue: {
+            create: jest.fn(),
+            findAll: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: LeaveRequestsService,
+          useValue: {
+            getBalances: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: ParentsService,
+          useValue: {
+            getDashboard: jest
+              .fn()
+              .mockResolvedValue({ totalChildrenCount: 1, children: [] }),
+          },
+        },
       ],
     }).compile();
 
@@ -151,12 +188,16 @@ describe('AnalyticsService', () => {
     it('should return student stats', async () => {
       const studentId = new Types.ObjectId();
       const schoolId = new Types.ObjectId();
-      
+
       mockModel.findOne.mockReturnValue(mockModel);
       mockModel.find.mockReturnValue(mockModel);
-      
+
       mockModel.exec
-        .mockResolvedValueOnce({ _id: studentId, schoolId, class: { _id: new Types.ObjectId() } }) // student
+        .mockResolvedValueOnce({
+          _id: studentId,
+          schoolId,
+          class: { _id: new Types.ObjectId() },
+        }) // student
         .mockResolvedValueOnce(new Array(10)) // myMarks
         .mockResolvedValueOnce([]) // exams
         .mockResolvedValueOnce([]) // invoices

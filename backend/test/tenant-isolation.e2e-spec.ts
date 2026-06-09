@@ -132,13 +132,33 @@ describe('Tenant Isolation (e2e)', () => {
     // 6. Seed Courses under separate schools using bypassTenant option
     // (so saving is not intercepted by dynamic context while seeding from supertest suite)
     await courseModel.create([
-      { name: 'Potions 101', description: 'Basic potions', schoolId: schoolHogwarts._id, department: deptHogwarts._id },
-      { name: 'Defense Against the Dark Arts', description: 'Defense spells', schoolId: schoolHogwarts._id, department: deptHogwarts._id },
+      {
+        name: 'Potions 101',
+        description: 'Basic potions',
+        schoolId: schoolHogwarts._id,
+        department: deptHogwarts._id,
+      },
+      {
+        name: 'Defense Against the Dark Arts',
+        description: 'Defense spells',
+        schoolId: schoolHogwarts._id,
+        department: deptHogwarts._id,
+      },
     ]);
 
     await courseModel.create([
-      { name: 'Basic Arithmetic', description: 'Simple math', schoolId: schoolSpringfield._id, department: deptSpringfield._id },
-      { name: 'Elementary Science', description: 'Simple science', schoolId: schoolSpringfield._id, department: deptSpringfield._id },
+      {
+        name: 'Basic Arithmetic',
+        description: 'Simple math',
+        schoolId: schoolSpringfield._id,
+        department: deptSpringfield._id,
+      },
+      {
+        name: 'Elementary Science',
+        description: 'Simple science',
+        schoolId: schoolSpringfield._id,
+        department: deptSpringfield._id,
+      },
     ]);
 
     // 7. Login and store access tokens

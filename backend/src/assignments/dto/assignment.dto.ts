@@ -1,14 +1,14 @@
-import { 
-  IsString, 
-  IsNotEmpty, 
-  IsDateString, 
-  IsOptional, 
-  IsNumber, 
-  IsMongoId, 
-  IsBoolean, 
-  Min, 
-  Max, 
-  ValidateNested 
+import {
+  IsString,
+  IsNotEmpty,
+  IsDateString,
+  IsOptional,
+  IsNumber,
+  IsMongoId,
+  IsBoolean,
+  Min,
+  Max,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -199,4 +199,3 @@ export class BulkGradeSubmissionDto {
   @IsNotEmpty()
   grades: BulkGradeItemDto[];
 }
-

@@ -3,7 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AssignmentsController } from './assignments.controller';
 import { AssignmentsService } from './assignments.service';
 import { Assignment, AssignmentSchema } from './schemas/assignment.schema';
-import { AssignmentSubmission, AssignmentSubmissionSchema } from './schemas/assignment-submission.schema';
+import {
+  AssignmentSubmission,
+  AssignmentSubmissionSchema,
+} from './schemas/assignment-submission.schema';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import { MarksModule } from '../marks/marks.module';
@@ -23,4 +26,3 @@ import { MarksModule } from '../marks/marks.module';
   exports: [AssignmentsService],
 })
 export class AssignmentsModule {}
-

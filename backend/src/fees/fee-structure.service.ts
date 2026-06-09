@@ -28,7 +28,17 @@ export class FeeStructureService {
   }
 
   async findAll(query: FeeStructureQueryDto = {}) {
-    return this.feeStructureModel.find(query).lean();
+    const cleanQuery: any = {};
+    if (query.classId) {
+      cleanQuery.classId = query.classId;
+    }
+    if (query.academicYearId) {
+      cleanQuery.academicYearId = query.academicYearId;
+    }
+    if (query.isActive !== undefined) {
+      cleanQuery.isActive = String(query.isActive) === 'true' || query.isActive === true;
+    }
+    return this.feeStructureModel.find(cleanQuery).lean();
   }
 
   async findById(id: string) {

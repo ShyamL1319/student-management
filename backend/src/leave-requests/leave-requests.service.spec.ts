@@ -165,7 +165,12 @@ describe('LeaveRequestsService', () => {
         exec: jest.fn().mockResolvedValue([]),
       });
 
-      const result = await service.create(dummyUserId, dummySchoolId, 'STUDENT', dto);
+      const result = await service.create(
+        dummyUserId,
+        dummySchoolId,
+        'STUDENT',
+        dto,
+      );
 
       expect(result).toBeDefined();
       expect(mockBalance.pending).toBe(3); // 3 days: 10, 11, 12

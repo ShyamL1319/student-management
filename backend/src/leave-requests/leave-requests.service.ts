@@ -1,25 +1,52 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { LeaveRequest, LeaveRequestDocument, ApprovalStep } from './schemas/leave-request.schema';
-import { LeaveBalance, LeaveBalanceDocument } from './schemas/leave-balance.schema';
-import { Attendance, AttendanceDocument } from '../attendances/schemas/attendance.schema';
+import {
+  LeaveRequest,
+  LeaveRequestDocument,
+  ApprovalStep,
+} from './schemas/leave-request.schema';
+import {
+  LeaveBalance,
+  LeaveBalanceDocument,
+} from './schemas/leave-balance.schema';
+import {
+  Attendance,
+  AttendanceDocument,
+} from '../attendances/schemas/attendance.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
-import { CreateLeaveRequestDto, UpdateLeaveRequestStatusDto, AllocateLeaveBalanceDto } from './dto/leave-request.dto';
+import {
+  CreateLeaveRequestDto,
+  UpdateLeaveRequestStatusDto,
+  AllocateLeaveBalanceDto,
+} from './dto/leave-request.dto';
 import { NotificationService } from '../notifications/services/notification.service';
-import { NotificationEventType, NotificationChannel } from '../notifications/schemas/notification.schema';
+import {
+  NotificationEventType,
+  NotificationChannel,
+} from '../notifications/schemas/notification.schema';
 
 @Injectable()
 export class LeaveRequestsService {
   constructor(
-    @InjectModel(LeaveRequest.name) private leaveRequestModel: Model<LeaveRequestDocument>,
-    @InjectModel(LeaveBalance.name) private leaveBalanceModel: Model<LeaveBalanceDocument>,
-    @InjectModel(Attendance.name) private attendanceModel: Model<AttendanceDocument>,
+    @InjectModel(LeaveRequest.name)
+    private leaveRequestModel: Model<LeaveRequestDocument>,
+    @InjectModel(LeaveBalance.name)
+    private leaveBalanceModel: Model<LeaveBalanceDocument>,
+    @InjectModel(Attendance.name)
+    private attendanceModel: Model<AttendanceDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private notificationService: NotificationService,
   ) {}
 
-  private calculateDuration(startDate: string | Date, endDate: string | Date): number {
+  private calculateDuration(
+    startDate: string | Date,
+    endDate: string | Date,
+  ): number {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = Math.abs(end.getTime() - start.getTime());
@@ -27,7 +54,12 @@ export class LeaveRequestsService {
     return diffDays;
   }
 
-  async create(userId: string, schoolId: string, role: string, dto: CreateLeaveRequestDto): Promise<LeaveRequest> {
+  async create(
+    userId: string,
+    schoolId: string,
+    role: string,
+    dto: CreateLeaveRequestDto,
+  ): Promise<LeaveRequest> {
     const start = new Date(dto.startDate);
     const end = new Date(dto.endDate);
 
@@ -36,22 +68,27 @@ export class LeaveRequestsService {
     }
 
     if (dto.type === 'Medical' && !dto.medicalAttachmentUrl) {
-      throw new BadRequestException('Medical attachment is required for Medical leaves');
+      throw new BadRequestException(
+        'Medical attachment is required for Medical leaves',
+      );
     }
 
     const duration = this.calculateDuration(start, end);
     const year = start.getFullYear();
 
     // Fetch or initialize leave balance
-    let balance = await this.leaveBalanceModel.findOne({
-      userId: new Types.ObjectId(userId),
-      leaveType: dto.type,
-      year,
-    }).exec();
+    let balance = await this.leaveBalanceModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        leaveType: dto.type,
+        year,
+      })
+      .exec();
 
     if (!balance) {
       // Auto initialize default balance if not set
-      const defaultAllocated = dto.type === 'Sick' ? 10 : dto.type === 'Casual' ? 15 : 10;
+      const defaultAllocated =
+        dto.type === 'Sick' ? 10 : dto.type === 'Casual' ? 15 : 10;
       balance = await this.leaveBalanceModel.create({
         schoolId: new Types.ObjectId(schoolId),
         userId: new Types.ObjectId(userId),
@@ -64,20 +101,24 @@ export class LeaveRequestsService {
     }
 
     if (balance.used + balance.pending + duration > balance.allocated) {
-      throw new BadRequestException(`Insufficient leave balance. Remaining: ${balance.allocated - balance.used - balance.pending} days.`);
+      throw new BadRequestException(
+        `Insufficient leave balance. Remaining: ${balance.allocated - balance.used - balance.pending} days.`,
+      );
     }
 
     // Check for overlap
-    const overlap = await this.leaveRequestModel.findOne({
-      requesterId: new Types.ObjectId(userId),
-      status: { $in: ['PENDING', 'APPROVED'] },
-      $or: [
-        { startDate: { $lte: end }, endDate: { $gte: start } }
-      ]
-    }).exec();
+    const overlap = await this.leaveRequestModel
+      .findOne({
+        requesterId: new Types.ObjectId(userId),
+        status: { $in: ['PENDING', 'APPROVED'] },
+        $or: [{ startDate: { $lte: end }, endDate: { $gte: start } }],
+      })
+      .exec();
 
     if (overlap) {
-      throw new BadRequestException('You already have a pending or approved leave request for this date range');
+      throw new BadRequestException(
+        'You already have a pending or approved leave request for this date range',
+      );
     }
 
     // Setup multi-level approval steps
@@ -115,12 +156,17 @@ export class LeaveRequestsService {
     return leaveRequest;
   }
 
-  async findAll(schoolId: string, query: any): Promise<{ data: LeaveRequest[]; total: number }> {
+  async findAll(
+    schoolId: string,
+    query: any,
+  ): Promise<{ data: LeaveRequest[]; total: number }> {
     const page = query.page ? parseInt(query.page, 10) : 1;
     const limit = query.limit ? parseInt(query.limit, 10) : 10;
     const skip = (page - 1) * limit;
 
-    const filter: Record<string, any> = { school: new Types.ObjectId(schoolId) };
+    const filter: Record<string, any> = {
+      school: new Types.ObjectId(schoolId),
+    };
     if (query.status) {
       filter.status = query.status;
     }
@@ -147,7 +193,10 @@ export class LeaveRequestsService {
 
   async findOne(id: string, schoolId: string): Promise<LeaveRequest> {
     const item = await this.leaveRequestModel
-      .findOne({ _id: new Types.ObjectId(id), school: new Types.ObjectId(schoolId) })
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
       .populate('requesterId', 'firstName lastName email roleType')
       .exec();
     if (!item) {
@@ -156,11 +205,18 @@ export class LeaveRequestsService {
     return item;
   }
 
-  async updateStatus(id: string, schoolId: string, approverId: string, dto: UpdateLeaveRequestStatusDto): Promise<LeaveRequest> {
-    const item = await this.leaveRequestModel.findOne({
-      _id: new Types.ObjectId(id),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+  async updateStatus(
+    id: string,
+    schoolId: string,
+    approverId: string,
+    dto: UpdateLeaveRequestStatusDto,
+  ): Promise<LeaveRequest> {
+    const item = await this.leaveRequestModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!item) {
       throw new NotFoundException('Leave request not found');
@@ -170,29 +226,42 @@ export class LeaveRequestsService {
       throw new BadRequestException('Leave request has already been processed');
     }
 
-    const approver = await this.userModel.findById(approverId).populate('role').exec();
+    const approver = await this.userModel
+      .findById(approverId)
+      .populate('role')
+      .exec();
     if (!approver) {
       throw new NotFoundException('Approver user not found');
     }
 
     const approverRole = approver.roleType || (approver.role as any)?.name;
 
-    const currentStepObj = item.approvalWorkflow.find(s => s.step === item.currentStep);
+    const currentStepObj = item.approvalWorkflow.find(
+      (s) => s.step === item.currentStep,
+    );
     if (!currentStepObj) {
       throw new BadRequestException('Current approval workflow step not found');
     }
 
     // Role-based auth verification for current step (bypassed if Admin or Super Admin)
-    if (currentStepObj.approverRole !== approverRole && approverRole !== 'ADMIN' && approverRole !== 'SUPER_ADMIN') {
-      throw new BadRequestException(`You do not have the required permissions (${currentStepObj.approverRole}) to approve this step`);
+    if (
+      currentStepObj.approverRole !== approverRole &&
+      approverRole !== 'ADMIN' &&
+      approverRole !== 'SUPER_ADMIN'
+    ) {
+      throw new BadRequestException(
+        `You do not have the required permissions (${currentStepObj.approverRole}) to approve this step`,
+      );
     }
 
     const duration = this.calculateDuration(item.startDate, item.endDate);
-    const balance = await this.leaveBalanceModel.findOne({
-      userId: item.requesterId,
-      leaveType: item.type,
-      year: new Date(item.startDate).getFullYear(),
-    }).exec();
+    const balance = await this.leaveBalanceModel
+      .findOne({
+        userId: item.requesterId,
+        leaveType: item.type,
+        year: new Date(item.startDate).getFullYear(),
+      })
+      .exec();
 
     if (dto.status === 'REJECTED') {
       currentStepObj.status = 'REJECTED';
@@ -223,7 +292,9 @@ export class LeaveRequestsService {
       currentStepObj.remarks = dto.remarks;
       currentStepObj.updatedAt = new Date();
 
-      const nextStep = item.approvalWorkflow.find(s => s.step === item.currentStep + 1);
+      const nextStep = item.approvalWorkflow.find(
+        (s) => s.step === item.currentStep + 1,
+      );
       if (nextStep) {
         item.currentStep += 1;
         await this.notifyApprovers(item, nextStep.approverRole);
@@ -256,18 +327,26 @@ export class LeaveRequestsService {
     return item.save();
   }
 
-  async cancel(id: string, schoolId: string, userId: string): Promise<LeaveRequest> {
-    const item = await this.leaveRequestModel.findOne({
-      _id: new Types.ObjectId(id),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+  async cancel(
+    id: string,
+    schoolId: string,
+    userId: string,
+  ): Promise<LeaveRequest> {
+    const item = await this.leaveRequestModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!item) {
       throw new NotFoundException('Leave request not found');
     }
 
     if (item.requesterId.toString() !== userId) {
-      throw new BadRequestException('You are not authorized to cancel this leave request');
+      throw new BadRequestException(
+        'You are not authorized to cancel this leave request',
+      );
     }
 
     if (item.status === 'CANCELLED') {
@@ -279,11 +358,13 @@ export class LeaveRequestsService {
     }
 
     const duration = this.calculateDuration(item.startDate, item.endDate);
-    const balance = await this.leaveBalanceModel.findOne({
-      userId: item.requesterId,
-      leaveType: item.type,
-      year: new Date(item.startDate).getFullYear(),
-    }).exec();
+    const balance = await this.leaveBalanceModel
+      .findOne({
+        userId: item.requesterId,
+        leaveType: item.type,
+        year: new Date(item.startDate).getFullYear(),
+      })
+      .exec();
 
     if (item.status === 'PENDING') {
       item.status = 'CANCELLED';
@@ -293,11 +374,21 @@ export class LeaveRequestsService {
       }
     } else if (item.status === 'APPROVED') {
       const now = new Date();
-      const todayMidnight = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-      const startMidnight = new Date(Date.UTC(item.startDate.getFullYear(), item.startDate.getMonth(), item.startDate.getDate()));
+      const todayMidnight = new Date(
+        Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
+      );
+      const startMidnight = new Date(
+        Date.UTC(
+          item.startDate.getFullYear(),
+          item.startDate.getMonth(),
+          item.startDate.getDate(),
+        ),
+      );
 
       if (startMidnight <= todayMidnight) {
-        throw new BadRequestException('Cannot cancel a leave request that has already started or completed');
+        throw new BadRequestException(
+          'Cannot cancel a leave request that has already started or completed',
+        );
       }
 
       item.status = 'CANCELLED';
@@ -322,10 +413,12 @@ export class LeaveRequestsService {
   }
 
   async remove(id: string, schoolId: string): Promise<void> {
-    const item = await this.leaveRequestModel.findOne({
-      _id: new Types.ObjectId(id),
-      school: new Types.ObjectId(schoolId),
-    }).exec();
+    const item = await this.leaveRequestModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        school: new Types.ObjectId(schoolId),
+      })
+      .exec();
 
     if (!item) {
       throw new NotFoundException('Leave request not found');
@@ -334,11 +427,13 @@ export class LeaveRequestsService {
     // Release balance if deleting a pending request
     if (item.status === 'PENDING' || item.status === 'APPROVED') {
       const duration = this.calculateDuration(item.startDate, item.endDate);
-      const balance = await this.leaveBalanceModel.findOne({
-        userId: item.requesterId,
-        leaveType: item.type,
-        year: new Date(item.startDate).getFullYear(),
-      }).exec();
+      const balance = await this.leaveBalanceModel
+        .findOne({
+          userId: item.requesterId,
+          leaveType: item.type,
+          year: new Date(item.startDate).getFullYear(),
+        })
+        .exec();
 
       if (balance) {
         if (item.status === 'PENDING') {
@@ -360,14 +455,17 @@ export class LeaveRequestsService {
     const balances: LeaveBalance[] = [];
 
     for (const type of types) {
-      let b = await this.leaveBalanceModel.findOne({
-        userId: new Types.ObjectId(userId),
-        leaveType: type,
-        year,
-      }).exec();
+      let b = await this.leaveBalanceModel
+        .findOne({
+          userId: new Types.ObjectId(userId),
+          leaveType: type,
+          year,
+        })
+        .exec();
 
       if (!b) {
-        const defaultAllocated = type === 'Sick' ? 10 : type === 'Casual' ? 15 : 10;
+        const defaultAllocated =
+          type === 'Sick' ? 10 : type === 'Casual' ? 15 : 10;
         b = await this.leaveBalanceModel.create({
           schoolId: new Types.ObjectId(schoolId),
           userId: new Types.ObjectId(userId),
@@ -383,13 +481,22 @@ export class LeaveRequestsService {
     return balances;
   }
 
-  async allocateBalance(schoolId: string, dto: AllocateLeaveBalanceDto): Promise<LeaveBalance> {
+  async allocateBalance(
+    schoolId: string,
+    dto: AllocateLeaveBalanceDto,
+  ): Promise<LeaveBalance> {
     const year = dto.year || new Date().getFullYear();
-    const balance = await this.leaveBalanceModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(dto.userId), leaveType: dto.leaveType, year },
-      { schoolId: new Types.ObjectId(schoolId), allocated: dto.allocated },
-      { upsert: true, new: true },
-    ).exec();
+    const balance = await this.leaveBalanceModel
+      .findOneAndUpdate(
+        {
+          userId: new Types.ObjectId(dto.userId),
+          leaveType: dto.leaveType,
+          year,
+        },
+        { schoolId: new Types.ObjectId(schoolId), allocated: dto.allocated },
+        { upsert: true, new: true },
+      )
+      .exec();
 
     if (!balance) {
       throw new BadRequestException('Failed to allocate balance');
@@ -398,19 +505,43 @@ export class LeaveRequestsService {
   }
 
   async getAnalytics(schoolId: string): Promise<any> {
-    const total = await this.leaveRequestModel.countDocuments({ school: new Types.ObjectId(schoolId) }).exec();
-    const approved = await this.leaveRequestModel.countDocuments({ school: new Types.ObjectId(schoolId), status: 'APPROVED' }).exec();
-    const rejected = await this.leaveRequestModel.countDocuments({ school: new Types.ObjectId(schoolId), status: 'REJECTED' }).exec();
-    const pending = await this.leaveRequestModel.countDocuments({ school: new Types.ObjectId(schoolId), status: 'PENDING' }).exec();
-    const cancelled = await this.leaveRequestModel.countDocuments({ school: new Types.ObjectId(schoolId), status: 'CANCELLED' }).exec();
+    const total = await this.leaveRequestModel
+      .countDocuments({ school: new Types.ObjectId(schoolId) })
+      .exec();
+    const approved = await this.leaveRequestModel
+      .countDocuments({
+        school: new Types.ObjectId(schoolId),
+        status: 'APPROVED',
+      })
+      .exec();
+    const rejected = await this.leaveRequestModel
+      .countDocuments({
+        school: new Types.ObjectId(schoolId),
+        status: 'REJECTED',
+      })
+      .exec();
+    const pending = await this.leaveRequestModel
+      .countDocuments({
+        school: new Types.ObjectId(schoolId),
+        status: 'PENDING',
+      })
+      .exec();
+    const cancelled = await this.leaveRequestModel
+      .countDocuments({
+        school: new Types.ObjectId(schoolId),
+        status: 'CANCELLED',
+      })
+      .exec();
 
-    const typesSummary = await this.leaveRequestModel.aggregate([
-      { $match: { school: new Types.ObjectId(schoolId) } },
-      { $group: { _id: '$type', count: { $sum: 1 } } },
-    ]).exec();
+    const typesSummary = await this.leaveRequestModel
+      .aggregate([
+        { $match: { school: new Types.ObjectId(schoolId) } },
+        { $group: { _id: '$type', count: { $sum: 1 } } },
+      ])
+      .exec();
 
     const distribution = { Sick: 0, Casual: 0, Medical: 0 };
-    typesSummary.forEach(t => {
+    typesSummary.forEach((t) => {
       if (t._id in distribution) {
         distribution[t._id as keyof typeof distribution] = t.count;
       }
@@ -422,9 +553,15 @@ export class LeaveRequestsService {
     };
   }
 
-  private async backfillAttendance(request: LeaveRequestDocument, approverId: string): Promise<void> {
+  private async backfillAttendance(
+    request: LeaveRequestDocument,
+    approverId: string,
+  ): Promise<void> {
     const start = new Date(request.startDate);
-    const daysCount = this.calculateDuration(request.startDate, request.endDate);
+    const daysCount = this.calculateDuration(
+      request.startDate,
+      request.endDate,
+    );
     const requester = await this.userModel.findById(request.requesterId).exec();
 
     for (let i = 0; i < daysCount; i++) {
@@ -432,7 +569,13 @@ export class LeaveRequestsService {
       currentDate.setDate(currentDate.getDate() + i);
 
       // Normalize date to UTC midnight
-      const utcDate = new Date(Date.UTC(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()));
+      const utcDate = new Date(
+        Date.UTC(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+        ),
+      );
 
       const attendanceData: any = {
         attendeeType: request.requesterType,
@@ -446,57 +589,87 @@ export class LeaveRequestsService {
 
       if (request.requesterType === 'STUDENT') {
         attendanceData.student = request.requesterId;
-        if (requester && (requester as any).class) attendanceData.class = (requester as any).class;
-        if (requester && (requester as any).section) attendanceData.section = (requester as any).section;
+        if (requester && (requester as any).class)
+          attendanceData.class = (requester as any).class;
+        if (requester && (requester as any).section)
+          attendanceData.section = (requester as any).section;
       } else if (request.requesterType === 'TEACHER') {
         attendanceData.teacher = request.requesterId;
       } else if (request.requesterType === 'STAFF') {
         attendanceData.staff = request.requesterId;
       }
 
-      await this.attendanceModel.findOneAndUpdate(
-        { attendeeType: request.requesterType as any, attendeeId: request.requesterId, date: utcDate },
-        attendanceData,
-        { upsert: true, new: true },
-      ).exec();
+      await this.attendanceModel
+        .findOneAndUpdate(
+          {
+            attendeeType: request.requesterType as any,
+            attendeeId: request.requesterId,
+            date: utcDate,
+          },
+          attendanceData,
+          { upsert: true, new: true },
+        )
+        .exec();
     }
   }
 
-  private async removeAttendanceBackfill(request: LeaveRequestDocument): Promise<void> {
+  private async removeAttendanceBackfill(
+    request: LeaveRequestDocument,
+  ): Promise<void> {
     const start = new Date(request.startDate);
-    const daysCount = this.calculateDuration(request.startDate, request.endDate);
+    const daysCount = this.calculateDuration(
+      request.startDate,
+      request.endDate,
+    );
 
     for (let i = 0; i < daysCount; i++) {
       const currentDate = new Date(start);
       currentDate.setDate(currentDate.getDate() + i);
-      const utcDate = new Date(Date.UTC(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()));
+      const utcDate = new Date(
+        Date.UTC(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+        ),
+      );
 
-      await this.attendanceModel.deleteOne({
-        attendeeType: request.requesterType as any,
-        attendeeId: request.requesterId,
-        date: utcDate,
-        status: 'LEAVE' as any,
-      }).exec();
+      await this.attendanceModel
+        .deleteOne({
+          attendeeType: request.requesterType as any,
+          attendeeId: request.requesterId,
+          date: utcDate,
+          status: 'LEAVE' as any,
+        })
+        .exec();
     }
   }
 
-  private async notifyApprovers(request: LeaveRequestDocument, stepRole: string): Promise<void> {
+  private async notifyApprovers(
+    request: LeaveRequestDocument,
+    stepRole: string,
+  ): Promise<void> {
     try {
       let approvers: UserDocument[] = [];
       if (stepRole === 'TEACHER' && request.requesterType === 'STUDENT') {
-        const student = await this.userModel.findById(request.requesterId).exec();
+        const student = await this.userModel
+          .findById(request.requesterId)
+          .exec();
         if (student && (student as any).class) {
-          approvers = await this.userModel.find({
-            roleType: 'TEACHER',
-            classes: (student as any).class,
-          }).exec();
+          approvers = await this.userModel
+            .find({
+              roleType: 'TEACHER',
+              classes: (student as any).class,
+            })
+            .exec();
         }
       }
 
       if (approvers.length === 0) {
-        approvers = await this.userModel.find({
-          roleType: stepRole,
-        }).exec();
+        approvers = await this.userModel
+          .find({
+            roleType: stepRole,
+          })
+          .exec();
       }
 
       for (const app of approvers) {

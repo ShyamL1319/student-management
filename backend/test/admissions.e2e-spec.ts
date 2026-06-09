@@ -35,11 +35,11 @@ describe('AdmissionsController (e2e)', () => {
         },
       ],
     })
-    .overrideGuard(JwtAuthGuard)
-    .useValue({ canActivate: () => true })
-    .overrideGuard(RolesGuard)
-    .useValue({ canActivate: () => true })
-    .compile();
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.use((req: any, res: any, next: any) => {
@@ -93,7 +93,13 @@ describe('AdmissionsController (e2e)', () => {
 
   it('GET /admissions should list applications', async () => {
     mockAdmissionsService.findAll.mockResolvedValue({
-      data: [{ _id: 'app-id', gradeLevel: 'Grade 6', status: AdmissionStage.SUBMITTED }],
+      data: [
+        {
+          _id: 'app-id',
+          gradeLevel: 'Grade 6',
+          status: AdmissionStage.SUBMITTED,
+        },
+      ],
       total: 1,
     });
 
@@ -112,7 +118,9 @@ describe('AdmissionsController (e2e)', () => {
     };
     mockAdmissionsService.getAnalytics.mockResolvedValue(analytics);
 
-    const response = await request(app.getHttpServer()).get('/admissions/analytics');
+    const response = await request(app.getHttpServer()).get(
+      '/admissions/analytics',
+    );
 
     expect(response.status).toBe(200);
     expect(response.body.totalApplications).toBe(10);
@@ -120,10 +128,16 @@ describe('AdmissionsController (e2e)', () => {
 
   it('GET /admissions/report should return report data', async () => {
     mockAdmissionsService.getReport.mockResolvedValue([
-      { applicationId: 'app-id', studentName: 'Alice Smith', status: AdmissionStage.SUBMITTED },
+      {
+        applicationId: 'app-id',
+        studentName: 'Alice Smith',
+        status: AdmissionStage.SUBMITTED,
+      },
     ]);
 
-    const response = await request(app.getHttpServer()).get('/admissions/report');
+    const response = await request(app.getHttpServer()).get(
+      '/admissions/report',
+    );
 
     expect(response.status).toBe(200);
     expect(response.body[0].studentName).toBe('Alice Smith');
@@ -179,8 +193,9 @@ describe('AdmissionsController (e2e)', () => {
       createdStudentId: 'student-id-123',
     });
 
-    const response = await request(app.getHttpServer())
-      .post('/admissions/app-id/enroll');
+    const response = await request(app.getHttpServer()).post(
+      '/admissions/app-id/enroll',
+    );
 
     expect(response.status).toBe(201);
     expect(response.body.status).toBe(AdmissionStage.ENROLLMENT);

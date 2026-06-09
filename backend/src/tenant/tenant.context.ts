@@ -1,8 +1,8 @@
 import { AsyncLocalStorage } from 'async_hooks';
 
 export interface TenantStore {
-  tenantId: string;   // Tenant Collection ID
-  schoolId: string;   // Associated School ID
+  tenantId: string; // Tenant Collection ID
+  schoolId: string; // Associated School ID
   subdomain: string;
 }
 

@@ -11,8 +11,8 @@ import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 export class DepartmentsService {
   constructor(
     @InjectModel(Department.name)
-    private departmentModel: Model<DepartmentDocument>
-  ) { }
+    private departmentModel: Model<DepartmentDocument>,
+  ) {}
 
   async create(createDepartmentDto: CreateDepartmentDto): Promise<Department> {
     const code =
@@ -86,9 +86,9 @@ export class DepartmentsService {
       updateDepartmentDto.code ||
       (updateDepartmentDto.name
         ? updateDepartmentDto.name
-          .replace(/[^a-zA-Z0-9]/g, '')
-          .slice(0, 4)
-          .toUpperCase()
+            .replace(/[^a-zA-Z0-9]/g, '')
+            .slice(0, 4)
+            .toUpperCase()
         : current.code);
     const updateData = {
       ...updateDepartmentDto,

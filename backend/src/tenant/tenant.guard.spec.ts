@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TenantGuard } from './tenant.guard';
 import { Reflector } from '@nestjs/core';
-import { ExecutionContext, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { TenantContext } from './tenant.context';
 import { RoleEnum } from '../common/enums/role.enum';
 
@@ -15,10 +19,7 @@ describe('TenantGuard', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TenantGuard,
-        { provide: Reflector, useValue: mockReflector },
-      ],
+      providers: [TenantGuard, { provide: Reflector, useValue: mockReflector }],
     }).compile();
 
     guard = module.get<TenantGuard>(TenantGuard);
@@ -61,7 +62,9 @@ describe('TenantGuard', () => {
 
   it('should return true for SUPER_ADMIN regardless of school mapping', () => {
     mockReflector.getAllAndOverride.mockReturnValue(false);
-    jest.spyOn(TenantContext, 'getSchoolId').mockReturnValue('target-school-id');
+    jest
+      .spyOn(TenantContext, 'getSchoolId')
+      .mockReturnValue('target-school-id');
 
     const req = {
       user: {

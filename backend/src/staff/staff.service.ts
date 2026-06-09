@@ -12,11 +12,16 @@ export class StaffService {
 
   async create(data: any) {
     const RoleModel = this.staffModel.db.model('Role');
-    const staffRole = await RoleModel.findOne({ name: 'STAFF' }).lean().exec() as { _id: any } | null;
+    const staffRole = (await RoleModel.findOne({ name: 'STAFF' })
+      .lean()
+      .exec()) as { _id: any } | null;
     if (!staffRole) throw new NotFoundException('STAFF role not found');
 
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(process.env.DEFAULT_PASSWORD || 'ChangeMe123!', salt);
+    const passwordHash = await bcrypt.hash(
+      process.env.DEFAULT_PASSWORD || 'ChangeMe123!',
+      salt,
+    );
 
     const staffData = {
       ...data,
@@ -34,7 +39,7 @@ export class StaffService {
     if (search) {
       q.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: (search as string), $options: 'i' } },
+        { email: { $regex: search as string, $options: 'i' } },
       ];
     }
     const itemsQuery = this.staffModel
