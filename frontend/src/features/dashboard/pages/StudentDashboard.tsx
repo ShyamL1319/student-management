@@ -156,7 +156,7 @@ const MOCK_ACHIEVEMENTS = [
 
 const QUICK_ACTIONS = [
   { label: 'Join Class', icon: <VideoIcon />, color: '#0d9488', path: '/timetables' },
-  { label: 'Apply Leave', icon: <CalendarIcon />, color: '#6366f1', path: '/attendances' },
+  { label: 'Apply Leave', icon: <CalendarIcon />, color: '#6366f1', path: '/leaves' },
   { label: 'Attendance', icon: <CheckCircleIcon />, color: '#22c55e', path: '/attendances' },
   { label: 'Submit Work', icon: <AddTaskIcon />, color: '#f59e0b', path: '/marks' },
   { label: 'Exam Info', icon: <EventIcon />, color: '#ef4444', path: '/examinations' },
@@ -589,7 +589,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             subtitle="Subject-wise breakdown and eligibility status"
             action={
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }} onClick={() => navigate('/attendances')}>Apply Leave</Button>
+                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }} onClick={() => navigate('/leaves')}>Apply Leave</Button>
                 <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }}>Apply Correction</Button>
               </Box>
             }
