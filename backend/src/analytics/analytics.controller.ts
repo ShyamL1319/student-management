@@ -15,6 +15,7 @@ export class AnalyticsController {
     user: {
       role: RoleEnum;
       school?: { toString(): string };
+      schoolId?: { toString(): string };
       _id: { toString(): string };
     },
   ) {
@@ -23,14 +24,21 @@ export class AnalyticsController {
         return this.analyticsService.getSuperAdminDashboard();
       case RoleEnum.ADMIN:
         return this.analyticsService.getSchoolAdminDashboard(
-          user.school?.toString() || '',
+          user.schoolId?.toString() || user.school?.toString() || '',
         );
       case RoleEnum.TEACHER:
         return this.analyticsService.getTeacherDashboard(user._id.toString());
       case RoleEnum.STUDENT:
         return this.analyticsService.getStudentDashboard(user._id.toString());
+      case RoleEnum.PARENT:
+        return this.analyticsService.getParentDashboard(user._id.toString());
+      case RoleEnum.STAFF:
+        return this.analyticsService.getStaffDashboard(
+          user._id.toString(),
+          user.schoolId?.toString() || user.school?.toString() || '',
+        );
       default:
-        // Default to a simple dashboard if role is unknown or 'STAFF'
+        // Default to a simple dashboard if role is unknown
         return { widgets: {}, recentActivity: [] };
     }
   }

@@ -10,7 +10,11 @@ import { Invoice } from '../fees/schemas/invoice.schema';
 import { Exam } from '../examinations/schemas/exam.schema';
 import { Notification } from '../notifications/schemas/notification.schema';
 import { Message } from './schemas/message.schema';
-import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 
 describe('ParentsService', () => {
@@ -106,11 +110,17 @@ describe('ParentsService', () => {
         { provide: getModelToken(User.name), useValue: mockUserModel },
         { provide: getModelToken(Role.name), useValue: mockRoleModel },
         { provide: getModelToken(Student.name), useValue: mockStudentModel },
-        { provide: getModelToken(Attendance.name), useValue: mockAttendanceModel },
+        {
+          provide: getModelToken(Attendance.name),
+          useValue: mockAttendanceModel,
+        },
         { provide: getModelToken(Mark.name), useValue: mockMarkModel },
         { provide: getModelToken(Invoice.name), useValue: mockInvoiceModel },
         { provide: getModelToken(Exam.name), useValue: mockExamModel },
-        { provide: getModelToken(Notification.name), useValue: mockNotificationModel },
+        {
+          provide: getModelToken(Notification.name),
+          useValue: mockNotificationModel,
+        },
         { provide: getModelToken(Message.name), useValue: mockMessageModel },
       ],
     }).compile();
@@ -163,7 +173,7 @@ describe('ParentsService', () => {
           password: 'password123',
           firstName: 'John',
           lastName: 'Doe',
-        })
+        }),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -200,7 +210,7 @@ describe('ParentsService', () => {
         service.linkChild(mockParentUser._id.toString(), {
           admissionNumber: 'ADM-2026-000001',
           dob: '2015-06-20', // mismatched month
-        })
+        }),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -219,7 +229,10 @@ describe('ParentsService', () => {
       const unauthorizedStudentId = new Types.ObjectId().toString();
 
       await expect(
-        service.getChildFees(mockParentUser._id.toString(), unauthorizedStudentId)
+        service.getChildFees(
+          mockParentUser._id.toString(),
+          unauthorizedStudentId,
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
   });

@@ -30,7 +30,6 @@ describe('DepartmentsService', () => {
   });
 
   it('should create a department with auto-generated code and description', async () => {
-
     departmentModel.create.mockImplementation((dto) => Promise.resolve(dto));
 
     const result = await service.create({

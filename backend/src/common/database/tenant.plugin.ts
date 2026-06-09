@@ -13,11 +13,23 @@ export function tenantPlugin(schema: Schema, options?: TenantPluginOptions) {
   // 1. Automatically inject the schoolId field to the schema
   if (!schema.paths['schoolId']) {
     schema.add({
-      schoolId: { type: Schema.Types.ObjectId, ref: 'School', required: false, index: true },
+      schoolId: {
+        type: Schema.Types.ObjectId,
+        ref: 'School',
+        required: false,
+        index: true,
+      },
     });
   }
 
-  const GLOBAL_BYPASS_MODELS = ['Tenant', 'School', 'Role', 'Permission', 'AuditLog', 'Counter'];
+  const GLOBAL_BYPASS_MODELS = [
+    'Tenant',
+    'School',
+    'Role',
+    'Permission',
+    'AuditLog',
+    'Counter',
+  ];
 
   const isBypassedModel = (modelName: string): boolean => {
     return GLOBAL_BYPASS_MODELS.includes(modelName);
@@ -65,14 +77,14 @@ export function tenantPlugin(schema: Schema, options?: TenantPluginOptions) {
     const schoolId = TenantContext.getSchoolId();
     if (schoolId) {
       this.pipeline().unshift({
-        $match: { schoolId: new Types.ObjectId(schoolId) }
+        $match: { schoolId: new Types.ObjectId(schoolId) },
       });
     }
   });
 
   // 4. Populate schoolId on document save/create
   schema.pre('save', function (this: any) {
-    const modelName = (this.constructor as any).modelName;
+    const modelName = this.constructor.modelName;
     if (modelName && isBypassedModel(modelName)) {
       return;
     }

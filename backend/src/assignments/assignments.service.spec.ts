@@ -55,8 +55,14 @@ describe('AssignmentsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AssignmentsService,
-        { provide: getModelToken(Assignment.name), useValue: assignmentModelMock },
-        { provide: getModelToken(AssignmentSubmission.name), useValue: submissionModelMock },
+        {
+          provide: getModelToken(Assignment.name),
+          useValue: assignmentModelMock,
+        },
+        {
+          provide: getModelToken(AssignmentSubmission.name),
+          useValue: submissionModelMock,
+        },
         { provide: getModelToken(Mark.name), useValue: markModelMock },
         { provide: NotificationService, useValue: notificationServiceMock },
         { provide: AuditLogsService, useValue: auditLogsServiceMock },
@@ -123,10 +129,15 @@ describe('AssignmentsService', () => {
       exec: jest.fn().mockResolvedValue(mockSubmission),
     });
 
-    const result = await service.grade(mockTeacherId, mockSchoolId, mockSubmissionId, {
-      marksObtained: 90,
-      feedback: 'Decent, but late.',
-    });
+    const result = await service.grade(
+      mockTeacherId,
+      mockSchoolId,
+      mockSubmissionId,
+      {
+        marksObtained: 90,
+        feedback: 'Decent, but late.',
+      },
+    );
 
     // 2 days late * 10% = 20% penalty. 20% of 100 maxMarks = 20 marks deduction.
     // 90 raw marks - 20 marks deduction = 70 final marks
@@ -161,16 +172,23 @@ describe('AssignmentsService', () => {
       exec: jest.fn().mockResolvedValue(null),
     });
 
-    submissionModelMock.create.mockImplementation((args) => Promise.resolve({
-      ...args,
-      _id: new Types.ObjectId(),
-    }));
+    submissionModelMock.create.mockImplementation((args) =>
+      Promise.resolve({
+        ...args,
+        _id: new Types.ObjectId(),
+      }),
+    );
 
-    const result = await service.submit(mockStudentId, mockSchoolId, mockAssignmentId, {
-      fileUrl: 'https://s3.com/submissions/potter.pdf',
-      fileName: 'potter.pdf',
-      fileSize: 1024,
-    });
+    const result = await service.submit(
+      mockStudentId,
+      mockSchoolId,
+      mockAssignmentId,
+      {
+        fileUrl: 'https://s3.com/submissions/potter.pdf',
+        fileName: 'potter.pdf',
+        fileSize: 1024,
+      },
+    );
 
     expect(result.isLate).toBe(false);
   });

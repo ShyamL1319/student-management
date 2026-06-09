@@ -4,9 +4,7 @@ import { StaffController } from './staff.controller';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [
-    UsersModule,
-  ],
+  imports: [UsersModule],
   controllers: [StaffController],
   providers: [StaffService],
   exports: [StaffService],

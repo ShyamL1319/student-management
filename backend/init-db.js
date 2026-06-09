@@ -590,8 +590,36 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
 
   // Seed Fee Structures
   const feeStructuresRes = await db.collection('feestructures').insertMany([
-    { name: 'Grade 6-8 Tuition', amount: 5000, frequency: 'term', categoryId: feeCategoryIds[0], schoolId: schoolId, isActive: true, createdAt: new Date() },
-    { name: 'Transport Zone A', amount: 1500, frequency: 'monthly', categoryId: feeCategoryIds[1], schoolId: schoolId, isActive: true, createdAt: new Date() }
+    {
+      feeName: 'Grade 6-8 Tuition',
+      amount: 5000,
+      discount: 0,
+      frequency: 'SEMESTER',
+      categoryId: feeCategoryIds[0],
+      classId: insertedClasses[0]._id,
+      academicYearId: activeYearId,
+      dueDate: new Date(currentYear, 9, 1),
+      applicability: 'APPLICABLE',
+      schoolId: schoolId,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      feeName: 'Transport Zone A',
+      amount: 1500,
+      discount: 0,
+      frequency: 'MONTHLY',
+      categoryId: feeCategoryIds[1],
+      classId: insertedClasses[0]._id,
+      academicYearId: activeYearId,
+      dueDate: new Date(currentYear, 9, 1),
+      applicability: 'APPLICABLE',
+      schoolId: schoolId,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
   ]);
 
   const invoices = [];

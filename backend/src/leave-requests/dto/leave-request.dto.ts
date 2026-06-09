@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, IsDateString, IsOptional, IsEnum, IsNumber, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsDateString,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  IsUrl,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLeaveRequestDto {
@@ -22,7 +30,10 @@ export class CreateLeaveRequestDto {
   @IsNotEmpty()
   reason: string;
 
-  @ApiProperty({ required: false, example: 'https://example.com/medical-cert.pdf' })
+  @ApiProperty({
+    required: false,
+    example: 'https://example.com/medical-cert.pdf',
+  })
   @IsUrl()
   @IsOptional()
   medicalAttachmentUrl?: string;
@@ -61,4 +72,3 @@ export class AllocateLeaveBalanceDto {
   @IsOptional()
   year?: number;
 }
-

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
@@ -13,11 +17,19 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ email }).setOptions({ bypassTenant: true }).populate('role').exec();
+    return this.userModel
+      .findOne({ email })
+      .setOptions({ bypassTenant: true })
+      .populate('role')
+      .exec();
   }
 
   async findById(id: string): Promise<UserDocument | null> {
-    return this.userModel.findById(id).setOptions({ bypassTenant: true }).populate('role').exec();
+    return this.userModel
+      .findById(id)
+      .setOptions({ bypassTenant: true })
+      .populate('role')
+      .exec();
   }
 
   async create(userData: Partial<User>): Promise<UserDocument> {
@@ -36,7 +48,10 @@ export class UsersService {
       .exec();
   }
 
-  async updateProfile(id: string, updateProfileDto: UpdateProfileDto): Promise<UserDocument> {
+  async updateProfile(
+    id: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<UserDocument> {
     const user = await this.userModel
       .findByIdAndUpdate(id, updateProfileDto, { new: true })
       .populate('role')
@@ -47,7 +62,11 @@ export class UsersService {
     return user;
   }
 
-  async updateUserRole(id: string, roleId: string, requester?: any): Promise<UserDocument> {
+  async updateUserRole(
+    id: string,
+    roleId: string,
+    requester?: any,
+  ): Promise<UserDocument> {
     const user = await this.userModel.findById(id).populate('role').exec();
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -64,7 +83,7 @@ export class UsersService {
 
     if (currentRoleName === 'SUPER_ADMIN' || newRoleName === 'SUPER_ADMIN') {
       if (requester) {
-        const requesterRoleName = requester.roleType || (requester.role as any)?.name;
+        const requesterRoleName = requester.roleType || requester.role?.name;
         if (requesterRoleName !== 'SUPER_ADMIN') {
           throw new ForbiddenException(
             'Only SUPER_ADMIN can assign, update, or remove the SUPER_ADMIN role',
@@ -74,7 +93,11 @@ export class UsersService {
     }
 
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(id, { role: newRole._id, roleType: newRoleName }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        { role: newRole._id, roleType: newRoleName },
+        { new: true },
+      )
       .populate('role')
       .exec();
     if (!updatedUser) {

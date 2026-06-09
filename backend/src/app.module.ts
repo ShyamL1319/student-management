@@ -111,8 +111,6 @@ import { tenantPlugin } from './common/database/tenant.plugin';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(TenantMiddleware)
-      .forRoutes('*');
+    consumer.apply(TenantMiddleware).forRoutes('*');
   }
 }

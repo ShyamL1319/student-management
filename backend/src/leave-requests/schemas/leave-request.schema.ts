@@ -8,7 +8,11 @@ export class ApprovalStep {
   @Prop({ required: true })
   step!: number;
 
-  @Prop({ required: true, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' })
+  @Prop({
+    required: true,
+    enum: ['PENDING', 'APPROVED', 'REJECTED'],
+    default: 'PENDING',
+  })
   status!: string;
 
   @Prop({ required: true })
@@ -67,4 +71,3 @@ export class LeaveRequest {
 }
 
 export const LeaveRequestSchema = SchemaFactory.createForClass(LeaveRequest);
-

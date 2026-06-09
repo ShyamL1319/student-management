@@ -1,7 +1,7 @@
 import { Model, Document, QueryFilter, UpdateQuery, Types } from 'mongoose';
 
 export class BaseRepository<T extends Document> {
-  constructor(protected readonly model: Model<T>) { }
+  constructor(protected readonly model: Model<T>) {}
 
   async create(doc: Partial<T>): Promise<T> {
     return this.model.create(doc);

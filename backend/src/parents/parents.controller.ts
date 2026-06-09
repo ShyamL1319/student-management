@@ -1,7 +1,24 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ParentsService } from './parents.service';
-import { RegisterParentDto, LinkChildDto, SendParentMessageDto, UpdateParentProfileDto, CreateParentDto, UpdateParentDto } from './dto/parent-auth.dto';
+import {
+  RegisterParentDto,
+  LinkChildDto,
+  SendParentMessageDto,
+  UpdateParentProfileDto,
+  CreateParentDto,
+  UpdateParentDto,
+} from './dto/parent-auth.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -43,7 +60,9 @@ export class ParentsController {
   @Roles(RoleEnum.PARENT)
   @ApiBearerAuth()
   @Get('dashboard')
-  @ApiOperation({ summary: 'Get parent dashboard widgets and summary statistics' })
+  @ApiOperation({
+    summary: 'Get parent dashboard widgets and summary statistics',
+  })
   async getDashboard(@CurrentUser() parent: any) {
     return this.parentsService.getDashboard(parent._id.toString());
   }
@@ -59,7 +78,14 @@ export class ParentsController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    return this.parentsService.getChildAttendance(parent._id.toString(), studentId, { page: page ? Number(page) : undefined, limit: limit ? Number(limit) : undefined });
+    return this.parentsService.getChildAttendance(
+      parent._id.toString(),
+      studentId,
+      {
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
+      },
+    );
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -67,16 +93,27 @@ export class ParentsController {
   @ApiBearerAuth()
   @Get('children/:studentId/academic')
   @ApiOperation({ summary: 'Get academic results & GPA history for a child' })
-  async getChildAcademic(@CurrentUser() parent: any, @Param('studentId') studentId: string) {
-    return this.parentsService.getChildAcademic(parent._id.toString(), studentId);
+  async getChildAcademic(
+    @CurrentUser() parent: any,
+    @Param('studentId') studentId: string,
+  ) {
+    return this.parentsService.getChildAcademic(
+      parent._id.toString(),
+      studentId,
+    );
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.PARENT)
   @ApiBearerAuth()
   @Get('children/:studentId/fees')
-  @ApiOperation({ summary: 'Get billing invoices and payment dues for a child' })
-  async getChildFees(@CurrentUser() parent: any, @Param('studentId') studentId: string) {
+  @ApiOperation({
+    summary: 'Get billing invoices and payment dues for a child',
+  })
+  async getChildFees(
+    @CurrentUser() parent: any,
+    @Param('studentId') studentId: string,
+  ) {
     return this.parentsService.getChildFees(parent._id.toString(), studentId);
   }
 
@@ -85,7 +122,10 @@ export class ParentsController {
   @ApiBearerAuth()
   @Get('children/:studentId/exams')
   @ApiOperation({ summary: 'Get exam schedules for a child' })
-  async getChildExams(@CurrentUser() parent: any, @Param('studentId') studentId: string) {
+  async getChildExams(
+    @CurrentUser() parent: any,
+    @Param('studentId') studentId: string,
+  ) {
     return this.parentsService.getChildExams(parent._id.toString(), studentId);
   }
 
@@ -102,7 +142,9 @@ export class ParentsController {
   @Roles(RoleEnum.PARENT)
   @ApiBearerAuth()
   @Get('messages')
-  @ApiOperation({ summary: 'List communications and messages sent/received by parent' })
+  @ApiOperation({
+    summary: 'List communications and messages sent/received by parent',
+  })
   async getMessages(@CurrentUser() parent: any) {
     return this.parentsService.getMessages(parent._id.toString());
   }
@@ -112,7 +154,10 @@ export class ParentsController {
   @ApiBearerAuth()
   @Post('messages')
   @ApiOperation({ summary: 'Send a message to a teacher or staff' })
-  async sendMessage(@CurrentUser() parent: any, @Body() dto: SendParentMessageDto) {
+  async sendMessage(
+    @CurrentUser() parent: any,
+    @Body() dto: SendParentMessageDto,
+  ) {
     return this.parentsService.sendMessage(parent._id.toString(), dto);
   }
 
@@ -130,7 +175,10 @@ export class ParentsController {
   @ApiBearerAuth()
   @Patch('profile')
   @ApiOperation({ summary: 'Update parent profile details' })
-  async updateProfile(@CurrentUser() parent: any, @Body() dto: UpdateParentProfileDto) {
+  async updateProfile(
+    @CurrentUser() parent: any,
+    @Body() dto: UpdateParentProfileDto,
+  ) {
     return this.parentsService.updateProfile(parent._id.toString(), dto);
   }
 
@@ -156,7 +204,9 @@ export class ParentsController {
   @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN, RoleEnum.TEACHER, RoleEnum.STAFF)
   @ApiBearerAuth()
   @Get(':id')
-  @ApiOperation({ summary: 'Get details of a specific parent account (Admin/Staff)' })
+  @ApiOperation({
+    summary: 'Get details of a specific parent account (Admin/Staff)',
+  })
   async findOne(@Param('id') id: string) {
     return this.parentsService.findOne(id);
   }

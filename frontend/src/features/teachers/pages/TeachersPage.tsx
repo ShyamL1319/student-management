@@ -113,7 +113,7 @@ export const TeachersPage: FC = () => {
               ) : data?.data?.length ? (
                 data.data.map((teacher: any) => (
                   <TableRow key={teacher._id || teacher.id}>
-                    <TableCell>{teacher.name}</TableCell>
+                    <TableCell>{teacher.firstName + ' ' + teacher.lastName}</TableCell>
                     <TableCell>{teacher.email || '—'}</TableCell>
                     <TableCell>{teacher.phone || '—'}</TableCell>
                     <TableCell>{(teacher.subjects || []).join(', ') || '—'}</TableCell>

@@ -7,9 +7,6 @@ import { UsersModule } from '../users/users.module';
   imports: [UsersModule],
   controllers: [StudentsController],
   providers: [StudentsService],
-  exports: [
-    StudentsService,
-    UsersModule,
-  ],
+  exports: [StudentsService, UsersModule],
 })
 export class StudentsModule {}

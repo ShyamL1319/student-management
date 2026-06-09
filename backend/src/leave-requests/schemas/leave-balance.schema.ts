@@ -28,4 +28,7 @@ export class LeaveBalance {
 }
 
 export const LeaveBalanceSchema = SchemaFactory.createForClass(LeaveBalance);
-LeaveBalanceSchema.index({ userId: 1, leaveType: 1, year: 1 }, { unique: true });
+LeaveBalanceSchema.index(
+  { userId: 1, leaveType: 1, year: 1 },
+  { unique: true },
+);

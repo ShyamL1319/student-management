@@ -65,4 +65,3 @@ export const AssignmentSchema = SchemaFactory.createForClass(Assignment);
 // Compound indexes for tenant-scoped operations
 AssignmentSchema.index({ school: 1, class: 1, isPublished: 1 });
 AssignmentSchema.index({ school: 1, teacher: 1 });
-

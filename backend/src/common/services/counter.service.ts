@@ -7,18 +7,22 @@ import { Counter, CounterDocument } from '../schemas/counter.schema';
 export class CounterService {
   constructor(
     @InjectModel(Counter.name) private counterModel: Model<CounterDocument>,
-  ) { }
+  ) {}
 
   async getNextSequence(counterName: string): Promise<number> {
-    const result = await this.counterModel.findOneAndUpdate(
-      { _id: counterName } as any,
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true },
-    ).exec();
+    const result = await this.counterModel
+      .findOneAndUpdate(
+        { _id: counterName } as any,
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true },
+      )
+      .exec();
 
     const doc = (result as any)?.value || result;
     if (!doc) {
-      throw new Error(`Failed to generate sequence for counter: ${counterName}`);
+      throw new Error(
+        `Failed to generate sequence for counter: ${counterName}`,
+      );
     }
 
     return doc.seq;
@@ -31,7 +35,10 @@ export class CounterService {
     return `PSEI-${year}-${paddedSeq}`;
   }
 
-  async generateRollNumber(classId: string, academicYearId: string): Promise<string> {
+  async generateRollNumber(
+    classId: string,
+    academicYearId: string,
+  ): Promise<string> {
     const counterKey = `roll_number:${classId}:${academicYearId}`;
     const seq = await this.getNextSequence(counterKey);
     const paddedSeq = String(seq).padStart(6, '0');
@@ -47,10 +54,12 @@ export class CounterService {
           classCode = classDoc.name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
           if (classDoc.department) {
             const DepartmentModel = this.counterModel.db.model('Department');
-            const deptDoc = await DepartmentModel.findById(classDoc.department).exec();
+            const deptDoc = await DepartmentModel.findById(
+              classDoc.department,
+            ).exec();
             if (deptDoc) {
-              deptCode = deptDoc.code 
-                ? deptDoc.code.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() 
+              deptCode = deptDoc.code
+                ? deptDoc.code.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
                 : deptDoc.name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
             }
           }
@@ -58,15 +67,17 @@ export class CounterService {
       } catch (err) {
         // Fallback in case of db errors or testing mocks
         const classIdStr = String(classId);
-        classCode = classIdStr.length > 6 
-          ? classIdStr.substring(classIdStr.length - 6).toUpperCase() 
-          : classIdStr.toUpperCase();
+        classCode =
+          classIdStr.length > 6
+            ? classIdStr.substring(classIdStr.length - 6).toUpperCase()
+            : classIdStr.toUpperCase();
       }
     } else {
       const classIdStr = String(classId);
-      classCode = classIdStr.length > 6 
-        ? classIdStr.substring(classIdStr.length - 6).toUpperCase() 
-        : classIdStr.toUpperCase();
+      classCode =
+        classIdStr.length > 6
+          ? classIdStr.substring(classIdStr.length - 6).toUpperCase()
+          : classIdStr.toUpperCase();
     }
 
     return `PSEI${deptCode}${classCode}${paddedSeq}`;

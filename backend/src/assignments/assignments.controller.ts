@@ -1,24 +1,29 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Patch, 
-  Delete, 
-  Body, 
-  Param, 
-  Query, 
-  UseGuards, 
-  HttpStatus, 
-  HttpCode 
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { AssignmentsService } from './assignments.service';
-import { 
-  CreateAssignmentDto, 
+import {
+  CreateAssignmentDto,
   UpdateAssignmentDto,
-  SubmitAssignmentDto, 
-  GradeSubmissionDto, 
-  BulkGradeSubmissionDto 
+  SubmitAssignmentDto,
+  GradeSubmissionDto,
+  BulkGradeSubmissionDto,
 } from './dto/assignment.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -43,28 +48,50 @@ export class AssignmentsController {
   }
 
   @Get()
-  @Roles(RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN, RoleEnum.TEACHER, RoleEnum.STUDENT)
-  @ApiOperation({ summary: 'List assignments with optional pagination filters' })
+  @Roles(
+    RoleEnum.ADMIN,
+    RoleEnum.SUPER_ADMIN,
+    RoleEnum.TEACHER,
+    RoleEnum.STUDENT,
+  )
+  @ApiOperation({
+    summary: 'List assignments with optional pagination filters',
+  })
   async findAll(@CurrentUser() user: any, @Query() query: any) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
     const filterQuery = { ...query };
-    
+
     if (user.roleType === RoleEnum.STUDENT) {
       filterQuery.classId = user.class?.toString();
       filterQuery.isPublished = true;
     } else if (user.roleType === RoleEnum.TEACHER) {
       filterQuery.teacherId = user._id.toString();
     }
-    
-    return this.assignmentsService.findAll(schoolId, filterQuery, user._id.toString(), user.roleType);
+
+    return this.assignmentsService.findAll(
+      schoolId,
+      filterQuery,
+      user._id.toString(),
+      user.roleType,
+    );
   }
 
   @Get(':id')
-  @Roles(RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN, RoleEnum.TEACHER, RoleEnum.STUDENT)
+  @Roles(
+    RoleEnum.ADMIN,
+    RoleEnum.SUPER_ADMIN,
+    RoleEnum.TEACHER,
+    RoleEnum.STUDENT,
+  )
   @ApiOperation({ summary: 'Get details of a specific assignment' })
   async findOne(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
-    return this.assignmentsService.findOne(id, schoolId, user._id.toString(), user.roleType);
+    return this.assignmentsService.findOne(
+      id,
+      schoolId,
+      user._id.toString(),
+      user.roleType,
+    );
   }
 
   @Patch(':id')
@@ -76,16 +103,29 @@ export class AssignmentsController {
     @Body() dto: UpdateAssignmentDto,
   ) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
-    return this.assignmentsService.update(id, schoolId, user._id.toString(), user.roleType, dto);
+    return this.assignmentsService.update(
+      id,
+      schoolId,
+      user._id.toString(),
+      user.roleType,
+      dto,
+    );
   }
 
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN, RoleEnum.TEACHER)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete an assignment and all associated submissions' })
+  @ApiOperation({
+    summary: 'Delete an assignment and all associated submissions',
+  })
   async remove(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
-    return this.assignmentsService.remove(id, schoolId, user._id.toString(), user.roleType);
+    return this.assignmentsService.remove(
+      id,
+      schoolId,
+      user._id.toString(),
+      user.roleType,
+    );
   }
 
   @Post(':id/publish')
@@ -93,19 +133,31 @@ export class AssignmentsController {
   @ApiOperation({ summary: 'Publish a draft assignment' })
   async publish(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
-    return this.assignmentsService.publish(id, schoolId, user._id.toString(), user.roleType);
+    return this.assignmentsService.publish(
+      id,
+      schoolId,
+      user._id.toString(),
+      user.roleType,
+    );
   }
 
   @Get(':id/presign-upload')
   @Roles(RoleEnum.STUDENT, RoleEnum.TEACHER, RoleEnum.ADMIN)
-  @ApiOperation({ summary: 'Generate S3 Presigned URL for attaching files/submitting work' })
+  @ApiOperation({
+    summary: 'Generate S3 Presigned URL for attaching files/submitting work',
+  })
   async getPresignedUrl(
     @CurrentUser() user: any,
     @Param('id') id: string,
     @Query('fileName') fileName: string,
   ) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
-    return this.assignmentsService.generatePresignedUploadUrl(schoolId, id, user._id.toString(), fileName);
+    return this.assignmentsService.generatePresignedUploadUrl(
+      schoolId,
+      id,
+      user._id.toString(),
+      fileName,
+    );
   }
 
   @Post(':id/submit')
@@ -117,7 +169,12 @@ export class AssignmentsController {
     @Body() dto: SubmitAssignmentDto,
   ) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
-    return this.assignmentsService.submit(user._id.toString(), schoolId, id, dto);
+    return this.assignmentsService.submit(
+      user._id.toString(),
+      schoolId,
+      id,
+      dto,
+    );
   }
 
   @Get(':id/submissions')
@@ -125,7 +182,12 @@ export class AssignmentsController {
   @ApiOperation({ summary: 'View submissions list for an assignment' })
   async getSubmissions(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
-    return this.assignmentsService.getSubmissions(schoolId, id, user._id.toString(), user.roleType);
+    return this.assignmentsService.getSubmissions(
+      schoolId,
+      id,
+      user._id.toString(),
+      user.roleType,
+    );
   }
 
   @Patch('submissions/:submissionId/grade')
@@ -137,7 +199,12 @@ export class AssignmentsController {
     @Body() dto: GradeSubmissionDto,
   ) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
-    return this.assignmentsService.grade(user._id.toString(), schoolId, submissionId, dto);
+    return this.assignmentsService.grade(
+      user._id.toString(),
+      schoolId,
+      submissionId,
+      dto,
+    );
   }
 
   @Post(':id/submissions/bulk-grade')
@@ -149,7 +216,12 @@ export class AssignmentsController {
     @Body() dto: BulkGradeSubmissionDto,
   ) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
-    return this.assignmentsService.bulkGrade(user._id.toString(), schoolId, id, dto);
+    return this.assignmentsService.bulkGrade(
+      user._id.toString(),
+      schoolId,
+      id,
+      dto,
+    );
   }
 
   @Get(':id/analytics')
@@ -160,4 +232,3 @@ export class AssignmentsController {
     return this.assignmentsService.getAnalytics(id, schoolId);
   }
 }
-

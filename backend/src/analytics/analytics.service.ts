@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -20,11 +20,32 @@ import {
 } from '../attendances/schemas/attendance.schema';
 import { Mark, MarkDocument } from '../marks/schemas/mark.schema';
 import { Exam, ExamDocument } from '../examinations/schemas/exam.schema';
-import { LeaveRequest, LeaveRequestDocument } from '../leave-requests/schemas/leave-request.schema';
-import { AdmissionApplication, AdmissionApplicationDocument } from '../admissions/schemas/admission.schema';
-import { Assignment, AssignmentDocument } from '../assignments/schemas/assignment.schema';
-import { AssignmentSubmission, AssignmentSubmissionDocument } from '../assignments/schemas/assignment-submission.schema';
+import {
+  LeaveRequest,
+  LeaveRequestDocument,
+} from '../leave-requests/schemas/leave-request.schema';
+import {
+  AdmissionApplication,
+  AdmissionApplicationDocument,
+} from '../admissions/schemas/admission.schema';
+import {
+  Assignment,
+  AssignmentDocument,
+} from '../assignments/schemas/assignment.schema';
+import {
+  AssignmentSubmission,
+  AssignmentSubmissionDocument,
+} from '../assignments/schemas/assignment-submission.schema';
 import { Invoice, InvoiceDocument } from '../fees/schemas/invoice.schema';
+import { Message, MessageDocument } from '../parents/schemas/message.schema';
+import {
+  AuditLog,
+  AuditLogDocument,
+  AuditStatus,
+} from '../audit-logs/schemas/audit-log.schema';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { LeaveRequestsService } from '../leave-requests/leave-requests.service';
+import { ParentsService } from '../parents/parents.service';
 
 @Injectable()
 export class AnalyticsService {
@@ -40,11 +61,20 @@ export class AnalyticsService {
     private attendanceModel: Model<AttendanceDocument>,
     @InjectModel(Mark.name) private markModel: Model<MarkDocument>,
     @InjectModel(Exam.name) private examModel: Model<ExamDocument>,
-    @InjectModel(LeaveRequest.name) private leaveRequestModel: Model<LeaveRequestDocument>,
-    @InjectModel(AdmissionApplication.name) private admissionModel: Model<AdmissionApplicationDocument>,
-    @InjectModel(Assignment.name) private assignmentModel: Model<AssignmentDocument>,
-    @InjectModel(AssignmentSubmission.name) private submissionModel: Model<AssignmentSubmissionDocument>,
+    @InjectModel(LeaveRequest.name)
+    private leaveRequestModel: Model<LeaveRequestDocument>,
+    @InjectModel(AdmissionApplication.name)
+    private admissionModel: Model<AdmissionApplicationDocument>,
+    @InjectModel(Assignment.name)
+    private assignmentModel: Model<AssignmentDocument>,
+    @InjectModel(AssignmentSubmission.name)
+    private submissionModel: Model<AssignmentSubmissionDocument>,
     @InjectModel(Invoice.name) private invoiceModel: Model<InvoiceDocument>,
+    @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
+    @InjectModel(AuditLog.name) private auditLogModel: Model<AuditLogDocument>,
+    private readonly auditLogsService: AuditLogsService,
+    private readonly leaveRequestsService: LeaveRequestsService,
+    private readonly parentsService: ParentsService,
   ) {}
 
   async getSuperAdminDashboard() {
@@ -61,7 +91,9 @@ export class AnalyticsService {
       feesResult.length > 0 ? feesResult[0].totalAmount : 0;
 
     // Calculate MRR/ARR based on active schools subscription prices
-    const activeSchools = await this.schoolModel.find({ isActive: true }).exec();
+    const activeSchools = await this.schoolModel
+      .find({ isActive: true })
+      .exec();
     let mrr = 0;
     for (const school of activeSchools) {
       if (school.name.toLowerCase().includes('hogwarts')) {
@@ -91,18 +123,99 @@ export class AnalyticsService {
     const revenueTrends = [
       { month: 'Jan', mrr: Math.round(mrr * 0.7), arr: Math.round(arr * 0.7) },
       { month: 'Feb', mrr: Math.round(mrr * 0.8), arr: Math.round(arr * 0.8) },
-      { month: 'Mar', mrr: Math.round(mrr * 0.85), arr: Math.round(arr * 0.85) },
+      {
+        month: 'Mar',
+        mrr: Math.round(mrr * 0.85),
+        arr: Math.round(arr * 0.85),
+      },
       { month: 'Apr', mrr: Math.round(mrr * 0.9), arr: Math.round(arr * 0.9) },
-      { month: 'May', mrr: Math.round(mrr * 0.95), arr: Math.round(arr * 0.95) },
+      {
+        month: 'May',
+        mrr: Math.round(mrr * 0.95),
+        arr: Math.round(arr * 0.95),
+      },
       { month: 'Jun', mrr, arr },
     ];
 
-    // Mock security threats from random IPs and admin emails
-    const securityThreats = [
-      { time: '2 mins ago', event: 'Brute-force lockout triggered', ip: '198.51.100.42', user: 'admin@school.com', status: 'Blocked' },
-      { time: '14 mins ago', event: 'Suspicious API token usage', ip: '203.0.113.118', user: 'system-hook-stripe', status: 'Flagged' },
-      { time: '1 hour ago', event: 'Multiple failed MFA challenges', ip: '185.190.140.9', user: 'treasurer@school.com', status: 'Resolved' },
-    ];
+    const recentLogs = await this.auditLogModel
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate('performedBy', 'firstName lastName email')
+      .lean()
+      .exec();
+
+    const failureLogs = await this.auditLogModel
+      .find({ status: AuditStatus.FAILURE })
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .populate('performedBy', 'firstName lastName email')
+      .lean()
+      .exec();
+
+    const securityThreats = failureLogs.map((log: any) => {
+      const email = log.performedBy?.email || 'anonymous';
+      const timeStr = this.formatTimeAgo(log.createdAt);
+      return {
+        time: timeStr,
+        event: `${log.action} attempt failed on ${log.entityType || 'system'}`,
+        ip: log.ipAddress || '127.0.0.1',
+        user: email,
+        status: 'Blocked',
+      };
+    });
+
+    if (securityThreats.length === 0) {
+      securityThreats.push(
+        {
+          time: '2 mins ago',
+          event: 'Brute-force lockout triggered',
+          ip: '198.51.100.42',
+          user: 'admin@school.com',
+          status: 'Blocked',
+        },
+        {
+          time: '14 mins ago',
+          event: 'Suspicious API token usage',
+          ip: '203.0.113.118',
+          user: 'system-hook-stripe',
+          status: 'Flagged',
+        },
+        {
+          time: '1 hour ago',
+          event: 'Multiple failed MFA challenges',
+          ip: '185.190.140.9',
+          user: 'treasurer@school.com',
+          status: 'Resolved',
+        },
+      );
+    }
+
+    const recentActivity = recentLogs.map((log: any) => {
+      const email = log.performedBy?.email || 'System';
+      const timeStr = this.formatTimeAgo(log.createdAt);
+      return {
+        description: `${email} performed ${log.action} on ${log.entityType || 'record'}`,
+        time: timeStr,
+      };
+    });
+
+    if (recentActivity.length === 0) {
+      recentActivity.push(
+        {
+          description: 'Database weekly backup snapshot completed',
+          time: '1 hour ago',
+        },
+        {
+          description: 'Stripe sync completed for Hogwarts billing tier',
+          time: '3 hours ago',
+        },
+        {
+          description: 'Security audit logs verified for SOC Compliance',
+          time: '1 day ago',
+        },
+      );
+    }
 
     return {
       widgets: {
@@ -120,11 +233,7 @@ export class AnalyticsService {
         infraMetrics,
       },
       securityThreats,
-      recentActivity: [
-        { description: 'Database weekly backup snapshot completed', time: '1 hour ago' },
-        { description: 'Stripe sync completed for Hogwarts billing tier', time: '3 hours ago' },
-        { description: 'Security audit logs verified for SOC Compliance', time: '1 day ago' },
-      ],
+      recentActivity,
     };
   }
 
@@ -147,8 +256,13 @@ export class AnalyticsService {
       feesResult.length > 0 ? feesResult[0].totalAmount : 0;
 
     // Calculate outstanding pending fees for this school
-    const outstandingInvoices = await this.invoiceModel.find(schoolFilter).exec();
-    const pendingFees = outstandingInvoices.reduce((sum, inv) => sum + (inv.pendingAmount || 0), 0);
+    const outstandingInvoices = await this.invoiceModel
+      .find(schoolFilter)
+      .exec();
+    const pendingFees = outstandingInvoices.reduce(
+      (sum, inv) => sum + (inv.pendingAmount || 0),
+      0,
+    );
 
     // Aggregate monthly actual vs projected fee payments
     const collectionsByMonth = await this.feeCollectionModel.aggregate([
@@ -157,12 +271,25 @@ export class AnalyticsService {
         $group: {
           _id: { $month: '$paymentDate' },
           collected: { $sum: '$amountPaid' },
-        }
-      }
+        },
+      },
     ]);
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     const financialTrends = monthNames.map((name, index) => {
-      const col = collectionsByMonth.find(c => c._id === index + 1);
+      const col = collectionsByMonth.find((c) => c._id === index + 1);
       return {
         month: name,
         collected: col ? col.collected : 120000 + index * 10000, // Fallback if no collections
@@ -179,21 +306,24 @@ export class AnalyticsService {
           total: { $count: {} },
           passed: {
             $sum: {
-              $cond: [{ $gte: ['$marksObtained', 40] }, 1, 0]
-            }
-          }
-        }
-      }
+              $cond: [{ $gte: ['$marksObtained', 40] }, 1, 0],
+            },
+          },
+        },
+      },
     ]);
 
     const academicStats = [];
     for (const item of marksBySubject) {
-      const subject = await this.classModel.db.collection('subjects').findOne({ _id: item._id });
+      const subject = await this.classModel.db
+        .collection('subjects')
+        .findOne({ _id: item._id });
       if (subject) {
         academicStats.push({
           subject: subject.name,
           average: Math.round(item.average),
-          passRate: item.total > 0 ? Math.round((item.passed / item.total) * 100) : 100,
+          passRate:
+            item.total > 0 ? Math.round((item.passed / item.total) * 100) : 100,
         });
       }
     }
@@ -208,8 +338,53 @@ export class AnalyticsService {
 
     // Overall attendance rate
     const attendances = await this.attendanceModel.find(schoolFilter).exec();
-    const presentCount = attendances.filter(a => a.status === 'PRESENT').length;
-    const attendanceRate = attendances.length > 0 ? Math.round((presentCount / attendances.length) * 100) : 95;
+    const presentCount = attendances.filter(
+      (a) => a.status === 'PRESENT',
+    ).length;
+    const attendanceRate =
+      attendances.length > 0
+        ? Math.round((presentCount / attendances.length) * 100)
+        : 95;
+
+    const schoolUsers = await this.userModel
+      .find({ schoolId: new Types.ObjectId(schoolId) })
+      .select('_id')
+      .lean()
+      .exec();
+    const userIds = schoolUsers.map((u) => u._id);
+    const recentLogs = await this.auditLogModel
+      .find({ performedBy: { $in: userIds } })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate('performedBy', 'firstName lastName email')
+      .lean()
+      .exec();
+
+    const recentActivity = recentLogs.map((log: any) => {
+      const email = log.performedBy?.email || 'User';
+      const timeStr = this.formatTimeAgo(log.createdAt);
+      return {
+        description: `${email} performed ${log.action} on ${log.entityType || 'record'}`,
+        time: timeStr,
+      };
+    });
+
+    if (recentActivity.length === 0) {
+      recentActivity.push(
+        {
+          description: 'Generated monthly finance collection summary report',
+          time: '1 hour ago',
+        },
+        {
+          description: 'Seeded exam schedule templates for next term',
+          time: '5 hours ago',
+        },
+        {
+          description: 'Registry backup successfully finished',
+          time: '1 day ago',
+        },
+      );
+    }
 
     return {
       widgets: {
@@ -225,11 +400,7 @@ export class AnalyticsService {
         financialTrends: financialTrends.slice(0, 6), // Jan to Jun
         academicStats,
       },
-      recentActivity: [
-        { description: 'Generated monthly finance collection summary report', time: '1 hour ago' },
-        { description: 'Seeded exam schedule templates for next term', time: '5 hours ago' },
-        { description: 'Registry backup successfully finished', time: '1 day ago' },
-      ],
+      recentActivity,
     };
   }
 
@@ -240,11 +411,14 @@ export class AnalyticsService {
     if (!teacher) throw new Error('Teacher not found');
     const schoolId = (teacher as any).schoolId;
 
-    const myClasses = await this.classModel.find({
-      classTeacher: teacher._id,
-    }).populate('sections').exec();
+    const myClasses = await this.classModel
+      .find({
+        classTeacher: teacher._id,
+      })
+      .populate('sections')
+      .exec();
 
-    const classIds = myClasses.map(c => c._id);
+    const classIds = myClasses.map((c) => c._id);
 
     const totalStudents = await this.studentModel.countDocuments({
       class: { $in: classIds },
@@ -255,17 +429,30 @@ export class AnalyticsService {
     });
 
     // Query teacher timetables for today's classes
-    const daysOfWeek = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const daysOfWeek = [
+      'SUNDAY',
+      'MONDAY',
+      'TUESDAY',
+      'WEDNESDAY',
+      'THURSDAY',
+      'FRIDAY',
+      'SATURDAY',
+    ];
     const todayDay = daysOfWeek[new Date().getDay()];
-    const timetablesToday = await this.classModel.db.collection('timetables').find({
-      teacher: teacher._id,
-      dayOfWeek: todayDay,
-    }).toArray();
+    const timetablesToday = await this.classModel.db
+      .collection('timetables')
+      .find({
+        teacher: teacher._id,
+        dayOfWeek: todayDay,
+      })
+      .toArray();
 
     const scheduleToday = [];
     for (const t of timetablesToday) {
       const cls = await this.classModel.findById(t.class).exec();
-      const subject = await this.classModel.db.collection('subjects').findOne({ _id: t.subject });
+      const subject = await this.classModel.db
+        .collection('subjects')
+        .findOne({ _id: t.subject });
       scheduleToday.push({
         id: t._id.toString(),
         subject: subject ? subject.name : 'Unknown Subject',
@@ -278,21 +465,43 @@ export class AnalyticsService {
 
     if (scheduleToday.length === 0) {
       scheduleToday.push(
-        { id: '1', subject: 'Advanced Biology', gradeClass: 'Grade 9-A', time: '08:30 AM – 09:20 AM', location: 'Lab 2', status: 'completed' },
-        { id: '2', subject: 'Genetics', gradeClass: 'Grade 10-C', time: '09:30 AM – 10:20 AM', location: 'Room 304', status: 'current' },
+        {
+          id: '1',
+          subject: 'Advanced Biology',
+          gradeClass: 'Grade 9-A',
+          time: '08:30 AM – 09:20 AM',
+          location: 'Lab 2',
+          status: 'completed',
+        },
+        {
+          id: '2',
+          subject: 'Genetics',
+          gradeClass: 'Grade 10-C',
+          time: '09:30 AM – 10:20 AM',
+          location: 'Room 304',
+          status: 'current',
+        },
       );
     }
 
     // Query teacher assignments and submission counts
-    const assignments = await this.assignmentModel.find({
-      teacher: teacher._id,
-    }).populate('subject', 'name').populate('class', 'name').exec();
+    const assignments = await this.assignmentModel
+      .find({
+        teacher: teacher._id,
+      })
+      .populate('subject', 'name')
+      .populate('class', 'name')
+      .exec();
 
     const assignmentList = [];
     for (const a of assignments) {
-      const submissions = await this.submissionModel.find({ assignment: a._id }).exec();
+      const submissions = await this.submissionModel
+        .find({ assignment: a._id })
+        .exec();
       const submittedCount = submissions.length;
-      const totalCount = await this.studentModel.countDocuments({ class: a.class });
+      const totalCount = await this.studentModel.countDocuments({
+        class: a.class,
+      });
       assignmentList.push({
         id: a._id.toString(),
         title: a.title,
@@ -301,24 +510,39 @@ export class AnalyticsService {
         submitted: submittedCount,
         total: totalCount || 30,
         status: a.dueDate > new Date() ? 'active' : 'evaluating',
-        daysLeft: Math.max(0, Math.round((a.dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))),
+        daysLeft: Math.max(
+          0,
+          Math.round(
+            (a.dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+          ),
+        ),
       });
     }
 
     if (assignmentList.length === 0) {
-      assignmentList.push(
-        { id: '1', title: 'Cell Division Lab Report', subject: 'AP Biology', class: 'Grade 11-A', submitted: 28, total: 32, status: 'evaluating', daysLeft: 1 },
-      );
+      assignmentList.push({
+        id: '1',
+        title: 'Cell Division Lab Report',
+        subject: 'AP Biology',
+        class: 'Grade 11-A',
+        submitted: 28,
+        total: 32,
+        status: 'evaluating',
+        daysLeft: 1,
+      });
     }
 
     // Student leave requests
-    const studentLeaves = await this.leaveRequestModel.find({
-      school: schoolId,
-      requesterType: 'STUDENT',
-      status: 'PENDING',
-    }).populate('requesterId', 'firstName lastName').exec();
+    const studentLeaves = await this.leaveRequestModel
+      .find({
+        school: schoolId,
+        requesterType: 'STUDENT',
+        status: 'PENDING',
+      })
+      .populate('requesterId', 'firstName lastName')
+      .exec();
 
-    const leaveRequests = studentLeaves.map(l => ({
+    const leaveRequests = studentLeaves.map((l) => ({
       id: l._id.toString(),
       studentName: `${(l.requesterId as any).firstName} ${(l.requesterId as any).lastName}`,
       class: 'Grade 9-A',
@@ -328,8 +552,115 @@ export class AnalyticsService {
     }));
 
     if (leaveRequests.length === 0) {
-      leaveRequests.push(
-        { id: '1', studentName: 'Ryan Cook', class: 'Grade 9-A', reason: 'Medical appointment', date: 'Today', status: 'pending' },
+      leaveRequests.push({
+        id: '1',
+        studentName: 'Ryan Cook',
+        class: 'Grade 9-A',
+        reason: 'Medical appointment',
+        date: 'Today',
+        status: 'pending',
+      });
+    }
+
+    const messages = await this.messageModel
+      .find({
+        $or: [{ recipientId: teacher._id }, { senderId: teacher._id }],
+      })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate('senderId', 'firstName lastName roleType')
+      .lean()
+      .exec();
+
+    const communications = messages.map((m: any) => {
+      const senderName = m.senderId
+        ? `${m.senderId.firstName} ${m.senderId.lastName}`
+        : 'System';
+      const role = m.senderId?.roleType || 'User';
+      return {
+        name: senderName,
+        role: role,
+        msg: m.content,
+        time: this.formatTimeAgo(m.createdAt),
+        unread: !m.isRead,
+      };
+    });
+
+    if (communications.length === 0) {
+      communications.push(
+        {
+          name: 'Mrs. Cook (Parent)',
+          role: 'Parent of Ryan Cook',
+          msg: 'Hello Dr. Jenkins, Ryan will miss class today due to an orthodontist appointment.',
+          time: '10 min ago',
+          unread: true,
+        },
+        {
+          name: 'Principal Miller',
+          role: 'Administration',
+          msg: 'Please review and submit the monthly syllabus coverage worksheet by Friday.',
+          time: '1 hour ago',
+          unread: true,
+        },
+      );
+    }
+
+    const teacherLogs = await this.auditLogModel
+      .find({ performedBy: teacher._id })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean()
+      .exec();
+
+    const recentActivity = teacherLogs.map((log: any) => ({
+      description: `Performed ${log.action} on ${log.entityType || 'record'}`,
+      time: this.formatTimeAgo(log.createdAt),
+    }));
+
+    if (recentActivity.length === 0) {
+      recentActivity.push(
+        {
+          description: 'Marked attendance for Grade 9-A Science',
+          time: '1 hour ago',
+        },
+        { description: 'Published Algebra Quiz results', time: '3 hours ago' },
+      );
+    }
+
+    const assignmentsWithAttachments = await this.assignmentModel
+      .find({
+        teacher: teacher._id,
+        attachmentUrl: { $ne: null, $exists: true },
+      })
+      .populate('class', 'name')
+      .limit(5)
+      .lean()
+      .exec();
+
+    const resources = assignmentsWithAttachments.map((a: any) => ({
+      id: a._id.toString(),
+      title: `${a.title} Attachment`,
+      type: a.attachmentUrl?.split('.').pop()?.toUpperCase() || 'PDF',
+      class: a.class?.name || 'All Classes',
+      size: '2.0 MB',
+    }));
+
+    if (resources.length === 0) {
+      resources.push(
+        {
+          id: '1',
+          title: 'Mitosis vs Meiosis Slide Deck',
+          type: 'PPT',
+          class: 'Grade 9-A',
+          size: '12.4 MB',
+        },
+        {
+          id: '2',
+          title: 'Genetics Pedigree Chart Guide',
+          type: 'PDF',
+          class: 'Grade 10-C',
+          size: '2.1 MB',
+        },
       );
     }
 
@@ -339,9 +670,11 @@ export class AnalyticsService {
         totalStudents,
         classesToday: scheduleToday.length,
         pendingAttendance: 2,
-        assignmentsPendingReview: assignmentList.filter(a => a.status === 'evaluating').length,
+        assignmentsPendingReview: assignmentList.filter(
+          (a) => a.status === 'evaluating',
+        ).length,
         upcomingExams,
-        unreadMessages: 5,
+        unreadMessages: communications.filter((c) => c.unread).length,
         pendingRequests: leaveRequests.length,
         upcomingMeetings: 2,
       },
@@ -364,31 +697,25 @@ export class AnalyticsService {
       scheduleToday,
       assignments: assignmentList,
       leaveRequests,
-      resources: [
-        { id: '1', title: 'Mitosis vs Meiosis Slide Deck', type: 'PPT', class: 'Grade 9-A', size: '12.4 MB' },
-        { id: '2', title: 'Genetics Pedigree Chart Guide', type: 'PDF', class: 'Grade 10-C', size: '2.1 MB' },
-      ],
-      communications: [
-        { name: 'Mrs. Cook (Parent)', role: 'Parent of Ryan Cook', msg: 'Hello Dr. Jenkins, Ryan will miss class today due to an orthodontist appointment.', time: '10 min ago', unread: true },
-        { name: 'Principal Miller', role: 'Administration', msg: 'Please review and submit the monthly syllabus coverage worksheet by Friday.', time: '1 hour ago', unread: true },
-      ],
-      recentActivity: [
-        { description: 'Marked attendance for Grade 9-A Science', time: '1 hour ago' },
-        { description: 'Published Algebra Quiz results', time: '3 hours ago' },
-      ],
+      resources,
+      communications,
+      recentActivity,
     };
   }
 
   async getStudentDashboard(userId: string) {
-    const student = await this.studentModel.findOne({
-      user: new Types.ObjectId(userId),
-    }).populate('class').exec();
+    const student = await this.studentModel
+      .findOne({
+        user: new Types.ObjectId(userId),
+      })
+      .populate('class')
+      .exec();
     if (!student) throw new Error('Student not found');
     const schoolId = student.schoolId;
 
     const attendanceRecords = await this.attendanceModel.countDocuments({
       student: student._id,
-    } as any);
+    });
     const presentRecords = await this.attendanceModel.countDocuments({
       student: student._id,
       status: 'PRESENT',
@@ -396,12 +723,17 @@ export class AnalyticsService {
     const attendancePercentage =
       attendanceRecords > 0 ? (presentRecords / attendanceRecords) * 100 : 92;
 
-    const myMarks = await this.markModel.find({
-      studentId: student._id.toString(),
-    }).exec();
+    const myMarks = await this.markModel
+      .find({
+        studentId: student._id.toString(),
+      })
+      .exec();
 
     // Calculate dynamic GPA based on marks
-    const totalObtained = myMarks.reduce((sum, m) => sum + (m.marksObtained || 0), 0);
+    const totalObtained = myMarks.reduce(
+      (sum, m) => sum + (m.marksObtained || 0),
+      0,
+    );
     const totalMax = myMarks.reduce((sum, m) => sum + (m.maxMarks || 0), 0);
     const gpaPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 85;
     let gpa = 3.5;
@@ -410,12 +742,15 @@ export class AnalyticsService {
     else if (gpaPercentage >= 70) gpa = 3.2;
 
     // Upcoming exams
-    const exams = await this.examModel.find({
-      class: student.class?._id,
-      isPublished: true,
-    }).limit(3).exec();
+    const exams = await this.examModel
+      .find({
+        class: student.class?._id,
+        isPublished: true,
+      })
+      .limit(3)
+      .exec();
 
-    const upcomingExams = exams.map(e => {
+    const upcomingExams = exams.map((e) => {
       const examDate = (e as any).schedule?.[0]?.date || new Date();
       return {
         id: e._id.toString(),
@@ -423,33 +758,65 @@ export class AnalyticsService {
         date: examDate.toLocaleDateString(),
         time: (e as any).schedule?.[0]?.startTime || '10:00 AM',
         venue: 'Hall A',
-        countdown: Math.max(0, Math.round((examDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))),
+        countdown: Math.max(
+          0,
+          Math.round((examDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+        ),
       };
     });
 
     if (upcomingExams.length === 0) {
       upcomingExams.push(
-        { id: '1', subject: 'Physics', date: 'Jun 20', time: '10:00 AM', venue: 'Hall A', countdown: 14 },
-        { id: '2', subject: 'Mathematics', date: 'Jun 22', time: '09:00 AM', venue: 'Hall B', countdown: 16 },
+        {
+          id: '1',
+          subject: 'Physics',
+          date: 'Jun 20',
+          time: '10:00 AM',
+          venue: 'Hall A',
+          countdown: 14,
+        },
+        {
+          id: '2',
+          subject: 'Mathematics',
+          date: 'Jun 22',
+          time: '09:00 AM',
+          venue: 'Hall B',
+          countdown: 16,
+        },
       );
     }
 
     // Schedule Today
-    const daysOfWeek = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const daysOfWeek = [
+      'SUNDAY',
+      'MONDAY',
+      'TUESDAY',
+      'WEDNESDAY',
+      'THURSDAY',
+      'FRIDAY',
+      'SATURDAY',
+    ];
     const todayDay = daysOfWeek[new Date().getDay()];
-    const timetablesToday = await this.classModel.db.collection('timetables').find({
-      class: student.class?._id,
-      dayOfWeek: todayDay,
-    }).toArray();
+    const timetablesToday = await this.classModel.db
+      .collection('timetables')
+      .find({
+        class: student.class?._id,
+        dayOfWeek: todayDay,
+      })
+      .toArray();
 
     const scheduleToday = [];
     for (const t of timetablesToday) {
-      const subject = await this.classModel.db.collection('subjects').findOne({ _id: t.subject });
+      const subject = await this.classModel.db
+        .collection('subjects')
+        .findOne({ _id: t.subject });
       const teacher = await this.userModel.findById(t.teacher).exec();
       scheduleToday.push({
         id: t._id.toString(),
         subject: subject ? subject.name : 'Class',
-        teacher: teacher ? `${teacher.firstName} ${teacher.lastName}` : 'Instructor',
+        teacher: teacher
+          ? `${teacher.firstName} ${teacher.lastName}`
+          : 'Instructor',
         time: `${t.startTime} – ${t.endTime}`,
         room: t.room || 'Room 301',
         status: 'upcoming',
@@ -459,17 +826,41 @@ export class AnalyticsService {
 
     if (scheduleToday.length === 0) {
       scheduleToday.push(
-        { id: '1', subject: 'Physics', teacher: 'Dr. A. Kumar', time: '08:00 – 09:00', room: 'Room 301', status: 'completed', color: '#6366f1' },
-        { id: '2', subject: 'Mathematics', teacher: 'Prof. R. Gupta', time: '09:15 – 10:15', room: 'Room 204', status: 'current', color: '#0d9488' },
+        {
+          id: '1',
+          subject: 'Physics',
+          teacher: 'Dr. A. Kumar',
+          time: '08:00 – 09:00',
+          room: 'Room 301',
+          status: 'completed',
+          color: '#6366f1',
+        },
+        {
+          id: '2',
+          subject: 'Mathematics',
+          teacher: 'Prof. R. Gupta',
+          time: '09:15 – 10:15',
+          room: 'Room 204',
+          status: 'current',
+          color: '#0d9488',
+        },
       );
     }
 
     // Invoices and Fees collection
-    const invoices = await this.invoiceModel.find({ studentId: student._id }).exec();
-    const paidAmount = invoices.reduce((sum, inv) => sum + (inv.paidAmount || 0), 0);
-    const pendingAmount = invoices.reduce((sum, inv) => sum + (inv.pendingAmount || 0), 0);
+    const invoices = await this.invoiceModel
+      .find({ studentId: student._id })
+      .exec();
+    const paidAmount = invoices.reduce(
+      (sum, inv) => sum + (inv.paidAmount || 0),
+      0,
+    );
+    const pendingAmount = invoices.reduce(
+      (sum, inv) => sum + (inv.pendingAmount || 0),
+      0,
+    );
 
-    const feeHistory = invoices.map(inv => ({
+    const feeHistory = invoices.map((inv) => ({
       desc: inv.feeItems?.[0]?.name || 'Tuition Dues',
       date: inv.invoiceDate.toLocaleDateString(),
       amount: inv.netAmount,
@@ -477,18 +868,25 @@ export class AnalyticsService {
     }));
 
     if (feeHistory.length === 0) {
-      feeHistory.push(
-        { desc: 'Term 1 Tuition', date: 'Jan 5', amount: 22500, status: 'paid' },
-      );
+      feeHistory.push({
+        desc: 'Term 1 Tuition',
+        date: 'Jan 5',
+        amount: 22500,
+        status: 'paid',
+      });
     }
 
     // Query assignments count
-    const studentAssignments = await this.assignmentModel.find({ class: student.class?._id }).exec();
-    const assignmentIds = studentAssignments.map(a => a._id);
-    const submissions = await this.submissionModel.find({
-      assignment: { $in: assignmentIds },
-      student: student._id,
-    }).exec();
+    const studentAssignments = await this.assignmentModel
+      .find({ class: student.class?._id })
+      .exec();
+    const assignmentIds = studentAssignments.map((a) => a._id);
+    const submissions = await this.submissionModel
+      .find({
+        assignment: { $in: assignmentIds },
+        student: student._id,
+      })
+      .exec();
 
     return {
       widgets: {
@@ -504,8 +902,12 @@ export class AnalyticsService {
       },
       charts: {
         gpaGrowth: [
-          { month: 'Jan', gpa: 3.4 }, { month: 'Feb', gpa: 3.5 }, { month: 'Mar', gpa: 3.6 },
-          { month: 'Apr', gpa: 3.7 }, { month: 'May', gpa: 3.8 }, { month: 'Jun', gpa },
+          { month: 'Jan', gpa: 3.4 },
+          { month: 'Feb', gpa: 3.5 },
+          { month: 'Mar', gpa: 3.6 },
+          { month: 'Apr', gpa: 3.7 },
+          { month: 'May', gpa: 3.8 },
+          { month: 'Jun', gpa },
         ],
         subjectsScores: [
           { name: 'Physics', score: 88, color: '#6366f1' },
@@ -514,15 +916,18 @@ export class AnalyticsService {
         ],
       },
       scheduleToday,
-      assignments: studentAssignments.map(a => {
-        const sub = submissions.find(s => s.assignment.toString() === a._id.toString());
+      assignments: studentAssignments.map((a) => {
+        const sub = submissions.find(
+          (s) => s.assignment.toString() === a._id.toString(),
+        );
         return {
           id: a._id.toString(),
           title: a.title,
           subject: 'Class Task',
           due: a.dueDate.toLocaleDateString(),
           status: sub ? sub.status.toLowerCase() : 'pending',
-          priority: a.dueDate.getTime() - Date.now() < 86400000 * 2 ? 'high' : 'medium',
+          priority:
+            a.dueDate.getTime() - Date.now() < 86400000 * 2 ? 'high' : 'medium',
           grade: sub?.marksObtained ? `${sub.marksObtained}` : undefined,
         };
       }),
@@ -534,31 +939,175 @@ export class AnalyticsService {
       fees: {
         paid: paidAmount || 45000,
         outstanding: pendingAmount || 12500,
-        dueDate: invoices.length > 0 ? invoices[0].dueDate.toLocaleDateString() : 'Jun 30, 2025',
+        dueDate:
+          invoices.length > 0
+            ? invoices[0].dueDate.toLocaleDateString()
+            : 'Jun 30, 2025',
         history: feeHistory,
       },
-      resources: [
-        { id: '1', title: 'Wave Optics – Chapter Notes', type: 'PDF', subject: 'Physics', size: '2.4 MB' },
-        { id: '2', title: 'Calculus Lecture Recording', type: 'Video', subject: 'Mathematics', size: '480 MB' },
-      ],
-      announcements: [
-        { id: '1', title: 'Term Examination Schedule Released', type: 'exam', time: '2 hours ago', urgent: true },
-        { id: '2', title: 'Annual Sports Day – June 28th', type: 'event', time: '1 day ago', urgent: false },
-      ],
-      achievements: [
-        { id: '1', title: 'Perfect Attendance', subtitle: 'March 2025', icon: '🏅' },
-        { id: '2', title: 'Top Scorer – Math', subtitle: 'Mid-term 2025', icon: '🥇' },
+      resources: (() => {
+        const studentResources = studentAssignments
+          .filter((a) => a.attachmentUrl)
+          .map((a) => ({
+            id: a._id.toString(),
+            title: `${a.title} Resource`,
+            type: a.attachmentUrl?.split('.').pop()?.toUpperCase() || 'PDF',
+            subject: 'Class Task',
+            size: '1.5 MB',
+          }));
+        if (studentResources.length === 0) {
+          studentResources.push(
+            {
+              id: '1',
+              title: 'Wave Optics – Chapter Notes',
+              type: 'PDF',
+              subject: 'Physics',
+              size: '2.4 MB',
+            },
+            {
+              id: '2',
+              title: 'Calculus Lecture Recording',
+              type: 'Video',
+              subject: 'Mathematics',
+              size: '480 MB',
+            },
+          );
+        }
+        return studentResources;
+      })(),
+      announcements: (() => {
+        const announcements = []; // We query notifications later or fallback
+        if (announcements.length === 0) {
+          announcements.push(
+            {
+              id: '1',
+              title: 'Term Examination Schedule Released',
+              type: 'exam',
+              time: '2 hours ago',
+              urgent: true,
+            },
+            {
+              id: '2',
+              title: 'Annual Sports Day – June 28th',
+              type: 'event',
+              time: '1 day ago',
+              urgent: false,
+            },
+          );
+        }
+        return announcements;
+      })(),
+      achievements: (() => {
+        const list = [];
+        if (attendancePercentage >= 95) {
+          list.push({
+            id: '1',
+            title: 'Perfect Attendance',
+            subtitle: 'March 2025',
+            icon: '🏅',
+          });
+        }
+        const hasTopScorer = myMarks.some(
+          (m) => m.marksObtained / m.maxMarks >= 0.9,
+        );
+        if (hasTopScorer) {
+          list.push({
+            id: '2',
+            title: 'Top Scorer',
+            subtitle: 'Academic Year',
+            icon: '🥇',
+          });
+        }
+        if (submissions.length >= 3) {
+          list.push({
+            id: '3',
+            title: 'Consistent Performer',
+            subtitle: `${submissions.length} Submissions`,
+            icon: '🔬',
+          });
+        }
+        if (list.length === 0) {
+          list.push(
+            {
+              id: '1',
+              title: 'Perfect Attendance',
+              subtitle: 'March 2025',
+              icon: '🏅',
+            },
+            {
+              id: '2',
+              title: 'Top Scorer – Math',
+              subtitle: 'Mid-term 2025',
+              icon: '🥇',
+            },
+          );
+        }
+        return list;
+      })(),
+    };
+  }
+
+  async getParentDashboard(userId: string) {
+    const parentData = await this.parentsService.getDashboard(userId);
+    const childrenCount = parentData.totalChildrenCount || 0;
+    const pendingFees =
+      parentData.children?.reduce(
+        (sum: number, c: any) => sum + (c.unpaidFees || 0),
+        0,
+      ) || 0;
+    return {
+      widgets: {
+        childrenCount,
+        pendingFees,
+      },
+      recentActivity: [],
+      children: parentData.children || [],
+    };
+  }
+
+  async getStaffDashboard(userId: string, schoolId: string) {
+    let balances: any[] = [];
+    try {
+      if (schoolId) {
+        balances = await this.leaveRequestsService.getBalances(
+          userId,
+          schoolId,
+        );
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    const leaveStats = balances.map((b) => ({
+      type: b.leaveType,
+      allocated: b.allocated,
+      used: b.used,
+      pending: b.pending,
+    }));
+
+    return {
+      widgets: {
+        pendingTasks: 3,
+        attendancePercentage: 98,
+      },
+      leaveBalances: leaveStats,
+      recentActivity: [
+        {
+          description: 'Registry backup successfully finished',
+          time: '1 day ago',
+        },
       ],
     };
   }
 
-  async getParentDashboard(_userId: string) {
-    return {
-      widgets: {
-        childrenCount: 1,
-        pendingFees: 0,
-      },
-      recentActivity: [],
-    };
+  private formatTimeAgo(date: Date): string {
+    const diffMs = Date.now() - new Date(date).getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    if (diffMins < 60) return `${Math.max(diffMins, 1)} min ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'Yesterday';
+    return `${diffDays} days ago`;
   }
 }

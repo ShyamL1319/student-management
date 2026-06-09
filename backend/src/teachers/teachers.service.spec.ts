@@ -38,18 +38,25 @@ describe('TeachersService', () => {
 
   it('should create a teacher', async () => {
     const dto = { firstName: 'John', lastName: 'Doe' };
-    const created = { firstName: 'John', lastName: 'Doe', role: 'mockRoleId', roleType: 'TEACHER' };
-    teacherModel.create.mockResolvedValue(created);
-
-    const res = await service.create(dto as any);
-    expect(res).toEqual(created);
-    expect(teacherModel.create).toHaveBeenCalledWith(expect.objectContaining({
+    const created = {
       firstName: 'John',
       lastName: 'Doe',
       role: 'mockRoleId',
       roleType: 'TEACHER',
-      passwordHash: expect.any(String),
-    }));
+    };
+    teacherModel.create.mockResolvedValue(created);
+
+    const res = await service.create(dto as any);
+    expect(res).toEqual(created);
+    expect(teacherModel.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'mockRoleId',
+        roleType: 'TEACHER',
+        passwordHash: expect.any(String),
+      }),
+    );
   });
 
   it('should return a teacher by id', async () => {

@@ -10,7 +10,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN)
@@ -38,6 +38,10 @@ export class UsersController {
     @Body() updateUserRoleDto: UpdateUserRoleDto,
     @CurrentUser() requester: any,
   ) {
-    return this.usersService.updateUserRole(id, updateUserRoleDto.roleId, requester);
+    return this.usersService.updateUserRole(
+      id,
+      updateUserRoleDto.roleId,
+      requester,
+    );
   }
 }

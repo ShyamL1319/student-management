@@ -4,9 +4,7 @@ import { TeachersController } from './teachers.controller';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [
-    UsersModule,
-  ],
+  imports: [UsersModule],
   controllers: [TeachersController],
   providers: [TeachersService],
   exports: [TeachersService],

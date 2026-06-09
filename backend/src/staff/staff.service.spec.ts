@@ -38,17 +38,24 @@ describe('StaffService', () => {
 
   it('should create a staff', async () => {
     const dto = { firstName: 'Staff', lastName: 'One' };
-    const created = { firstName: 'Staff', lastName: 'One', role: 'mockRoleId', roleType: 'STAFF' };
-    staffModel.create.mockResolvedValue(created);
-
-    const res = await service.create(dto as any);
-    expect(res).toEqual(created);
-    expect(staffModel.create).toHaveBeenCalledWith(expect.objectContaining({
+    const created = {
       firstName: 'Staff',
       lastName: 'One',
       role: 'mockRoleId',
       roleType: 'STAFF',
-      passwordHash: expect.any(String),
-    }));
+    };
+    staffModel.create.mockResolvedValue(created);
+
+    const res = await service.create(dto as any);
+    expect(res).toEqual(created);
+    expect(staffModel.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstName: 'Staff',
+        lastName: 'One',
+        role: 'mockRoleId',
+        roleType: 'STAFF',
+        passwordHash: expect.any(String),
+      }),
+    );
   });
 });

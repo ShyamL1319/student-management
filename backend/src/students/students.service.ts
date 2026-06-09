@@ -21,11 +21,21 @@ export class StudentsService {
     const activeYear = await AcademicYearModel.findOne({ isActive: true });
     const academicYearId = activeYear ? activeYear._id.toString() : 'default';
 
-    const admissionNumber = data.admissionNumber || (await this.counterService.generateAdmissionNumber());
-    const rollNumber = data.rollNumber || (await this.counterService.generateRollNumber(data.class, academicYearId));
+    const admissionNumber =
+      data.admissionNumber ||
+      (await this.counterService.generateAdmissionNumber());
+    const rollNumber =
+      data.rollNumber ||
+      (await this.counterService.generateRollNumber(
+        data.class,
+        academicYearId,
+      ));
 
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(process.env.DEFAULT_PASSWORD || 'ChangeMe123!', salt);
+    const passwordHash = await bcrypt.hash(
+      process.env.DEFAULT_PASSWORD || 'ChangeMe123!',
+      salt,
+    );
 
     const studentData = {
       ...data,

@@ -4,7 +4,7 @@ import { Role } from '../../roles/schemas/role.schema';
 
 export type UserDocument = User & Document;
 
-@Schema({ 
+@Schema({
   timestamps: true,
   discriminatorKey: 'roleType',
 })

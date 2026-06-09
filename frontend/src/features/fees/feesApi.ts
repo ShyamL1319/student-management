@@ -1,82 +1,61 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import api from '../../api/api';
+
 export async function createFeeStructure(data: any) {
-  const response = await fetch(`${API_BASE_URL}/fee-structures`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  const response = await api.post('/fee-structures', data);
+  return response.data;
 }
 
 export async function fetchFeeStructures(classId?: string, academicYearId?: string) {
-  let url = `${API_BASE_URL}/fee-structures`;
+  let url = '/fee-structures';
   if (classId) {
-    url = `${API_BASE_URL}/fee-structures/class/${classId}`;
+    url = `/fee-structures/class/${classId}`;
   }
-  const response = await fetch(url, {
-    method: 'GET',
-  });
-  return response.json();
+  const response = await api.get(url);
+  return response.data;
 }
 
 export async function updateFeeStructure(id: string, data: any) {
-  const response = await fetch(`${API_BASE_URL}/fee-structures/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  const response = await api.put(`/fee-structures/${id}`, data);
+  return response.data;
 }
 
 export async function deactivateFeeStructure(id: string) {
-  const response = await fetch(`${API_BASE_URL}/fee-structures/${id}/deactivate`, {
-    method: 'PUT',
-  });
-  return response.json();
+  const response = await api.put(`/fee-structures/${id}/deactivate`);
+  return response.data;
 }
 
 export async function deleteFeeStructure(id: string) {
-  const response = await fetch(`${API_BASE_URL}/fee-structures/${id}`, {
-    method: 'DELETE',
-  });
-  return response.json();
+  const response = await api.delete(`/fee-structures/${id}`);
+  return response.data;
 }
 
 // Fee Collection APIs
 export async function createFeeCollection(data: any) {
-  const response = await fetch(`${API_BASE_URL}/fee-collections`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  const response = await api.post('/fee-collections', data);
+  return response.data;
 }
 
 export async function fetchFeeCollections(studentId?: string, classId?: string, status?: string) {
-  let url = `${API_BASE_URL}/fee-collections`;
+  let url = '/fee-collections';
   if (studentId) {
-    url = `${API_BASE_URL}/fee-collections/student/${studentId}`;
+    url = `/fee-collections/student/${studentId}`;
   } else if (classId) {
-    url = `${API_BASE_URL}/fee-collections/class/${classId}`;
+    url = `/fee-collections/class/${classId}`;
   }
-  const response = await fetch(url, {
-    method: 'GET',
+  const response = await api.get(url, {
+    params: status ? { status } : undefined,
   });
-  return response.json();
+  return response.data;
 }
 
 export async function fetchPendingFees(studentId: string) {
-  const response = await fetch(`${API_BASE_URL}/fee-collections/student/${studentId}/pending`, {
-    method: 'GET',
-  });
-  return response.json();
+  const response = await api.get(`/fee-collections/student/${studentId}/pending`);
+  return response.data;
 }
 
 export async function fetchOutstandingAmount(studentId: string) {
-  const response = await fetch(`${API_BASE_URL}/fee-collections/student/${studentId}/outstanding`, {
-    method: 'GET',
-  });
-  return response.json();
+  const response = await api.get(`/fee-collections/student/${studentId}/outstanding`);
+  return response.data;
 }
 
 export async function recordPayment(
@@ -84,180 +63,136 @@ export async function recordPayment(
   amountPaid: number,
   paymentMethod: string,
 ) {
-  const response = await fetch(`${API_BASE_URL}/fee-collections/${feeCollectionId}/payment`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amountPaid, paymentMethod }),
+  const response = await api.put(`/fee-collections/${feeCollectionId}/payment`, {
+    amountPaid,
+    paymentMethod,
   });
-  return response.json();
+  return response.data;
 }
 
 export async function updateFeeCollection(id: string, data: any) {
-  const response = await fetch(`${API_BASE_URL}/fee-collections/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  const response = await api.put(`/fee-collections/${id}`, data);
+  return response.data;
 }
 
 export async function deleteFeeCollection(id: string) {
-  const response = await fetch(`${API_BASE_URL}/fee-collections/${id}`, {
-    method: 'DELETE',
-  });
-  return response.json();
+  const response = await api.delete(`/fee-collections/${id}`);
+  return response.data;
 }
 
 // Receipt APIs
 export async function createReceipt(data: any) {
-  const response = await fetch(`${API_BASE_URL}/receipts`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  const response = await api.post('/receipts', data);
+  return response.data;
 }
 
 export async function fetchReceipts(studentId?: string) {
-  let url = `${API_BASE_URL}/receipts`;
+  let url = '/receipts';
   if (studentId) {
-    url = `${API_BASE_URL}/receipts/student/${studentId}`;
+    url = `/receipts/student/${studentId}`;
   }
-  const response = await fetch(url, {
-    method: 'GET',
-  });
-  return response.json();
+  const response = await api.get(url);
+  return response.data;
 }
 
 export async function fetchReceiptByNumber(receiptNumber: string) {
-  const response = await fetch(`${API_BASE_URL}/receipts/number/${receiptNumber}`, {
-    method: 'GET',
-  });
-  return response.json();
+  const response = await api.get(`/receipts/number/${receiptNumber}`);
+  return response.data;
 }
 
 export async function cancelReceipt(id: string) {
-  const response = await fetch(`${API_BASE_URL}/receipts/${id}/cancel`, {
-    method: 'PUT',
-  });
-  return response.json();
+  const response = await api.put(`/receipts/${id}/cancel`);
+  return response.data;
 }
 
 export async function deleteReceipt(id: string) {
-  const response = await fetch(`${API_BASE_URL}/receipts/${id}`, {
-    method: 'DELETE',
-  });
-  return response.json();
+  const response = await api.delete(`/receipts/${id}`);
+  return response.data;
 }
 
 // Invoice APIs
 export async function createInvoice(data: any) {
-  const response = await fetch(`${API_BASE_URL}/invoices`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  const response = await api.post('/invoices', data);
+  return response.data;
 }
 
 export async function fetchInvoices(studentId?: string, classId?: string) {
-  let url = `${API_BASE_URL}/invoices`;
+  let url = '/invoices';
   if (studentId) {
-    url = `${API_BASE_URL}/invoices/student/${studentId}`;
+    url = `/invoices/student/${studentId}`;
   } else if (classId) {
-    url = `${API_BASE_URL}/invoices/class/${classId}`;
+    url = `/invoices/class/${classId}`;
   }
-  const response = await fetch(url, {
-    method: 'GET',
-  });
-  return response.json();
+  const response = await api.get(url);
+  return response.data;
 }
 
 export async function fetchOverdueInvoices() {
-  const response = await fetch(`${API_BASE_URL}/invoices/overdue`, {
-    method: 'GET',
-  });
-  return response.json();
+  const response = await api.get('/invoices/overdue');
+  return response.data;
 }
 
 export async function recordInvoicePayment(invoiceId: string, amountPaid: number) {
-  const response = await fetch(`${API_BASE_URL}/invoices/${invoiceId}/payment`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amountPaid }),
-  });
-  return response.json();
+  const response = await api.put(`/invoices/${invoiceId}/payment`, { amountPaid });
+  return response.data;
 }
 
 export async function updateInvoice(id: string, data: any) {
-  const response = await fetch(`${API_BASE_URL}/invoices/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  const response = await api.put(`/invoices/${id}`, data);
+  return response.data;
 }
 
 export async function cancelInvoice(id: string) {
-  const response = await fetch(`${API_BASE_URL}/invoices/${id}/cancel`, {
-    method: 'PUT',
-  });
-  return response.json();
+  const response = await api.put(`/invoices/${id}/cancel`);
+  return response.data;
 }
 
 export async function deleteInvoice(id: string) {
-  const response = await fetch(`${API_BASE_URL}/invoices/${id}`, {
-    method: 'DELETE',
-  });
-  return response.json();
+  const response = await api.delete(`/invoices/${id}`);
+  return response.data;
 }
 
 // Report APIs
 export async function fetchCollectionReport(classId?: string, academicYearId?: string) {
-  let url = `${API_BASE_URL}/fees/reports/collection`;
-  const params = [];
-  if (classId) params.push(`classId=${classId}`);
-  if (academicYearId) params.push(`academicYearId=${academicYearId}`);
-  if (params.length > 0) url += '?' + params.join('&');
+  const params: any = {};
+  if (classId) params.classId = classId;
+  if (academicYearId) params.academicYearId = academicYearId;
 
-  const response = await fetch(url, { method: 'GET' });
-  return response.json();
+  const response = await api.get('/fees/reports/collection', { params });
+  return response.data;
 }
 
 export async function fetchOutstandingFeesReport(academicYearId?: string) {
-  let url = `${API_BASE_URL}/fees/reports/outstanding`;
-  if (academicYearId) url += `?academicYearId=${academicYearId}`;
+  const params: any = {};
+  if (academicYearId) params.academicYearId = academicYearId;
 
-  const response = await fetch(url, { method: 'GET' });
-  return response.json();
+  const response = await api.get('/fees/reports/outstanding', { params });
+  return response.data;
 }
 
 export async function fetchReceiptReport(startDate?: Date, endDate?: Date) {
-  let url = `${API_BASE_URL}/fees/reports/receipts`;
-  const params = [];
-  if (startDate) params.push(`startDate=${startDate.toISOString()}`);
-  if (endDate) params.push(`endDate=${endDate.toISOString()}`);
-  if (params.length > 0) url += '?' + params.join('&');
+  const params: any = {};
+  if (startDate) params.startDate = startDate.toISOString();
+  if (endDate) params.endDate = endDate.toISOString();
 
-  const response = await fetch(url, { method: 'GET' });
-  return response.json();
+  const response = await api.get('/fees/reports/receipts', { params });
+  return response.data;
 }
 
 export async function fetchInvoiceReport(classId?: string, academicYearId?: string) {
-  let url = `${API_BASE_URL}/fees/reports/invoices`;
-  const params = [];
-  if (classId) params.push(`classId=${classId}`);
-  if (academicYearId) params.push(`academicYearId=${academicYearId}`);
-  if (params.length > 0) url += '?' + params.join('&');
+  const params: any = {};
+  if (classId) params.classId = classId;
+  if (academicYearId) params.academicYearId = academicYearId;
 
-  const response = await fetch(url, { method: 'GET' });
-  return response.json();
+  const response = await api.get('/fees/reports/invoices', { params });
+  return response.data;
 }
 
 export async function fetchMonthlyReport(academicYearId?: string) {
-  let url = `${API_BASE_URL}/fees/reports/monthly`;
-  if (academicYearId) url += `?academicYearId=${academicYearId}`;
+  const params: any = {};
+  if (academicYearId) params.academicYearId = academicYearId;
 
-  const response = await fetch(url, { method: 'GET' });
-  return response.json();
+  const response = await api.get('/fees/reports/monthly', { params });
+  return response.data;
 }
+

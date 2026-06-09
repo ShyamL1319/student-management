@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -65,7 +64,7 @@ export class DashboardService {
     @InjectModel(Subject.name) private subjectModel: Model<SubjectDocument>,
     @InjectModel(AcademicYear.name)
     private academicYearModel: Model<AcademicYearDocument>,
-  ) { }
+  ) {}
 
   async getStudentDashboardData(user: {
     _id: Types.ObjectId | string;
@@ -367,10 +366,7 @@ export class DashboardService {
       subject: exam.subject,
       due: exam.date,
       status: 'pending' as const,
-      priority: (index === 0 ? 'high' : index === 1 ? 'medium' : 'low') as
-        | 'high'
-        | 'medium'
-        | 'low',
+      priority: (index === 0 ? 'high' : index === 1 ? 'medium' : 'low') as 'high' | 'medium' | 'low',
     }));
 
     return [...pending, ...graded];
@@ -465,9 +461,7 @@ export class DashboardService {
           day: 'numeric',
         }),
         amount: invoice.netAmount,
-        status: (invoice.pendingAmount > 0 ? 'pending' : 'paid') as
-          | 'pending'
-          | 'paid',
+        status: (invoice.pendingAmount > 0 ? 'pending' : 'paid') as 'pending' | 'paid',
       };
     });
 
@@ -476,10 +470,10 @@ export class DashboardService {
       outstanding,
       dueDate: nearestDue
         ? (nearestDue as Date).toLocaleDateString('en-IN', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })
         : 'N/A',
       history,
     };

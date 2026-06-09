@@ -66,7 +66,12 @@ describe('TenantMiddleware', () => {
     const res = {} as any;
     const next = jest.fn();
 
-    const mockTenant = { _id: tenantId, name: 'Test School', subdomain: 'test', isActive: true };
+    const mockTenant = {
+      _id: tenantId,
+      name: 'Test School',
+      subdomain: 'test',
+      isActive: true,
+    };
     const mockSchool = { _id: schoolId, tenantId };
 
     mockTenantModel.findById.mockResolvedValue(mockTenant);
@@ -78,7 +83,9 @@ describe('TenantMiddleware', () => {
     await middleware.use(req, res, next);
 
     expect(mockTenantModel.findById).toHaveBeenCalledWith(tenantId);
-    expect(mockSchoolModel.findOne).toHaveBeenCalledWith({ tenantId: tenantId });
+    expect(mockSchoolModel.findOne).toHaveBeenCalledWith({
+      tenantId: tenantId,
+    });
     expect(contextRunSpy).toHaveBeenCalled();
     expect(next).toHaveBeenCalled();
   });
@@ -95,7 +102,12 @@ describe('TenantMiddleware', () => {
     const res = {} as any;
     const next = jest.fn();
 
-    const mockTenant = { _id: tenantId, name: 'Hogwarts', subdomain: 'hogwarts', isActive: true };
+    const mockTenant = {
+      _id: tenantId,
+      name: 'Hogwarts',
+      subdomain: 'hogwarts',
+      isActive: true,
+    };
     const mockSchool = { _id: schoolId, tenantId };
 
     mockTenantModel.findOne.mockResolvedValue(mockTenant);
@@ -104,7 +116,9 @@ describe('TenantMiddleware', () => {
     await middleware.use(req, res, next);
 
     expect(mockTenantModel.findOne).toHaveBeenCalled();
-    expect(mockSchoolModel.findOne).toHaveBeenCalledWith({ tenantId: tenantId });
+    expect(mockSchoolModel.findOne).toHaveBeenCalledWith({
+      tenantId: tenantId,
+    });
     expect(next).toHaveBeenCalled();
   });
 
@@ -136,7 +150,12 @@ describe('TenantMiddleware', () => {
     const res = {} as any;
     const next = jest.fn();
 
-    const mockTenant = { _id: tenantId, name: 'Inactive', subdomain: 'inactive', isActive: false };
+    const mockTenant = {
+      _id: tenantId,
+      name: 'Inactive',
+      subdomain: 'inactive',
+      isActive: false,
+    };
     mockTenantModel.findById.mockResolvedValue(mockTenant);
 
     await middleware.use(req, res, next);

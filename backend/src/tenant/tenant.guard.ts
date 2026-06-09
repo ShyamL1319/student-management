@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { TenantContext } from './tenant.context';
 import { RoleEnum } from '../common/enums/role.enum';
@@ -25,7 +31,10 @@ export class TenantGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    let userSchoolId = user?.schoolId?.toString() || user?.school?.toString() || user?.school?._id?.toString();
+    let userSchoolId =
+      user?.schoolId?.toString() ||
+      user?.school?.toString() ||
+      user?.school?._id?.toString();
     let isSuperAdmin = user?.role?.name === RoleEnum.SUPER_ADMIN;
 
     // If request.user is not populated yet (global guard execution order), extract from JWT
@@ -36,7 +45,9 @@ export class TenantGuard implements CanActivate {
           const token = authHeader.split(' ')[1];
           const payloadPart = token.split('.')[1];
           if (payloadPart) {
-            const payload = JSON.parse(Buffer.from(payloadPart, 'base64').toString());
+            const payload = JSON.parse(
+              Buffer.from(payloadPart, 'base64').toString(),
+            );
             userSchoolId = payload.schoolId || payload.school;
             const roleName = payload.role?.name || payload.role;
             isSuperAdmin = roleName === RoleEnum.SUPER_ADMIN;
@@ -54,8 +65,12 @@ export class TenantGuard implements CanActivate {
       }
 
       if (userSchoolId !== schoolId) {
-        console.warn(`SECURITY ALERT: User attempted cross-tenant access. User School: ${userSchoolId}, Target School: ${schoolId}`);
-        throw new ForbiddenException('Access Denied: Cross-tenant access detected');
+        console.warn(
+          `SECURITY ALERT: User attempted cross-tenant access. User School: ${userSchoolId}, Target School: ${schoolId}`,
+        );
+        throw new ForbiddenException(
+          'Access Denied: Cross-tenant access detected',
+        );
       }
     }
 

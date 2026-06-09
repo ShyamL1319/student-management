@@ -1,7 +1,22 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdmissionsService } from './admissions.service';
-import { CreateAdmissionDto, ScheduleInterviewDto, EvaluateApplicationDto, UpdateAdmissionStatusDto } from './dto/admission.dto';
+import {
+  CreateAdmissionDto,
+  ScheduleInterviewDto,
+  EvaluateApplicationDto,
+  UpdateAdmissionStatusDto,
+} from './dto/admission.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -17,7 +32,10 @@ export class AdmissionsController {
   @Post('apply')
   @Public()
   @ApiOperation({ summary: 'Submit an online admission application' })
-  async apply(@Body() dto: CreateAdmissionDto, @Query('schoolId') schoolId: string) {
+  async apply(
+    @Body() dto: CreateAdmissionDto,
+    @Query('schoolId') schoolId: string,
+  ) {
     return this.admissionsService.create(schoolId, dto);
   }
 
@@ -67,7 +85,12 @@ export class AdmissionsController {
     @Param('id') id: string,
     @Body() dto: UpdateAdmissionStatusDto,
   ) {
-    return this.admissionsService.updateStatus(id, user.schoolId.toString(), user._id.toString(), dto);
+    return this.admissionsService.updateStatus(
+      id,
+      user.schoolId.toString(),
+      user._id.toString(),
+      dto,
+    );
   }
 
   @Post(':id/schedule')
@@ -80,7 +103,12 @@ export class AdmissionsController {
     @Param('id') id: string,
     @Body() dto: ScheduleInterviewDto,
   ) {
-    return this.admissionsService.scheduleInterview(id, user.schoolId.toString(), user._id.toString(), dto);
+    return this.admissionsService.scheduleInterview(
+      id,
+      user.schoolId.toString(),
+      user._id.toString(),
+      dto,
+    );
   }
 
   @Post(':id/evaluate')
@@ -93,19 +121,27 @@ export class AdmissionsController {
     @Param('id') id: string,
     @Body() dto: EvaluateApplicationDto,
   ) {
-    return this.admissionsService.evaluate(id, user.schoolId.toString(), user._id.toString(), dto);
+    return this.admissionsService.evaluate(
+      id,
+      user.schoolId.toString(),
+      user._id.toString(),
+      dto,
+    );
   }
 
   @Post(':id/enroll')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Enroll candidate, generate invoice and user credentials' })
-  async enroll(
-    @CurrentUser() user: any,
-    @Param('id') id: string,
-  ) {
-    return this.admissionsService.enroll(id, user.schoolId.toString(), user._id.toString());
+  @ApiOperation({
+    summary: 'Enroll candidate, generate invoice and user credentials',
+  })
+  async enroll(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.admissionsService.enroll(
+      id,
+      user.schoolId.toString(),
+      user._id.toString(),
+    );
   }
 
   @Delete(':id')

@@ -68,11 +68,16 @@ describe('StudentsService', () => {
     const res = await service.create(dto as any);
     expect(res).toEqual(expectedCreated);
     expect(mockCounterService.generateAdmissionNumber).toHaveBeenCalled();
-    expect(mockCounterService.generateRollNumber).toHaveBeenCalledWith('mockClassId', 'mockAcademicYearId');
-    expect(studentModel.create).toHaveBeenCalledWith(expect.objectContaining({
-      firstName: 'Test',
-      admissionNumber: 'ADM-2026-000001',
-      rollNumber: 'ROLL-class-000001',
-    }));
+    expect(mockCounterService.generateRollNumber).toHaveBeenCalledWith(
+      'mockClassId',
+      'mockAcademicYearId',
+    );
+    expect(studentModel.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstName: 'Test',
+        admissionNumber: 'ADM-2026-000001',
+        rollNumber: 'ROLL-class-000001',
+      }),
+    );
   });
 });
