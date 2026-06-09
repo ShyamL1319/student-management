@@ -22,6 +22,10 @@ export enum NotificationEventType {
   EXAM_SCHEDULE = 'exam-schedule',
   TIMETABLE_CHANGE = 'timetable-change',
   ANNOUNCEMENT = 'announcement',
+  LEAVE_REQUESTED = 'leave-requested',
+  LEAVE_APPROVED = 'leave-approved',
+  LEAVE_REJECTED = 'leave-rejected',
+  LEAVE_CANCELLED = 'leave-cancelled',
 }
 
 @Schema({ timestamps: true })

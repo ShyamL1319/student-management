@@ -160,18 +160,37 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
   const [selectedClassForAttendance, setSelectedClassForAttendance] = useState<string>('');
   
   // Dynamic leave requests state and handlers
-  const [leaveRequests, setLeaveRequests] = useState<any[]>(data.leaveRequests || MOCK_LEAVE_REQUESTS);
+  const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
   
-  useEffect(() => {
-    if (data.leaveRequests) {
-      setLeaveRequests(data.leaveRequests);
+  const fetchLeaves = async () => {
+    try {
+      const res = await api.get('/leave-requests');
+      if (res && res.data) {
+        const pendingLeaves = res.data.data
+          .filter((l: any) => l.status === 'PENDING')
+          .map((l: any) => ({
+            id: l._id || l.id,
+            studentName: l.requesterId ? `${l.requesterId.firstName} ${l.requesterId.lastName}` : 'Unknown Student',
+            class: l.requesterId?.class?.name || 'Class',
+            reason: l.reason,
+            date: `${new Date(l.startDate).toLocaleDateString()} - ${new Date(l.endDate).toLocaleDateString()}`,
+            status: 'pending',
+          }));
+        setLeaveRequests(pendingLeaves);
+      }
+    } catch (err) {
+      console.error('Failed to fetch pending leaves on teacher dashboard', err);
     }
-  }, [data]);
+  };
+
+  useEffect(() => {
+    fetchLeaves();
+  }, []);
 
   const handleApproveLeave = async (id: string) => {
     try {
       await api.patch(`/leave-requests/${id}/status`, { status: 'APPROVED' });
-      setLeaveRequests(prev => prev.filter(r => r.id !== id));
+      fetchLeaves();
     } catch (err) {
       console.error('Failed to approve leave', err);
     }
@@ -180,7 +199,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
   const handleRejectLeave = async (id: string) => {
     try {
       await api.patch(`/leave-requests/${id}/status`, { status: 'REJECTED' });
-      setLeaveRequests(prev => prev.filter(r => r.id !== id));
+      fetchLeaves();
     } catch (err) {
       console.error('Failed to reject leave', err);
     }

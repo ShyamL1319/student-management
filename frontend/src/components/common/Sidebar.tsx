@@ -216,6 +216,7 @@ export const Sidebar: FC<SidebarProps> = ({ drawerWidth, mobileOpen, onDrawerTog
                 {renderLinkItem('Exams', <EventAvailableIcon fontSize="small" />, '/exams', onLinkClick)}
                 {renderLinkItem('Marks', <GradeIcon fontSize="small" />, '/marks', onLinkClick)}
                 {renderLinkItem('Attendance', <EventAvailableIcon fontSize="small" />, '/attendances', onLinkClick)}
+                {renderLinkItem('Leaves', <EventAvailableIcon fontSize="small" />, '/leaves', onLinkClick)}
                 {renderLinkItem('Timetables', <ScheduleIcon fontSize="small" />, '/timetables', onLinkClick)}
               </List>
             </Collapse>

@@ -577,6 +577,10 @@ export class DashboardService {
       [NotificationEventType.EXAM_SCHEDULE]: 'Examination Cell',
       [NotificationEventType.TIMETABLE_CHANGE]: 'Timetable',
       [NotificationEventType.ANNOUNCEMENT]: 'Announcement',
+      [NotificationEventType.LEAVE_REQUESTED]: 'Leave Request',
+      [NotificationEventType.LEAVE_APPROVED]: 'Leave Approval',
+      [NotificationEventType.LEAVE_REJECTED]: 'Leave Rejection',
+      [NotificationEventType.LEAVE_CANCELLED]: 'Leave Cancellation',
     };
     return map[eventType] ?? 'Notification';
   }

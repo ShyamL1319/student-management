@@ -35,6 +35,7 @@ import { NotificationPreferences } from './features/notifications/pages/Notifica
 import { ReportsPage } from './features/reports/pages/ReportsPage';
 import { AuditLogsPage } from './features/audit-logs';
 import ParentDashboard from './features/dashboard/pages/ParentDashboard';
+import { LeavesPage } from './features/leaves/pages/LeavesPage';
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) => {
   const { isAuthenticated, user } = useAuth();
@@ -184,6 +185,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <AttendancePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaves"
+          element={
+            <ProtectedRoute>
+              <LeavesPage />
             </ProtectedRoute>
           }
         />
