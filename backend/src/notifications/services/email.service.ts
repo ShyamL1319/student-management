@@ -37,6 +37,7 @@ export class EmailService {
     subject: string,
     message: string,
     htmlContent?: string,
+    attachments?: Array<{ filename: string; content: Buffer }>,
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
       const mailOptions = {
@@ -47,6 +48,7 @@ export class EmailService {
         subject,
         text: message,
         html: htmlContent || message,
+        attachments,
       };
 
       const info = await this.transporter.sendMail(mailOptions);

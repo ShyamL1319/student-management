@@ -102,5 +102,16 @@ export const parentsApi = {
   getParent: async (id: string) => {
     const response = await api.get(`/parents/${id}`);
     return response.data;
+  },
+
+  initiatePayment: async (dto: { studentId: string; invoiceId: string; gateway: 'STRIPE' | 'RAZORPAY' | 'PHONEPE' }) => {
+    const res = await api.post('/payments/initiate', dto);
+    return res.data;
+  },
+
+  simulatePaymentSuccess: async (dto: { paymentId: string }) => {
+    const res = await api.post('/payments/simulate-success', dto);
+    return res.data;
   }
 };
+

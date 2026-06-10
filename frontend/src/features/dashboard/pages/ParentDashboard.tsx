@@ -32,6 +32,10 @@ import {
   Send as SendIcon,
   Add as AddIcon,
   DateRange as DateIcon,
+  CreditCard as CreditCardIcon,
+  ArrowBack as ArrowBackIcon,
+  DoneAll as DoneAllIcon,
+  Payments as PaymentsIcon,
 } from '@mui/icons-material';
 import { parentsApi } from '../../parents/api/parents.api';
 
@@ -152,10 +156,25 @@ export const ParentDashboard: React.FC = () => {
   const [linkSuccess, setLinkSuccess] = useState('');
   const [linking, setLinking] = useState(false);
 
-  // Messaging states
   const [newMessage, setNewMessage] = useState('');
   const [recipientId, setRecipientId] = useState('');
   const [sending, setSending] = useState(false);
+
+  // Payment checkout states
+  const [selectedInvoice, setSelectedInvoice] = useState<FeeInvoice | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [selectedGateway, setSelectedGateway] = useState<'STRIPE' | 'RAZORPAY' | 'PHONEPE'>('STRIPE');
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [initiatedPaymentData, setInitiatedPaymentData] = useState<any>(null);
+
+  // Stripe Mock Credit Card details
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
+  const [isSubmittingCard, setIsSubmittingCard] = useState(false);
 
   // Reload trigger to refresh the page safely
   const [reloadTrigger, setReloadTrigger] = useState(0);
@@ -224,6 +243,148 @@ export const ParentDashboard: React.FC = () => {
 
     loadChildDetails();
   }, [activeChild]);
+
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleOpenCheckout = (invoice: FeeInvoice) => {
+    setSelectedInvoice(invoice);
+    setIsCheckoutOpen(true);
+    setCheckoutSuccess(false);
+    setCheckoutError('');
+    setInitiatedPaymentData(null);
+    setSelectedGateway('STRIPE');
+    setCardName('');
+    setCardNumber('');
+    setCardExpiry('');
+    setCardCvc('');
+  };
+
+  const handleInitiatePayment = async () => {
+    if (!selectedInvoice || !activeChild) return;
+    setCheckoutLoading(true);
+    setCheckoutError('');
+    try {
+      const initData = await parentsApi.initiatePayment({
+        studentId: activeChild._id,
+        invoiceId: selectedInvoice._id,
+        gateway: selectedGateway,
+      });
+      setInitiatedPaymentData(initData);
+
+      if (selectedGateway === 'PHONEPE') {
+        if (initData.redirectUrl) {
+          window.open(initData.redirectUrl, '_blank');
+        } else {
+          setCheckoutError('No redirect URL returned by PhonePe');
+        }
+      } else if (selectedGateway === 'RAZORPAY') {
+        const scriptLoaded = await loadRazorpayScript();
+        if (!scriptLoaded) {
+          setCheckoutError('Failed to load Razorpay SDK. Please check your connection.');
+          return;
+        }
+
+        const options = {
+          key: (import.meta.env.VITE_RAZORPAY_KEY_ID as string) || 'rzp_test_mock',
+          amount: initData.amount,
+          currency: initData.currency || 'INR',
+          name: 'School Fees Payment',
+          description: `Invoice: ${selectedInvoice.invoiceNumber}`,
+          order_id: initData.orderId,
+          handler: async function (response: any) {
+            try {
+              setCheckoutLoading(true);
+              await parentsApi.simulatePaymentSuccess({ paymentId: initData.paymentId });
+              setCheckoutSuccess(true);
+              const feeRes = await parentsApi.getChildFees(activeChild._id);
+              setFees(feeRes || []);
+            } catch (err: any) {
+              setCheckoutError(err?.response?.data?.message || 'Fulfillment verification failed.');
+            } finally {
+              setCheckoutLoading(false);
+            }
+          },
+          prefill: {
+            name: `${activeChild.firstName} ${activeChild.lastName}`,
+            email: 'parent@school.com',
+          },
+          theme: {
+            color: '#1e1b4b',
+          },
+        };
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      }
+    } catch (err: any) {
+      setCheckoutError(err?.response?.data?.message || 'Failed to initiate payment.');
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  const handleStripeMockPaySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!initiatedPaymentData) return;
+    setIsSubmittingCard(true);
+    setCheckoutError('');
+
+    try {
+      if (cardNumber.replace(/\s/g, '').length < 16) {
+        throw new Error('Please enter a valid 16-digit credit card number.');
+      }
+      if (cardExpiry.length < 5 || !cardExpiry.includes('/')) {
+        throw new Error('Please enter a valid expiry date (MM/YY).');
+      }
+      if (cardCvc.length < 3) {
+        throw new Error('Please enter a valid CVC code.');
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      await parentsApi.simulatePaymentSuccess({ paymentId: initiatedPaymentData.paymentId });
+      setCheckoutSuccess(true);
+
+      if (activeChild) {
+        const feeRes = await parentsApi.getChildFees(activeChild._id);
+        setFees(feeRes || []);
+      }
+    } catch (err: any) {
+      setCheckoutError(err.message || 'Payment simulation failed.');
+    } finally {
+      setIsSubmittingCard(false);
+    }
+  };
+
+  const handleSimulatePhonepeCallback = async () => {
+    if (!initiatedPaymentData) return;
+    setCheckoutLoading(true);
+    setCheckoutError('');
+    try {
+      await parentsApi.simulatePaymentSuccess({ paymentId: initiatedPaymentData.paymentId });
+      setCheckoutSuccess(true);
+      if (activeChild) {
+        const feeRes = await parentsApi.getChildFees(activeChild._id);
+        setFees(feeRes || []);
+      }
+    } catch (err: any) {
+      setCheckoutError(err?.response?.data?.message || 'Simulated PhonePe callback failed.');
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   const handleLinkChild = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -502,7 +663,13 @@ export const ParentDashboard: React.FC = () => {
                             />
                           </Box>
                           {invoice.pendingAmount > 0 && (
-                            <Button variant="contained" color="error" size="small" sx={{ borderRadius: 1.5, fontWeight: 700 }}>
+                            <Button
+                              variant="contained"
+                              color="error"
+                              size="small"
+                              onClick={() => handleOpenCheckout(invoice)}
+                              sx={{ borderRadius: 1.5, fontWeight: 700 }}
+                            >
                               Pay Now
                             </Button>
                           )}
@@ -667,6 +834,347 @@ export const ParentDashboard: React.FC = () => {
             </Button>
           </DialogActions>
         </Box>
+      </Dialog>
+
+      {/* 4. Payment Checkout Dialog Wizard */}
+      <Dialog
+        open={isCheckoutOpen}
+        onClose={() => !checkoutLoading && !isSubmittingCard && setIsCheckoutOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{ paper: { sx: { borderRadius: 4, p: 1 } } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, textAlign: 'center', pb: 1 }}>
+          {checkoutSuccess ? 'Payment Successful' : 'Secure Fee Checkout'}
+        </DialogTitle>
+
+        <DialogContent>
+          {checkoutError && (
+            <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+              {checkoutError}
+            </Alert>
+          )}
+
+          {checkoutSuccess ? (
+            <Box sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  bgcolor: 'success.light',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mb: 1,
+                  boxShadow: '0 4px 20px rgba(46, 125, 50, 0.4)',
+                  animation: 'scaleIn 0.3s ease-out',
+                }}
+              >
+                <DoneAllIcon sx={{ fontSize: 48 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: 'success.main' }}>
+                Thank You!
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
+                Payment for invoice <strong>{selectedInvoice?.invoiceNumber}</strong> has been successfully captured.
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, fontStyle: 'italic' }}>
+                A digital A4 receipt has been generated and emailed to your registered address.
+              </Typography>
+            </Box>
+          ) : !initiatedPaymentData ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
+              {selectedInvoice && (
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, bgcolor: 'action.hover', borderStyle: 'dashed' }}>
+                  <Grid container spacing={1}>
+                    <Grid size={{ xs: 6 }}>
+                      <Typography variant="caption" color="text.secondary">INVOICE NO</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>{selectedInvoice.invoiceNumber}</Typography>
+                    </Grid>
+                    <Grid size={{ xs: 6 }} sx={{ textAlign: 'right' }}>
+                      <Typography variant="caption" color="text.secondary">AMOUNT DUE</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                        ${selectedInvoice.pendingAmount}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              )}
+
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                Select Payment Method:
+              </Typography>
+
+              <Grid container spacing={2}>
+                {[
+                  { id: 'STRIPE', name: 'Stripe Cards', desc: 'Credit / Debit Card', icon: <CreditCardIcon sx={{ fontSize: 28 }} />, color: '#6366f1' },
+                  { id: 'RAZORPAY', name: 'Razorpay UPI', desc: 'NetBanking / UPI', icon: <PaymentsIcon sx={{ fontSize: 28 }} />, color: '#0ea5e9' },
+                  { id: 'PHONEPE', name: 'PhonePe', desc: 'UPI Standard Redirect', icon: <AccountBalanceIcon sx={{ fontSize: 28 }} />, color: '#8b5cf6' },
+                ].map((gatewayOption) => {
+                  const isSelected = selectedGateway === gatewayOption.id;
+                  return (
+                    <Grid size={{ xs: 12 }} key={gatewayOption.id}>
+                      <Box
+                        onClick={() => setSelectedGateway(gatewayOption.id as any)}
+                        sx={{
+                          p: 2,
+                          borderRadius: 3,
+                          border: '2px solid',
+                          borderColor: isSelected ? gatewayOption.color : 'divider',
+                          bgcolor: isSelected ? `${gatewayOption.color}08` : 'background.paper',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                            borderColor: isSelected ? gatewayOption.color : 'text.secondary',
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 1,
+                            borderRadius: 2,
+                            bgcolor: isSelected ? `${gatewayOption.color}15` : 'action.selected',
+                            color: gatewayOption.color,
+                            display: 'flex',
+                          }}
+                        >
+                          {gatewayOption.icon}
+                        </Box>
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                            {gatewayOption.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {gatewayOption.desc}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </Box>
+          ) : (
+            <Box sx={{ mt: 1 }}>
+              {selectedGateway === 'STRIPE' ? (
+                <Box component="form" onSubmit={handleStripeMockPaySubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {/* Premium credit card mockup graphic */}
+                  <Box
+                    sx={{
+                      background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4f46e5 100%)',
+                      borderRadius: 4,
+                      boxShadow: '0 8px 30px rgba(79, 70, 229, 0.3)',
+                      p: 2.5,
+                      color: 'white',
+                      height: 180,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      mb: 1,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box sx={{ width: 40, height: 30, bgcolor: '#eab308', borderRadius: 1, opacity: 0.8 }} />
+                      <Typography sx={{ fontWeight: 900, fontSize: 18, fontStyle: 'italic' }}>CARD</Typography>
+                    </Box>
+                    <Typography variant="h6" sx={{ letterSpacing: 2.5, fontFamily: 'monospace', textAlign: 'center', my: 1 }}>
+                      {cardNumber || '•••• •••• •••• ••••'}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <Box>
+                        <Typography sx={{ fontSize: 8, opacity: 0.6, textTransform: 'uppercase' }}>CARDHOLDER</Typography>
+                        <Typography sx={{ fontSize: 13, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
+                          {cardName || 'YOUR NAME'}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography sx={{ fontSize: 8, opacity: 0.6, textTransform: 'uppercase' }}>EXPIRES</Typography>
+                        <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{cardExpiry || 'MM/YY'}</Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+
+                  <TextField
+                    required
+                    fullWidth
+                    size="small"
+                    label="Cardholder Name"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    slotProps={{ input: { sx: { borderRadius: '8px' } } }}
+                  />
+
+                  <TextField
+                    required
+                    fullWidth
+                    size="small"
+                    label="Card Number"
+                    placeholder="4111 2222 3333 4444"
+                    value={cardNumber}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').substring(0, 16);
+                      const formatted = val.replace(/(\d{4})(?=\d)/g, '$1 ');
+                      setCardNumber(formatted);
+                    }}
+                    slotProps={{ input: { sx: { borderRadius: '8px' } } }}
+                  />
+
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 6 }}>
+                      <TextField
+                        required
+                        fullWidth
+                        size="small"
+                        label="Expiry Date"
+                        placeholder="MM/YY"
+                        value={cardExpiry}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').substring(0, 4);
+                          const formatted = val.length >= 3 ? `${val.substring(0, 2)}/${val.substring(2)}` : val;
+                          setCardExpiry(formatted);
+                        }}
+                        slotProps={{ input: { sx: { borderRadius: '8px' } } }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 6 }}>
+                      <TextField
+                        required
+                        fullWidth
+                        size="small"
+                        label="CVC / CVV"
+                        placeholder="123"
+                        type="password"
+                        value={cardCvc}
+                        onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').substring(0, 4))}
+                        slotProps={{ input: { sx: { borderRadius: '8px' } } }}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    disabled={isSubmittingCard}
+                    sx={{ mt: 1, py: 1.25, borderRadius: 2, fontWeight: 700, bgcolor: '#4f46e5', '&:hover': { bgcolor: '#4338ca' } }}
+                  >
+                    {isSubmittingCard ? <CircularProgress size={24} color="inherit" /> : `Pay $${selectedInvoice?.pendingAmount}`}
+                  </Button>
+                </Box>
+              ) : selectedGateway === 'RAZORPAY' ? (
+                <Box sx={{ textAlign: 'center', py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Typography variant="body2">
+                    Razorpay checkout modal has been initiated. If the script did not load or popup is blocked, you can use the button below to authorize the order.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    disabled={checkoutLoading}
+                    onClick={async () => {
+                      try {
+                        setCheckoutLoading(true);
+                        await parentsApi.simulatePaymentSuccess({ paymentId: initiatedPaymentData.paymentId });
+                        setCheckoutSuccess(true);
+                        if (activeChild) {
+                          const feeRes = await parentsApi.getChildFees(activeChild._id);
+                          setFees(feeRes || []);
+                        }
+                      } catch (err: any) {
+                        setCheckoutError(err?.response?.data?.message || 'Verification of simulated order failed.');
+                      } finally {
+                        setCheckoutLoading(false);
+                      }
+                    }}
+                    sx={{ py: 1.25, borderRadius: 2, fontWeight: 700, bgcolor: '#0ea5e9', '&:hover': { bgcolor: '#0284c7' } }}
+                  >
+                    {checkoutLoading ? <CircularProgress size={24} color="inherit" /> : 'Authorize Demo Razorpay Order'}
+                  </Button>
+                </Box>
+              ) : (
+                <Box sx={{ textAlign: 'center', py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Typography variant="body2">
+                    PhonePe Pay Page requires external merchant redirection.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => initiatedPaymentData.redirectUrl && window.open(initiatedPaymentData.redirectUrl, '_blank')}
+                    sx={{ py: 1, borderRadius: 2, fontWeight: 700 }}
+                  >
+                    Open PhonePe Payment Page Link
+                  </Button>
+                  <Divider sx={{ my: 1 }}>OR</Divider>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    disabled={checkoutLoading}
+                    onClick={handleSimulatePhonepeCallback}
+                    sx={{ py: 1.25, borderRadius: 2, fontWeight: 700, bgcolor: '#8b5cf6', '&:hover': { bgcolor: '#7c3aed' } }}
+                  >
+                    {checkoutLoading ? <CircularProgress size={24} color="inherit" /> : 'Simulate PhonePe Callback'}
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2.5, justifyContent: 'space-between' }}>
+          {checkoutSuccess ? (
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => setIsCheckoutOpen(false)}
+              sx={{ fontWeight: 700, borderRadius: 2 }}
+            >
+              Close Window
+            </Button>
+          ) : (
+            <>
+              <Button
+                onClick={() => {
+                  if (initiatedPaymentData) {
+                    setInitiatedPaymentData(null);
+                  } else {
+                    setIsCheckoutOpen(false);
+                  }
+                }}
+                disabled={checkoutLoading || isSubmittingCard}
+                startIcon={<ArrowBackIcon />}
+                color="inherit"
+                sx={{ fontWeight: 600 }}
+              >
+                {initiatedPaymentData ? 'Back' : 'Cancel'}
+              </Button>
+              {!initiatedPaymentData && (
+                <Button
+                  onClick={handleInitiatePayment}
+                  disabled={checkoutLoading}
+                  variant="contained"
+                  sx={{
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    bgcolor: selectedGateway === 'STRIPE' ? '#6366f1' : selectedGateway === 'RAZORPAY' ? '#0ea5e9' : '#8b5cf6',
+                    '&:hover': {
+                      bgcolor: selectedGateway === 'STRIPE' ? '#4f46e5' : selectedGateway === 'RAZORPAY' ? '#0284c7' : '#7c3aed',
+                    },
+                  }}
+                >
+                  {checkoutLoading ? <CircularProgress size={20} color="inherit" /> : 'Proceed to Pay'}
+                </Button>
+              )}
+            </>
+          )}
+        </DialogActions>
       </Dialog>
     </Box>
   );

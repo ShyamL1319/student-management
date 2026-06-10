@@ -30,6 +30,7 @@ import { ParentsModule } from './parents/parents.module';
 import { LeaveRequestsModule } from './leave-requests/leave-requests.module';
 import { AdmissionsModule } from './admissions/admissions.module';
 import { AssignmentsModule } from './assignments/assignments.module';
+import { PaymentsModule } from './payments/payments.module';
 
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -83,6 +84,7 @@ import { tenantPlugin } from './common/database/tenant.plugin';
     TimetablesModule,
     AttendancesModule,
     FeesModule,
+    PaymentsModule,
     NotificationsModule,
     AnalyticsModule,
     ReportsModule,
