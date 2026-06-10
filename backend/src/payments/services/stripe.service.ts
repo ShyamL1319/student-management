@@ -11,19 +11,23 @@ export class StripeService {
     const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     if (secretKey) {
       this.globalStripe = new Stripe(secretKey, {
-        apiVersion: '2023-10-16' as any,
+        apiVersion: '2023-10-16',
       });
     } else {
-      this.logger.warn('Stripe SECRET_KEY is not set globally. Fallback to per-tenant configuration is required.');
+      this.logger.warn(
+        'Stripe SECRET_KEY is not set globally. Fallback to per-tenant configuration is required.',
+      );
     }
   }
 
   private getClient(apiKey?: string): Stripe {
     if (apiKey) {
-      return new Stripe(apiKey, { apiVersion: '2023-10-16' as any });
+      return new Stripe(apiKey, { apiVersion: '2023-10-16' });
     }
     if (!this.globalStripe) {
-      throw new BadRequestException('Stripe credentials not configured globally or for this school.');
+      throw new BadRequestException(
+        'Stripe credentials not configured globally or for this school.',
+      );
     }
     return this.globalStripe;
   }
@@ -62,14 +66,18 @@ export class StripeService {
   ): Promise<Stripe.Event> {
     try {
       const stripe = this.getClient(apiKey);
-      const secret = webhookSecret || this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
+      const secret =
+        webhookSecret ||
+        this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
       if (!secret) {
         throw new BadRequestException('Stripe Webhook Secret not configured.');
       }
       return stripe.webhooks.constructEvent(rawBody, signature, secret);
     } catch (error) {
       this.logger.error('Stripe webhook signature validation failed:', error);
-      throw new BadRequestException(`Webhook signature verification failed: ${error.message}`);
+      throw new BadRequestException(
+        `Webhook signature verification failed: ${error.message}`,
+      );
     }
   }
 

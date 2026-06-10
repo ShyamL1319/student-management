@@ -17,6 +17,40 @@ import {
 export class AuditInterceptor implements NestInterceptor {
   constructor(private readonly auditLogsService: AuditLogsService) {}
 
+  private redactSecrets(obj: any): any {
+    if (obj === null || typeof obj !== 'object') {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.redactSecrets(item));
+    }
+
+    const redacted: any = {};
+    for (const key of Object.keys(obj)) {
+      const lowerKey = key.toLowerCase();
+      const isSensitive = [
+        'password',
+        'secret',
+        'token',
+        'key',
+        'credential',
+        'auth',
+        'pass',
+        'api_key',
+      ].some((sensitiveWord) => lowerKey.includes(sensitiveWord));
+
+      if (isSensitive && typeof obj[key] === 'string' && obj[key]) {
+        redacted[key] = '******';
+      } else if (typeof obj[key] === 'object') {
+        redacted[key] = this.redactSecrets(obj[key]);
+      } else {
+        redacted[key] = obj[key];
+      }
+    }
+    return redacted;
+  }
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
@@ -55,7 +89,10 @@ export class AuditInterceptor implements NestInterceptor {
                 entityType,
                 entityId: data?._id || data?.id || body?._id || body?.id,
                 performedBy: user?._id || user?.id,
-                changes: action !== AuditAction.LOGIN ? body : undefined,
+                changes:
+                  action !== AuditAction.LOGIN
+                    ? this.redactSecrets(body)
+                    : undefined,
                 ipAddress: ip,
                 userAgent,
                 status: AuditStatus.SUCCESS,
@@ -74,7 +111,10 @@ export class AuditInterceptor implements NestInterceptor {
                 action,
                 entityType,
                 performedBy: user?._id || user?.id,
-                changes: action !== AuditAction.LOGIN ? body : undefined,
+                changes:
+                  action !== AuditAction.LOGIN
+                    ? this.redactSecrets(body)
+                    : undefined,
                 ipAddress: ip,
                 userAgent,
                 status: AuditStatus.FAILURE,

@@ -11,7 +11,8 @@ export class CreateSubscriptionDto {
   studentId: string;
 
   @ApiProperty({
-    description: 'The Price ID (Stripe) or Plan ID (Razorpay) for recurring fees',
+    description:
+      'The Price ID (Stripe) or Plan ID (Razorpay) for recurring fees',
     example: 'price_1OrABC123xyz',
   })
   @IsString()

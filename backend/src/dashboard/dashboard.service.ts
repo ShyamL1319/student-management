@@ -360,14 +360,18 @@ export class DashboardService {
       grade: mark.grade,
     }));
 
-    const pending = upcomingExams.slice(0, 3).map((exam, index) => ({
-      id: `pending-${exam.id}`,
-      title: `${exam.subject} Exam Preparation`,
-      subject: exam.subject,
-      due: exam.date,
-      status: 'pending' as const,
-      priority: (index === 0 ? 'high' : index === 1 ? 'medium' : 'low') as 'high' | 'medium' | 'low',
-    }));
+    const pending = upcomingExams.slice(0, 3).map((exam, index) => {
+      const priority: 'high' | 'medium' | 'low' =
+        index === 0 ? 'high' : index === 1 ? 'medium' : 'low';
+      return {
+        id: `pending-${exam.id}`,
+        title: `${exam.subject} Exam Preparation`,
+        subject: exam.subject,
+        due: exam.date,
+        status: 'pending' as const,
+        priority,
+      };
+    });
 
     return [...pending, ...graded];
   }

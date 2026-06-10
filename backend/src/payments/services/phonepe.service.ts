@@ -11,13 +11,23 @@ export class PhonepeService {
   private globalHostUrl: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.globalMerchantId = this.configService.get<string>('PHONEPE_MERCHANT_ID') || '';
-    this.globalSaltKey = this.configService.get<string>('PHONEPE_SALT_KEY') || '';
-    this.globalSaltIndex = this.configService.get<string>('PHONEPE_SALT_INDEX') || '1';
-    this.globalHostUrl = this.configService.get<string>('PHONEPE_HOST_URL') || 'https://api-preprod.phonepe.com/apis/pg-sandbox';
+    this.globalMerchantId =
+      this.configService.get<string>('PHONEPE_MERCHANT_ID') || '';
+    this.globalSaltKey =
+      this.configService.get<string>('PHONEPE_SALT_KEY') || '';
+    this.globalSaltIndex =
+      this.configService.get<string>('PHONEPE_SALT_INDEX') || '1';
+    this.globalHostUrl =
+      this.configService.get<string>('PHONEPE_HOST_URL') ||
+      'https://api-preprod.phonepe.com/apis/pg-sandbox';
   }
 
-  private getSettings(settings?: { merchantId?: string; saltKey?: string; saltIndex?: string; hostUrl?: string }) {
+  private getSettings(settings?: {
+    merchantId?: string;
+    saltKey?: string;
+    saltIndex?: string;
+    hostUrl?: string;
+  }) {
     return {
       merchantId: settings?.merchantId || this.globalMerchantId,
       saltKey: settings?.saltKey || this.globalSaltKey,
@@ -29,7 +39,12 @@ export class PhonepeService {
   /**
    * Generates X-VERIFY checksum for PhonePe header
    */
-  private calculateChecksum(payload: string, apiEndpoint: string, saltKey: string, saltIndex: string): string {
+  private calculateChecksum(
+    payload: string,
+    apiEndpoint: string,
+    saltKey: string,
+    saltIndex: string,
+  ): string {
     const stringToHash = payload + apiEndpoint + saltKey;
     const hash = crypto.createHash('sha256').update(stringToHash).digest('hex');
     return `${hash}###${saltIndex}`;
@@ -48,7 +63,9 @@ export class PhonepeService {
   ): Promise<{ redirectUrl: string; transactionId: string }> {
     const config = this.getSettings(schoolSettings);
     if (!config.merchantId || !config.saltKey) {
-      throw new BadRequestException('PhonePe merchant credentials are not configured.');
+      throw new BadRequestException(
+        'PhonePe merchant credentials are not configured.',
+      );
     }
 
     const payload = {
@@ -64,9 +81,16 @@ export class PhonepeService {
       },
     };
 
-    const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64');
+    const base64Payload = Buffer.from(JSON.stringify(payload)).toString(
+      'base64',
+    );
     const apiEndpoint = '/pg/v1/pay';
-    const xVerify = this.calculateChecksum(base64Payload, apiEndpoint, config.saltKey, config.saltIndex);
+    const xVerify = this.calculateChecksum(
+      base64Payload,
+      apiEndpoint,
+      config.saltKey,
+      config.saltIndex,
+    );
 
     try {
       const response = await fetch(`${config.hostUrl}${apiEndpoint}`, {
@@ -78,7 +102,7 @@ export class PhonepeService {
         body: JSON.stringify({ request: base64Payload }),
       });
 
-      const data = await response.json() as any;
+      const data = await response.json();
 
       if (data?.success && data?.data?.instrumentResponse?.redirectInfo?.url) {
         return {
@@ -105,7 +129,12 @@ export class PhonepeService {
   ): boolean {
     try {
       const config = this.getSettings(schoolSettings);
-      const calculatedVerify = this.calculateChecksum(base64Response, '', config.saltKey, config.saltIndex);
+      const calculatedVerify = this.calculateChecksum(
+        base64Response,
+        '',
+        config.saltKey,
+        config.saltIndex,
+      );
       return calculatedVerify === xVerifyHeader;
     } catch (error) {
       this.logger.error('PhonePe signature verification failed:', error);
@@ -119,10 +148,20 @@ export class PhonepeService {
   async checkTransactionStatus(
     transactionId: string,
     schoolSettings?: any,
-  ): Promise<{ success: boolean; amount: number; paymentId?: string; message?: string }> {
+  ): Promise<{
+    success: boolean;
+    amount: number;
+    paymentId?: string;
+    message?: string;
+  }> {
     const config = this.getSettings(schoolSettings);
     const apiEndpoint = `/pg/v1/status/${config.merchantId}/${transactionId}`;
-    const xVerify = this.calculateChecksum('', apiEndpoint, config.saltKey, config.saltIndex);
+    const xVerify = this.calculateChecksum(
+      '',
+      apiEndpoint,
+      config.saltKey,
+      config.saltIndex,
+    );
 
     try {
       const response = await fetch(`${config.hostUrl}${apiEndpoint}`, {
@@ -134,7 +173,7 @@ export class PhonepeService {
         },
       });
 
-      const data = await response.json() as any;
+      const data = await response.json();
 
       if (data?.success && data?.code === 'PAYMENT_SUCCESS') {
         return {
@@ -174,9 +213,16 @@ export class PhonepeService {
       callbackUrl: `${this.configService.get<string>('VITE_API_BASE_URL') || 'http://localhost:3000/api'}/payments/webhook/phonepe`,
     };
 
-    const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64');
+    const base64Payload = Buffer.from(JSON.stringify(payload)).toString(
+      'base64',
+    );
     const apiEndpoint = '/pg/v1/refund';
-    const xVerify = this.calculateChecksum(base64Payload, apiEndpoint, config.saltKey, config.saltIndex);
+    const xVerify = this.calculateChecksum(
+      base64Payload,
+      apiEndpoint,
+      config.saltKey,
+      config.saltIndex,
+    );
 
     try {
       const response = await fetch(`${config.hostUrl}${apiEndpoint}`, {
@@ -188,7 +234,7 @@ export class PhonepeService {
         body: JSON.stringify({ request: base64Payload }),
       });
 
-      const data = await response.json() as any;
+      const data = await response.json();
 
       if (data?.success) {
         return {

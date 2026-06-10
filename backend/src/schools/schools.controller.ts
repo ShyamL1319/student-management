@@ -46,7 +46,7 @@ export class SchoolsController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TEACHER, Role.STAFF)
   @ApiOperation({ summary: 'Get current school settings' })
   async getSettings(@CurrentUser() user: any) {
-    const schoolId = user.school?.toString();
+    const schoolId = user.schoolId?.toString() || user.school?.toString();
     if (!schoolId) {
       throw new NotFoundException('No school associated with this user');
     }
@@ -57,7 +57,7 @@ export class SchoolsController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Update current school settings' })
   async updateSettings(@CurrentUser() user: any, @Body() dto: UpdateSchoolDto) {
-    const schoolId = user.school?.toString();
+    const schoolId = user.schoolId?.toString() || user.school?.toString();
     if (!schoolId) {
       throw new NotFoundException('No school associated with this user');
     }

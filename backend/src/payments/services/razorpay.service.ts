@@ -17,7 +17,9 @@ export class RazorpayService {
         key_secret: keySecret,
       });
     } else {
-      this.logger.warn('Razorpay credentials are not set globally. Fallback to per-tenant configuration is required.');
+      this.logger.warn(
+        'Razorpay credentials are not set globally. Fallback to per-tenant configuration is required.',
+      );
     }
   }
 
@@ -26,7 +28,9 @@ export class RazorpayService {
       return new Razorpay({ key_id: keyId, key_secret: keySecret });
     }
     if (!this.globalRazorpay) {
-      throw new BadRequestException('Razorpay credentials not configured globally or for this school.');
+      throw new BadRequestException(
+        'Razorpay credentials not configured globally or for this school.',
+      );
     }
     return this.globalRazorpay;
   }
@@ -52,7 +56,9 @@ export class RazorpayService {
       });
     } catch (error) {
       this.logger.error('Error creating Razorpay Order:', error);
-      throw new BadRequestException(`Razorpay error: ${error.message || error}`);
+      throw new BadRequestException(
+        `Razorpay error: ${error.message || error}`,
+      );
     }
   }
 
@@ -65,9 +71,13 @@ export class RazorpayService {
     webhookSecret?: string,
   ): boolean {
     try {
-      const secret = webhookSecret || this.configService.get<string>('RAZORPAY_WEBHOOK_SECRET');
+      const secret =
+        webhookSecret ||
+        this.configService.get<string>('RAZORPAY_WEBHOOK_SECRET');
       if (!secret) {
-        throw new BadRequestException('Razorpay Webhook Secret not configured.');
+        throw new BadRequestException(
+          'Razorpay Webhook Secret not configured.',
+        );
       }
       const expectedSignature = crypto
         .createHmac('sha256', secret)
@@ -101,7 +111,9 @@ export class RazorpayService {
       });
     } catch (error) {
       this.logger.error('Error creating Razorpay Customer:', error);
-      throw new BadRequestException(`Razorpay error: ${error.message || error}`);
+      throw new BadRequestException(
+        `Razorpay error: ${error.message || error}`,
+      );
     }
   }
 
@@ -126,7 +138,9 @@ export class RazorpayService {
       } as any);
     } catch (error) {
       this.logger.error('Error creating Razorpay Subscription:', error);
-      throw new BadRequestException(`Razorpay error: ${error.message || error}`);
+      throw new BadRequestException(
+        `Razorpay error: ${error.message || error}`,
+      );
     }
   }
 
@@ -143,7 +157,9 @@ export class RazorpayService {
       return await razorpay.subscriptions.cancel(subscriptionId, false); // false = cancel immediately
     } catch (error) {
       this.logger.error('Error cancelling Razorpay Subscription:', error);
-      throw new BadRequestException(`Razorpay error: ${error.message || error}`);
+      throw new BadRequestException(
+        `Razorpay error: ${error.message || error}`,
+      );
     }
   }
 
@@ -168,7 +184,9 @@ export class RazorpayService {
       return await razorpay.payments.refund(paymentId, params);
     } catch (error) {
       this.logger.error('Error creating Razorpay Refund:', error);
-      throw new BadRequestException(`Razorpay error: ${error.message || error}`);
+      throw new BadRequestException(
+        `Razorpay error: ${error.message || error}`,
+      );
     }
   }
 }

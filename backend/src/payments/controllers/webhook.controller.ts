@@ -1,4 +1,12 @@
-import { Controller, Post, Headers, Req, BadRequestException, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Headers,
+  Req,
+  BadRequestException,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -28,7 +36,9 @@ export class WebhookController {
 
     const rawBody = (req as any).rawBody;
     if (!rawBody) {
-      throw new BadRequestException('Raw body not captured. Verify main.ts configuration.');
+      throw new BadRequestException(
+        'Raw body not captured. Verify main.ts configuration.',
+      );
     }
 
     // Queue webhook event for asynchronous background ingestion
@@ -59,7 +69,9 @@ export class WebhookController {
 
     const rawBody = (req as any).rawBody;
     if (!rawBody) {
-      throw new BadRequestException('Raw body not captured. Verify main.ts configuration.');
+      throw new BadRequestException(
+        'Raw body not captured. Verify main.ts configuration.',
+      );
     }
 
     // Queue webhook event for asynchronous background ingestion
@@ -90,7 +102,9 @@ export class WebhookController {
 
     const rawBody = (req as any).rawBody;
     if (!rawBody) {
-      throw new BadRequestException('Raw body not captured. Verify main.ts configuration.');
+      throw new BadRequestException(
+        'Raw body not captured. Verify main.ts configuration.',
+      );
     }
 
     // Queue webhook event for asynchronous background ingestion
