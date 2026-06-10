@@ -12,9 +12,7 @@ import { RazorpayService } from './razorpay.service';
 import { PhonepeService } from './phonepe.service';
 
 @Injectable()
-export class QueueJobProcessor
-  implements OnModuleInit, OnModuleDestroy
-{
+export class QueueJobProcessor implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(QueueJobProcessor.name);
   private timer: NodeJS.Timeout | null = null;
   private isProcessing = false;
@@ -61,11 +59,15 @@ export class QueueJobProcessor
     try {
       const now = new Date();
       // Find jobs that are PENDING or FAILED but haven't reached max attempts, and are scheduled for execution
-      const jobs = await this.queueModel.find({
-        status: { $in: ['PENDING', 'FAILED'] },
-        attempts: { $lt: 3 }, // maxAttempts = 3
-        $or: [{ processAfter: null }, { processAfter: { $lte: now } }],
-      }).sort({ createdAt: 1 }).limit(5).exec();
+      const jobs = await this.queueModel
+        .find({
+          status: { $in: ['PENDING', 'FAILED'] },
+          attempts: { $lt: 3 }, // maxAttempts = 3
+          $or: [{ processAfter: null }, { processAfter: { $lte: now } }],
+        })
+        .sort({ createdAt: 1 })
+        .limit(5)
+        .exec();
 
       for (const job of jobs) {
         await this.runJob(job);
@@ -78,7 +80,9 @@ export class QueueJobProcessor
   }
 
   private async runJob(job: QueueJobDocument) {
-    this.logger.log(`Processing Job ID: ${job._id.toString()}, Type: ${job.jobType}`);
+    this.logger.log(
+      `Processing Job ID: ${job._id.toString()}, Type: ${job.jobType}`,
+    );
     job.status = 'PROCESSING';
     job.attempts += 1;
     await job.save();
@@ -99,7 +103,9 @@ export class QueueJobProcessor
       await job.save();
       this.logger.log(`Job ID: ${job._id.toString()} completed successfully.`);
     } catch (error) {
-      this.logger.error(`Job ID: ${job._id.toString()} failed. Error: ${error.message}`);
+      this.logger.error(
+        `Job ID: ${job._id.toString()} failed. Error: ${error.message}`,
+      );
       job.status = 'FAILED';
       job.lastError = error.message;
 
@@ -121,7 +127,9 @@ export class QueueJobProcessor
     apiKey?: string;
   }) {
     if (!this.paymentService) {
-      throw new Error('PaymentService is not yet injected into QueueProcessor.');
+      throw new Error(
+        'PaymentService is not yet injected into QueueProcessor.',
+      );
     }
 
     if (payload.gateway === 'STRIPE') {
@@ -146,13 +154,21 @@ export class QueueJobProcessor
         }
         case 'payment_intent.payment_failed': {
           const paymentIntent = event.data.object as any;
-          const failureReason = paymentIntent.last_payment_error?.message || 'Payment failed';
-          await this.paymentService.processPaymentFailure(paymentIntent.id, failureReason);
+          const failureReason =
+            paymentIntent.last_payment_error?.message || 'Payment failed';
+          await this.paymentService.processPaymentFailure(
+            paymentIntent.id,
+            failureReason,
+          );
           break;
         }
         case 'charge.refunded': {
           const charge = event.data.object as any;
-          await this.paymentService.processRefundEvent(charge.payment_intent, charge.amount_refunded, charge);
+          await this.paymentService.processRefundEvent(
+            charge.payment_intent,
+            charge.amount_refunded,
+            charge,
+          );
           break;
         }
         default:
@@ -167,7 +183,9 @@ export class QueueJobProcessor
       );
 
       if (!isValid) {
-        throw new Error('Razorpay webhook signature verification failed during background processing.');
+        throw new Error(
+          'Razorpay webhook signature verification failed during background processing.',
+        );
       }
 
       const event = JSON.parse(payload.body);
@@ -188,12 +206,19 @@ export class QueueJobProcessor
         case 'payment.failed': {
           const payment = event.payload.payment.entity;
           const failureReason = payment.error_description || 'Payment failed';
-          await this.paymentService.processPaymentFailure(payment.order_id, failureReason);
+          await this.paymentService.processPaymentFailure(
+            payment.order_id,
+            failureReason,
+          );
           break;
         }
         case 'refund.processed': {
           const refund = event.payload.refund.entity;
-          await this.paymentService.processRefundEvent(refund.payment_id, refund.amount, event);
+          await this.paymentService.processRefundEvent(
+            refund.payment_id,
+            refund.amount,
+            event,
+          );
           break;
         }
         default:
@@ -211,7 +236,9 @@ export class QueueJobProcessor
       }
 
       // PhonePe payload body contains base64 response under webhook body response
-      const decodedBody = JSON.parse(Buffer.from(payload.body, 'base64').toString('utf8'));
+      const decodedBody = JSON.parse(
+        Buffer.from(payload.body, 'base64').toString('utf8'),
+      );
       const state = decodedBody.success;
       const merchantTransactionId = decodedBody.data.merchantTransactionId;
       const transactionId = decodedBody.data.transactionId; // phonepe transaction ID
@@ -224,7 +251,10 @@ export class QueueJobProcessor
         );
       } else {
         const failureReason = decodedBody.message || 'PhonePe payment failed';
-        await this.paymentService.processPaymentFailure(merchantTransactionId, failureReason);
+        await this.paymentService.processPaymentFailure(
+          merchantTransactionId,
+          failureReason,
+        );
       }
     }
   }
@@ -234,7 +264,9 @@ export class QueueJobProcessor
    */
   private async handleRetryAlertJob(payload: { paymentId: string }) {
     if (!this.paymentService) {
-      throw new Error('PaymentService is not yet injected into QueueProcessor.');
+      throw new Error(
+        'PaymentService is not yet injected into QueueProcessor.',
+      );
     }
     // We can fetch the failed payment record and trigger a notification retry
     await this.paymentService.sendPaymentFailedAlert(payload.paymentId);

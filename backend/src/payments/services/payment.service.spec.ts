@@ -77,7 +77,10 @@ describe('PaymentService', () => {
         { provide: RazorpayService, useValue: mockRazorpayService },
         { provide: PhonepeService, useValue: mockPhonepeService },
         { provide: ReceiptPdfService, useValue: mockReceiptPdfService },
-        { provide: QueueJobProcessor, useValue: { setPaymentService: jest.fn() } },
+        {
+          provide: QueueJobProcessor,
+          useValue: { setPaymentService: jest.fn() },
+        },
         { provide: EmailService, useValue: { sendEmail: jest.fn() } },
         { provide: ConfigService, useValue: { get: jest.fn() } },
       ],
@@ -93,7 +96,13 @@ describe('PaymentService', () => {
   describe('initiatePayment', () => {
     it('should initiate Stripe checkout session successfully', async () => {
       const mockStudent = { _id: 'student123', schoolId: 'school123' };
-      const mockInvoice = { _id: 'invoice123', pendingAmount: 500, netAmount: 500, invoiceNumber: 'INV001', status: 'ISSUED' };
+      const mockInvoice = {
+        _id: 'invoice123',
+        pendingAmount: 500,
+        netAmount: 500,
+        invoiceNumber: 'INV001',
+        status: 'ISSUED',
+      };
 
       mockStudentModel.findById.mockResolvedValue(mockStudent);
       mockInvoiceModel.findById.mockResolvedValue(mockInvoice);
@@ -109,7 +118,11 @@ describe('PaymentService', () => {
         status: 'PENDING',
       });
 
-      const result = await service.initiatePayment('student123', 'invoice123', 'STRIPE');
+      const result = await service.initiatePayment(
+        'student123',
+        'invoice123',
+        'STRIPE',
+      );
 
       expect(result).toBeDefined();
       expect(result.clientSecret).toBe('secret_123');
@@ -118,7 +131,13 @@ describe('PaymentService', () => {
 
     it('should initiate Razorpay checkout order successfully', async () => {
       const mockStudent = { _id: 'student123', schoolId: 'school123' };
-      const mockInvoice = { _id: 'invoice123', pendingAmount: 300, netAmount: 300, invoiceNumber: 'INV002', status: 'ISSUED' };
+      const mockInvoice = {
+        _id: 'invoice123',
+        pendingAmount: 300,
+        netAmount: 300,
+        invoiceNumber: 'INV002',
+        status: 'ISSUED',
+      };
 
       mockStudentModel.findById.mockResolvedValue(mockStudent);
       mockInvoiceModel.findById.mockResolvedValue(mockInvoice);
@@ -135,7 +154,11 @@ describe('PaymentService', () => {
         status: 'PENDING',
       });
 
-      const result = await service.initiatePayment('student123', 'invoice123', 'RAZORPAY');
+      const result = await service.initiatePayment(
+        'student123',
+        'invoice123',
+        'RAZORPAY',
+      );
 
       expect(result).toBeDefined();
       expect(result.orderId).toBe('order_123');

@@ -38,7 +38,8 @@ export class RefundRequestDto {
   paymentId: string;
 
   @ApiProperty({
-    description: 'The amount to refund in standard decimal currency (e.g. Rs 500.50)',
+    description:
+      'The amount to refund in standard decimal currency (e.g. Rs 500.50)',
     example: 500.5,
   })
   @IsNumber()
@@ -64,4 +65,3 @@ export class SimulatePaymentSuccessDto {
   @IsNotEmpty()
   paymentId: string;
 }
-

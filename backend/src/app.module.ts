@@ -31,6 +31,7 @@ import { LeaveRequestsModule } from './leave-requests/leave-requests.module';
 import { AdmissionsModule } from './admissions/admissions.module';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { PaymentsModule } from './payments/payments.module';
+import { SettingsModule } from './settings/settings.module';
 
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -93,6 +94,7 @@ import { tenantPlugin } from './common/database/tenant.plugin';
     LeaveRequestsModule,
     AdmissionsModule,
     AssignmentsModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [

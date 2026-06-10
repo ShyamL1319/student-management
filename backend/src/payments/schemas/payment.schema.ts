@@ -23,7 +23,10 @@ export class Payment {
   @Prop({ required: true, default: 'INR' })
   currency: string;
 
-  @Prop({ required: true, enum: ['STRIPE', 'RAZORPAY', 'PHONEPE', 'CASH', 'CHEQUE'] })
+  @Prop({
+    required: true,
+    enum: ['STRIPE', 'RAZORPAY', 'PHONEPE', 'CASH', 'CHEQUE'],
+  })
   gateway: string;
 
   @Prop({ required: true, unique: true })

@@ -33,14 +33,19 @@ describe('WebhookController', () => {
   describe('handleStripeWebhook', () => {
     it('should queue Stripe webhook job successfully when rawBody is valid', async () => {
       const mockReq = {
-        rawBody: Buffer.from(JSON.stringify({ id: 'evt_123', type: 'payment_intent.succeeded' })),
+        rawBody: Buffer.from(
+          JSON.stringify({ id: 'evt_123', type: 'payment_intent.succeeded' }),
+        ),
       } as unknown as Request;
 
       mockQueueModel.create.mockResolvedValue({
         _id: 'job123',
       });
 
-      const result = await controller.handleStripeWebhook('signature_123', mockReq);
+      const result = await controller.handleStripeWebhook(
+        'signature_123',
+        mockReq,
+      );
 
       expect(result).toEqual({ received: true });
       expect(mockQueueModel.create).toHaveBeenCalled();
@@ -59,9 +64,9 @@ describe('WebhookController', () => {
     it('should throw BadRequestException if rawBody is missing on request', async () => {
       const mockReq = {} as Request; // missing rawBody
 
-      await expect(controller.handleStripeWebhook('sig_123', mockReq)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        controller.handleStripeWebhook('sig_123', mockReq),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -75,7 +80,10 @@ describe('WebhookController', () => {
         _id: 'job456',
       });
 
-      const result = await controller.handleRazorpayWebhook('razorpay_sig_123', mockReq);
+      const result = await controller.handleRazorpayWebhook(
+        'razorpay_sig_123',
+        mockReq,
+      );
 
       expect(result).toEqual({ received: true });
       expect(mockQueueModel.create).toHaveBeenCalled();

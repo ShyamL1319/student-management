@@ -36,7 +36,8 @@ export class FeeStructureService {
       cleanQuery.academicYearId = query.academicYearId;
     }
     if (query.isActive !== undefined) {
-      cleanQuery.isActive = String(query.isActive) === 'true' || query.isActive === true;
+      cleanQuery.isActive =
+        String(query.isActive) === 'true' || query.isActive === true;
     }
     return this.feeStructureModel.find(cleanQuery).lean();
   }

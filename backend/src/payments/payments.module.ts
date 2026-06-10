@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Payment, PaymentSchema } from './schemas/payment.schema';
-import { Subscription, SubscriptionSchema } from './schemas/subscription.schema';
+import {
+  Subscription,
+  SubscriptionSchema,
+} from './schemas/subscription.schema';
 import { Refund, RefundSchema } from './schemas/refund.schema';
 import { QueueJob, QueueJobSchema } from './schemas/queue-job.schema';
 import { StripeService } from './services/stripe.service';

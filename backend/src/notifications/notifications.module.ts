@@ -55,6 +55,11 @@ import { NotificationEventController } from './notification-event.controller';
     SmsService,
     InAppService,
   ],
-  exports: [NotificationService, NotificationEventService, EmailService, MongooseModule],
+  exports: [
+    NotificationService,
+    NotificationEventService,
+    EmailService,
+    MongooseModule,
+  ],
 })
 export class NotificationsModule {}

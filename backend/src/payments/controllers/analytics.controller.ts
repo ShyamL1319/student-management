@@ -15,7 +15,9 @@ export class RevenueAnalyticsController {
 
   @Get('revenue')
   @Roles(RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get total revenue collections, refunds, failure rate, and MRR' })
+  @ApiOperation({
+    summary: 'Get total revenue collections, refunds, failure rate, and MRR',
+  })
   async getRevenueStats() {
     return this.paymentService.getRevenueAnalytics();
   }

@@ -1,14 +1,29 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Payment, PaymentDocument } from '../schemas/payment.schema';
-import { Subscription, SubscriptionDocument } from '../schemas/subscription.schema';
+import {
+  Subscription,
+  SubscriptionDocument,
+} from '../schemas/subscription.schema';
 import { Refund, RefundDocument } from '../schemas/refund.schema';
 import { QueueJob, QueueJobDocument } from '../schemas/queue-job.schema';
 import { Invoice, InvoiceDocument } from '../../fees/schemas/invoice.schema';
-import { FeeCollection, FeeCollectionDocument } from '../../fees/schemas/fee-collection.schema';
+import {
+  FeeCollection,
+  FeeCollectionDocument,
+} from '../../fees/schemas/fee-collection.schema';
 import { Receipt, ReceiptDocument } from '../../fees/schemas/receipt.schema';
-import { Student, StudentDocument } from '../../students/schemas/student.schema';
+import {
+  Student,
+  StudentDocument,
+} from '../../students/schemas/student.schema';
 import { School, SchoolDocument } from '../../schools/schemas/school.schema';
 import { StripeService } from './stripe.service';
 import { RazorpayService } from './razorpay.service';
@@ -24,15 +39,24 @@ export class PaymentService implements OnModuleInit {
   private readonly logger = new Logger(PaymentService.name);
 
   constructor(
-    @InjectModel(Payment.name) private readonly paymentModel: Model<PaymentDocument>,
-    @InjectModel(Subscription.name) private readonly subscriptionModel: Model<SubscriptionDocument>,
-    @InjectModel(Refund.name) private readonly refundModel: Model<RefundDocument>,
-    @InjectModel(QueueJob.name) private readonly queueJobModel: Model<QueueJobDocument>,
-    @InjectModel(Invoice.name) private readonly invoiceModel: Model<InvoiceDocument>,
-    @InjectModel(FeeCollection.name) private readonly feeCollectionModel: Model<FeeCollectionDocument>,
-    @InjectModel(Receipt.name) private readonly receiptModel: Model<ReceiptDocument>,
-    @InjectModel(Student.name) private readonly studentModel: Model<StudentDocument>,
-    @InjectModel(School.name) private readonly schoolModel: Model<SchoolDocument>,
+    @InjectModel(Payment.name)
+    private readonly paymentModel: Model<PaymentDocument>,
+    @InjectModel(Subscription.name)
+    private readonly subscriptionModel: Model<SubscriptionDocument>,
+    @InjectModel(Refund.name)
+    private readonly refundModel: Model<RefundDocument>,
+    @InjectModel(QueueJob.name)
+    private readonly queueJobModel: Model<QueueJobDocument>,
+    @InjectModel(Invoice.name)
+    private readonly invoiceModel: Model<InvoiceDocument>,
+    @InjectModel(FeeCollection.name)
+    private readonly feeCollectionModel: Model<FeeCollectionDocument>,
+    @InjectModel(Receipt.name)
+    private readonly receiptModel: Model<ReceiptDocument>,
+    @InjectModel(Student.name)
+    private readonly studentModel: Model<StudentDocument>,
+    @InjectModel(School.name)
+    private readonly schoolModel: Model<SchoolDocument>,
     private readonly stripeService: StripeService,
     private readonly razorpayService: RazorpayService,
     private readonly phonepeService: PhonepeService,
@@ -56,10 +80,12 @@ export class PaymentService implements OnModuleInit {
     gateway: 'STRIPE' | 'RAZORPAY' | 'PHONEPE',
   ): Promise<any> {
     const student = await this.studentModel.findById(studentId);
-    if (!student) throw new NotFoundException(`Student with ID ${studentId} not found`);
+    if (!student)
+      throw new NotFoundException(`Student with ID ${studentId} not found`);
 
     const invoice = await this.invoiceModel.findById(invoiceId);
-    if (!invoice) throw new NotFoundException(`Invoice with ID ${invoiceId} not found`);
+    if (!invoice)
+      throw new NotFoundException(`Invoice with ID ${invoiceId} not found`);
 
     if (invoice.status === 'PAID') {
       throw new BadRequestException('Invoice is already fully paid');
@@ -173,17 +199,25 @@ export class PaymentService implements OnModuleInit {
   ): Promise<void> {
     const payment = await this.paymentModel.findOne({ gatewayTransactionId });
     if (!payment) {
-      throw new NotFoundException(`Payment record with gateway transaction ID ${gatewayTransactionId} not found`);
+      throw new NotFoundException(
+        `Payment record with gateway transaction ID ${gatewayTransactionId} not found`,
+      );
     }
 
     if (payment.status === 'SUCCESS') {
-      this.logger.log(`Payment transaction ${gatewayTransactionId} was already marked as SUCCESS.`);
+      this.logger.log(
+        `Payment transaction ${gatewayTransactionId} was already marked as SUCCESS.`,
+      );
       return;
     }
 
     // Set multi-tenant isolation context dynamically based on payment school context
     await TenantContext.run(
-      { schoolId: payment.schoolId?.toString() || '', tenantId: '', subdomain: '' },
+      {
+        schoolId: payment.schoolId?.toString() || '',
+        tenantId: '',
+        subdomain: '',
+      },
       async () => {
         payment.status = 'SUCCESS';
         payment.gatewayPaymentId = gatewayPaymentId;
@@ -196,7 +230,10 @@ export class PaymentService implements OnModuleInit {
           if (invoice) {
             const amountPaidDecimal = payment.amount / 100;
             invoice.paidAmount = (invoice.paidAmount || 0) + amountPaidDecimal;
-            invoice.pendingAmount = Math.max(0, invoice.netAmount - invoice.paidAmount);
+            invoice.pendingAmount = Math.max(
+              0,
+              invoice.netAmount - invoice.paidAmount,
+            );
             invoice.status = invoice.pendingAmount === 0 ? 'PAID' : 'PARTIAL';
             await invoice.save();
 
@@ -209,7 +246,8 @@ export class PaymentService implements OnModuleInit {
             const receipt = await this.receiptModel.create({
               receiptNumber,
               studentId: payment.studentId,
-              feeCollectionId: invoice.feeItems?.[0]?.feeStructureId || new Types.ObjectId(),
+              feeCollectionId:
+                invoice.feeItems?.[0]?.feeStructureId || new Types.ObjectId(),
               amountReceived: amountPaidDecimal,
               paymentDate: new Date(),
               paymentMethod: payment.gateway,
@@ -225,20 +263,25 @@ export class PaymentService implements OnModuleInit {
             // 3. Retrieve student information and send pdf email receipt
             const student = await this.studentModel.findById(payment.studentId);
             if (student) {
-              const recipientEmail = student.email || (student as any).parentEmail;
+              const recipientEmail =
+                student.email || (student as any).parentEmail;
               if (recipientEmail) {
-                await this.receiptPdfService.generateAndEmailReceipt(recipientEmail, `${student.firstName} ${student.lastName}`, {
-                  receiptNumber: receipt.receiptNumber,
-                  studentName: `${student.firstName} ${student.lastName}`,
-                  studentRollNumber: student.rollNumber,
-                  className: 'Class Info',
-                  paymentDate: receipt.paymentDate,
-                  paymentMethod: receipt.paymentMethod,
-                  transactionId: receipt.transactionId,
-                  amountReceived: receipt.amountReceived,
-                  currency: payment.currency,
-                  feeDetails: receipt.feeDetails,
-                });
+                await this.receiptPdfService.generateAndEmailReceipt(
+                  recipientEmail,
+                  `${student.firstName} ${student.lastName}`,
+                  {
+                    receiptNumber: receipt.receiptNumber,
+                    studentName: `${student.firstName} ${student.lastName}`,
+                    studentRollNumber: student.rollNumber,
+                    className: 'Class Info',
+                    paymentDate: receipt.paymentDate,
+                    paymentMethod: receipt.paymentMethod,
+                    transactionId: receipt.transactionId,
+                    amountReceived: receipt.amountReceived,
+                    currency: payment.currency,
+                    feeDetails: receipt.feeDetails,
+                  },
+                );
               }
             }
           }
@@ -256,13 +299,19 @@ export class PaymentService implements OnModuleInit {
   ): Promise<void> {
     const payment = await this.paymentModel.findOne({ gatewayTransactionId });
     if (!payment) {
-      throw new NotFoundException(`Payment record with transaction ID ${gatewayTransactionId} not found`);
+      throw new NotFoundException(
+        `Payment record with transaction ID ${gatewayTransactionId} not found`,
+      );
     }
 
     if (payment.status === 'FAILED') return;
 
     await TenantContext.run(
-      { schoolId: payment.schoolId?.toString() || '', tenantId: '', subdomain: '' },
+      {
+        schoolId: payment.schoolId?.toString() || '',
+        tenantId: '',
+        subdomain: '',
+      },
       async () => {
         payment.status = 'FAILED';
         payment.failureReason = failureReason;
@@ -290,11 +339,18 @@ export class PaymentService implements OnModuleInit {
     if (!payment) return;
 
     await TenantContext.run(
-      { schoolId: payment.schoolId?.toString() || '', tenantId: '', subdomain: '' },
+      {
+        schoolId: payment.schoolId?.toString() || '',
+        tenantId: '',
+        subdomain: '',
+      },
       async () => {
         const refundAmount = refundAmountMinor / 100;
         payment.refundedAmount = (payment.refundedAmount || 0) + refundAmount;
-        payment.status = payment.refundedAmount >= (payment.amount / 100) ? 'REFUNDED' : 'PARTIALLY_REFUNDED';
+        payment.status =
+          payment.refundedAmount >= payment.amount / 100
+            ? 'REFUNDED'
+            : 'PARTIALLY_REFUNDED';
         await payment.save();
 
         if (payment.invoiceId) {
@@ -341,12 +397,22 @@ School Administration`,
   /**
    * Initiate manual Refund via API
    */
-  async initiateRefund(paymentId: string, amount: number, reason: string): Promise<any> {
+  async initiateRefund(
+    paymentId: string,
+    amount: number,
+    reason: string,
+  ): Promise<any> {
     const payment = await this.paymentModel.findById(paymentId);
-    if (!payment) throw new NotFoundException(`Payment record ${paymentId} not found`);
+    if (!payment)
+      throw new NotFoundException(`Payment record ${paymentId} not found`);
 
-    if (payment.status !== 'SUCCESS' && payment.status !== 'PARTIALLY_REFUNDED') {
-      throw new BadRequestException('Cannot refund a transaction that has not succeeded.');
+    if (
+      payment.status !== 'SUCCESS' &&
+      payment.status !== 'PARTIALLY_REFUNDED'
+    ) {
+      throw new BadRequestException(
+        'Cannot refund a transaction that has not succeeded.',
+      );
     }
 
     const school = await this.schoolModel.findById(payment.schoolId);
@@ -378,7 +444,9 @@ School Administration`,
         paymentSettings,
       );
     } else {
-      throw new BadRequestException('Refund not supported for cash/cheque through automated gateways.');
+      throw new BadRequestException(
+        'Refund not supported for cash/cheque through automated gateways.',
+      );
     }
 
     await this.refundModel.create({
@@ -391,7 +459,11 @@ School Administration`,
       gatewayResponse: refundResult,
     });
 
-    await this.processRefundEvent(payment.gatewayTransactionId, amountMinor, refundResult);
+    await this.processRefundEvent(
+      payment.gatewayTransactionId,
+      amountMinor,
+      refundResult,
+    );
 
     return { success: true, refundId: refundResult.id };
   }
@@ -399,7 +471,11 @@ School Administration`,
   /**
    * Subscribes a student to automated billing
    */
-  async createSubscription(studentId: string, planId: string, gateway: 'STRIPE' | 'RAZORPAY'): Promise<any> {
+  async createSubscription(
+    studentId: string,
+    planId: string,
+    gateway: 'STRIPE' | 'RAZORPAY',
+  ): Promise<any> {
     const student = await this.studentModel.findById(studentId);
     if (!student) throw new NotFoundException(`Student ${studentId} not found`);
 
@@ -472,16 +548,24 @@ School Administration`,
    */
   async cancelSubscription(subscriptionId: string): Promise<any> {
     const sub = await this.subscriptionModel.findById(subscriptionId);
-    if (!sub) throw new NotFoundException(`Subscription ${subscriptionId} not found`);
+    if (!sub)
+      throw new NotFoundException(`Subscription ${subscriptionId} not found`);
 
     const student = await this.studentModel.findById(sub.studentId);
     const school = await this.schoolModel.findById(student?.schoolId);
     const paymentSettings = (school as any)?.paymentSettings || {};
 
     if (sub.gateway === 'STRIPE') {
-      await this.stripeService.cancelSubscription(sub.gatewaySubscriptionId, paymentSettings.stripeSecretKey);
+      await this.stripeService.cancelSubscription(
+        sub.gatewaySubscriptionId,
+        paymentSettings.stripeSecretKey,
+      );
     } else {
-      await this.razorpayService.cancelSubscription(sub.gatewaySubscriptionId, paymentSettings.razorpayKeyId, paymentSettings.razorpayKeySecret);
+      await this.razorpayService.cancelSubscription(
+        sub.gatewaySubscriptionId,
+        paymentSettings.razorpayKeyId,
+        paymentSettings.razorpayKeySecret,
+      );
     }
 
     sub.status = 'CANCELLED';
@@ -496,12 +580,24 @@ School Administration`,
    */
   async getRevenueAnalytics(): Promise<any> {
     const successPayments = await this.paymentModel.find({ status: 'SUCCESS' });
-    const refundedPayments = await this.paymentModel.find({ status: { $in: ['REFUNDED', 'PARTIALLY_REFUNDED'] } });
-    const failedPayments = await this.paymentModel.countDocuments({ status: 'FAILED' });
-    const pendingPayments = await this.paymentModel.countDocuments({ status: 'PENDING' });
+    const refundedPayments = await this.paymentModel.find({
+      status: { $in: ['REFUNDED', 'PARTIALLY_REFUNDED'] },
+    });
+    const failedPayments = await this.paymentModel.countDocuments({
+      status: 'FAILED',
+    });
+    const pendingPayments = await this.paymentModel.countDocuments({
+      status: 'PENDING',
+    });
 
-    const totalCollected = successPayments.reduce((sum, p) => sum + (p.amount / 100), 0);
-    const totalRefunded = refundedPayments.reduce((sum, r) => sum + (r.refundedAmount || 0), 0);
+    const totalCollected = successPayments.reduce(
+      (sum, p) => sum + p.amount / 100,
+      0,
+    );
+    const totalRefunded = refundedPayments.reduce(
+      (sum, r) => sum + (r.refundedAmount || 0),
+      0,
+    );
     const netRevenue = totalCollected - totalRefunded;
 
     const totalTx = successPayments.length + failedPayments + pendingPayments;
