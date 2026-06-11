@@ -71,3 +71,5 @@ export class LeaveRequest {
 }
 
 export const LeaveRequestSchema = SchemaFactory.createForClass(LeaveRequest);
+
+LeaveRequestSchema.index({ schoolId: 1, requesterId: 1, status: 1 });

@@ -45,3 +45,6 @@ export class AuditLog {
 }
 
 export const AuditLogSchema = SchemaFactory.createForClass(AuditLog);
+
+// Prune audit logs automatically after 365 days (31536000 seconds)
+AuditLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 31536000 });

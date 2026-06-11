@@ -79,6 +79,6 @@ export const AssignmentSubmissionSchema =
 
 // Prevent a student from having multiple submission documents for a single assignment
 AssignmentSubmissionSchema.index(
-  { assignment: 1, student: 1 },
+  { schoolId: 1, assignment: 1, student: 1 },
   { unique: true },
 );
