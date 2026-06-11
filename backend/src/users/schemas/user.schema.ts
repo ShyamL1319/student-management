@@ -43,6 +43,15 @@ export class User {
 
   @Prop({ default: null })
   resetPasswordExpires!: Date;
+
+  @Prop({ default: null })
+  mfaSecret?: string;
+
+  @Prop({ default: false })
+  mfaEnabled!: boolean;
+
+  @Prop({ type: [String], default: [] })
+  mfaBackupCodes!: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

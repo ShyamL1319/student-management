@@ -44,6 +44,7 @@ import { TenantGuard } from './tenant/tenant.guard';
 import { TenantMiddleware } from './tenant/tenant.middleware';
 import { TenantInterceptor } from './tenant/tenant.interceptor';
 import { tenantPlugin } from './common/database/tenant.plugin';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -63,6 +64,23 @@ import { tenantPlugin } from './common/database/tenant.plugin';
       }),
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000,
+        limit: 100,
+      },
+      {
+        name: 'sensitive',
+        ttl: 60000,
+        limit: 5,
+      },
+      {
+        name: 'exports',
+        ttl: 300000,
+        limit: 3,
+      },
+    ]),
     TenantModule,
     CommonModule,
     UsersModule,
@@ -106,6 +124,10 @@ import { tenantPlugin } from './common/database/tenant.plugin';
     {
       provide: APP_INTERCEPTOR,
       useClass: TenantInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
     {
       provide: APP_GUARD,
