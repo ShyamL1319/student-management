@@ -23,7 +23,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
@@ -120,7 +120,6 @@ export class AuthService {
         firstName: profile.firstName,
         lastName: profile.lastName,
         avatar: profile.avatar,
-        role: userRole._id,
         roles: [userRole._id],
         roleType: 'USER',
         isActive: true,
@@ -197,7 +196,7 @@ export class AuthService {
       email: user.email,
       sub: user._id,
       roles: roleNames,
-      role: user.role,
+      role: roleNames[0],
       schoolId: user.schoolId?.toString(),
     };
     const accessToken = this.jwtService.sign(payload, {
@@ -277,8 +276,8 @@ export class AuthService {
     if (roleNames.length === 0) {
       if (user.roleType) {
         roleNames.push(user.roleType);
-      } else if (user.role) {
-        const name = typeof user.role === 'string' ? user.role : user.role.name;
+      } else if (user.roles) {
+        const name = typeof user.roles === 'string' ? user.roles : user.roles[0].name;
         if (name) roleNames.push(name);
       }
     }
@@ -287,7 +286,7 @@ export class AuthService {
       email: user.email,
       sub: user._id,
       roles: roleNames,
-      role: user.role,
+      role: user.roles,
       schoolId: user.schoolId?.toString(),
     };
     const newAccessToken = this.jwtService.sign(payload, {

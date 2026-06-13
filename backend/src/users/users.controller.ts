@@ -8,6 +8,7 @@ import {
   Post,
   Delete,
   Put,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -29,8 +30,8 @@ export class UsersController {
 
   @Get()
   @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN)
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() query?: any) {
+    return this.usersService.findAll(query);
   }
 
   @Get('profile')

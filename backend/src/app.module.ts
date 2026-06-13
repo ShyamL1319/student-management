@@ -32,6 +32,7 @@ import { AdmissionsModule } from './admissions/admissions.module';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { PaymentsModule } from './payments/payments.module';
 import { SettingsModule } from './settings/settings.module';
+import { SearchModule } from './search/search.module';
 
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -110,9 +111,9 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     AuditLogsModule,
     DashboardModule,
     LeaveRequestsModule,
-    AdmissionsModule,
     AssignmentsModule,
     SettingsModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

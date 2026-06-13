@@ -71,7 +71,7 @@ export class ParentsService {
       firstName: dto.firstName,
       lastName: dto.lastName,
       phone: dto.phone || '',
-      role: parentRole._id,
+      roles: [parentRole._id],
       roleType: 'PARENT',
       isActive: true,
       children: [],
@@ -356,7 +356,7 @@ export class ParentsService {
   async getProfile(parentIdStr: string) {
     const parent = await this.userModel
       .findById(parentIdStr)
-      .populate('role')
+      .populate('roles')
       .lean();
     if (!parent) throw new NotFoundException('Parent profile not found');
     const { passwordHash: _, ...profile } = parent;
@@ -366,7 +366,7 @@ export class ParentsService {
   async updateProfile(parentIdStr: string, dto: UpdateParentProfileDto) {
     const updated = await this.userModel
       .findByIdAndUpdate(parentIdStr, { $set: dto }, { new: true })
-      .populate('role')
+      .populate('roles')
       .exec();
 
     if (!updated) throw new NotFoundException('Parent profile not found');
@@ -393,7 +393,7 @@ export class ParentsService {
     const [data, total] = await Promise.all([
       this.userModel
         .find(filter)
-        .populate('role')
+        .populate('roles')
         .populate({
           path: 'children',
           model: 'User',
@@ -412,7 +412,7 @@ export class ParentsService {
   async findOne(id: string): Promise<any> {
     const parent = await this.userModel
       .findById(id)
-      .populate('role')
+      .populate('roles')
       .populate({
         path: 'children',
         model: 'User',
@@ -454,7 +454,7 @@ export class ParentsService {
       firstName: dto.firstName,
       lastName: dto.lastName,
       phone: dto.phone || '',
-      role: parentRole._id,
+      roles: [parentRole._id],
       roleType: 'PARENT',
       isActive: true,
       children: childrenObjectIds,
@@ -493,7 +493,7 @@ export class ParentsService {
 
     const updated = await this.userModel
       .findByIdAndUpdate(id, { $set: updateFields }, { new: true })
-      .populate('role')
+      .populate('roles')
       .exec();
 
     if (!updated) {

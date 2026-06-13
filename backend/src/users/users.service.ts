@@ -17,21 +17,71 @@ interface RequesterUser {
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) { }
 
   getUserModel() {
     return this.userModel;
   }
 
-  async findAll(): Promise<UserDocument[]> {
-    return this.userModel.find().populate('role roles').exec();
+  async findAll(query?: any): Promise<any> {
+    const { page, limit, search, roleId } = query || {};
+
+    if (page === undefined && limit === undefined && search === undefined && roleId === undefined) {
+      return this.userModel.find().populate('roles').exec();
+    }
+
+    const q: any = {};
+    if (search) {
+      const escaped = search.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      q.$or = [
+        { firstName: { $regex: '^' + escaped, $options: 'i' } },
+        { lastName: { $regex: '^' + escaped, $options: 'i' } },
+        { email: { $regex: '^' + escaped, $options: 'i' } },
+        { roleType: { $regex: '^' + escaped, $options: 'i' } },
+      ];
+    }
+
+    if (roleId) {
+      const targetQuery = { roles: roleId };
+      if (q.$or) {
+        // Intersect search term filter with roleId filter
+        q.$and = [
+          { $or: q.$or },
+          targetQuery,
+        ];
+        delete q.$or;
+      } else {
+        q.roles = roleId;
+      }
+    }
+
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 10;
+
+    const itemsQuery = this.userModel
+      .find(q)
+      .populate('roles')
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum);
+
+    const [data, total] = await Promise.all([
+      itemsQuery.exec(),
+      this.userModel.countDocuments(q).exec(),
+    ]);
+
+    return {
+      data,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+    };
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel
       .findOne({ email })
       .setOptions({ bypassTenant: true })
-      .populate('role roles')
+      .populate('roles')
       .exec();
   }
 
@@ -39,7 +89,7 @@ export class UsersService {
     return this.userModel
       .findById(id)
       .setOptions({ bypassTenant: true })
-      .populate('role roles')
+      .populate('roles')
       .exec();
   }
 
@@ -55,7 +105,7 @@ export class UsersService {
     return this.userModel
       .findByIdAndUpdate(id, updateData, { new: true })
       .setOptions({ bypassTenant: true })
-      .populate('role roles')
+      .populate('roles')
       .exec();
   }
 
@@ -65,7 +115,7 @@ export class UsersService {
   ): Promise<UserDocument> {
     const user = await this.userModel
       .findByIdAndUpdate(id, updateProfileDto, { new: true })
-      .populate('role roles')
+      .populate('roles')
       .exec();
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -80,7 +130,7 @@ export class UsersService {
   ): Promise<UserDocument> {
     const user = await this.userModel
       .findById(id)
-      .populate('role roles')
+      .populate('roles')
       .exec();
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -93,7 +143,7 @@ export class UsersService {
     }
 
     const currentRoleName =
-      (user.role as unknown as RoleDocument)?.name || user.roleType;
+      (user.roles as unknown as RoleDocument)?.name || user.roleType;
     const newRoleName = newRole.name;
 
     if (currentRoleName === 'SUPER_ADMIN' || newRoleName === 'SUPER_ADMIN') {
@@ -115,10 +165,10 @@ export class UsersService {
     const updatedUser = await this.userModel
       .findByIdAndUpdate(
         id,
-        { role: newRole._id, roleType: newRoleName, roles: [newRole._id] },
+        { roleType: newRoleName, roles: [newRole._id] },
         { new: true },
       )
-      .populate('role roles')
+      .populate('roles')
       .exec();
     if (!updatedUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -169,7 +219,7 @@ export class UsersService {
     }
 
     user.roles.push(roleToAdd);
-    return (await user.save()).populate('role roles');
+    return (await user.save()).populate('roles');
   }
 
   async removeRole(
@@ -220,7 +270,7 @@ export class UsersService {
     user.roles = (user.roles as unknown as RoleDocument[]).filter(
       (r) => String(r._id) !== roleId,
     );
-    return (await user.save()).populate('role roles');
+    return (await user.save()).populate('roles');
   }
 
   async replaceRoles(
@@ -290,7 +340,7 @@ export class UsersService {
     }
 
     user.roles = roleIds as unknown as Role[];
-    return (await user.save()).populate('role roles');
+    return (await user.save()).populate('roles');
   }
 
   async getUserRoles(id: string): Promise<Role[]> {

@@ -28,3 +28,6 @@ export class Mark {
 }
 
 export const MarkSchema = SchemaFactory.createForClass(Mark);
+
+MarkSchema.index({ studentId: 1, subjectId: 1 });
+MarkSchema.index({ examId: 1, studentId: 1 });

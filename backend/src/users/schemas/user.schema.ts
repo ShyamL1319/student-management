@@ -54,9 +54,6 @@ export class User {
   })
   roles!: Role[];
 
-  @Prop({ type: Types.ObjectId, ref: 'Role', required: false })
-  role?: Role;
-
   roleType!: string;
 
   @Prop({ type: Types.ObjectId, ref: 'School', required: false, index: true })
@@ -86,13 +83,13 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
+UserSchema.index({ schoolId: 1, firstName: 1, lastName: 1 });
+UserSchema.index({ schoolId: 1, lastName: 1 });
+UserSchema.index({ schoolId: 1, email: 1 });
+UserSchema.index({ schoolId: 1, roles: 1 });
+
 UserSchema.pre('save', async function () {
   const self = this as any;
-
-  // Enforce roles initialization from legacy role field if roles array is empty
-  if ((!self.roles || self.roles.length === 0) && self.role) {
-    self.roles = [self.role];
-  }
 
   if (self.roles && self.roles.length > 0) {
     // Prevent duplicate role IDs
@@ -135,7 +132,6 @@ UserSchema.pre('save', async function () {
     const primaryRole =
       roles.find((r: any) => r.name === primaryRoleName) || roles[0];
     if (primaryRole) {
-      self.role = primaryRole._id;
       self.roleType = primaryRole.name;
     }
   } else {
@@ -150,7 +146,6 @@ UserSchema.pre('save', async function () {
       });
     }
     self.roles = [userRole._id];
-    self.role = userRole._id;
     self.roleType = 'USER';
   }
 });

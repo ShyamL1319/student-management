@@ -93,3 +93,5 @@ export class Notification extends Document {
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);
+
+NotificationSchema.index({ recipientId: 1, createdAt: -1 });

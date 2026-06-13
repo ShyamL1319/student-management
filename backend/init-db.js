@@ -92,7 +92,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   const studentCount = await db
     .collection('users')
     .countDocuments({ roleType: 'STUDENT' });
-  if (studentCount >= 50) {
+  if (studentCount >= 5) {
     console.log(
       'Database already has sufficient seed data. Skipping massive seed.',
     );
@@ -112,12 +112,6 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
     { name: 'Operations', description: 'School Operations' },
     { name: 'IT Support', description: 'IT and Tech Support' },
     { name: 'Library', description: 'Library Management' },
-    { name: 'Science Department', description: 'Science and Mathematics Academic Dept' },
-    { name: 'Arts & Humanities', description: 'Languages, Arts and Social Studies' },
-    {
-      name: 'Empty Department',
-      description: 'Department without staff for edge cases',
-    },
   ];
   const insertedDepts = [];
   for (const d of depts) {
@@ -140,11 +134,6 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
     'English',
     'History',
     'Geography',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'Computer Science',
-    'Art',
   ];
   const insertedSubjects = [];
   for (const s of subjects) {
@@ -195,20 +184,19 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   console.log('Seeding Staff...');
   const staffIds = [];
   const staffRecords = [];
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 5; i++) {
     const name = getRandomName();
     const email = `staff${i}@school.com`;
-    // Map to all departments except the last 'Empty Department'
-    const dept = insertedDepts[i % (insertedDepts.length - 1)];
+    const dept = insertedDepts[i % insertedDepts.length];
     staffRecords.push({
       email,
       passwordHash: defaultPasswordHash,
       firstName: name.firstName,
       lastName: name.lastName,
       phone: `555-10${i.toString().padStart(2, '0')}`,
-      role: roleIds['STAFF'],
+      roles: [roleIds['STAFF']],
       roleType: 'STAFF',
-      isActive: i % 10 !== 0, // 1 inactive in 10
+      isActive: true,
       department: dept._id,
       schoolId: schoolId,
       createdAt: new Date(),
@@ -238,14 +226,13 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   const teacherIds = [];
   const teachers = [];
   const teacherRecords = [];
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 5; i++) {
     const name = getRandomName();
     const email = `teacher${i}@school.com`;
     const tSubjects = [
       insertedSubjects[i % insertedSubjects.length]._id,
-      insertedSubjects[(i + 1) % insertedSubjects.length]._id,
     ];
-    const academicDepts = insertedDepts.filter(d => ['Science Department', 'Arts & Humanities'].includes(d.name));
+    const academicDepts = insertedDepts;
     const assignedDept = academicDepts[i % academicDepts.length];
     const tId = new ObjectId();
     teacherRecords.push({
@@ -255,7 +242,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
       firstName: name.firstName,
       lastName: name.lastName,
       phone: `555-20${i.toString().padStart(2, '0')}`,
-      role: roleIds['TEACHER'],
+      roles: [roleIds['TEACHER']],
       roleType: 'TEACHER',
       isActive: true,
       subjects: tSubjects,
@@ -272,10 +259,10 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   // --- 6. Classes & Sections ---
   console.log('Seeding Classes & Sections...');
   const classNames = ['Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
-  const sectionNames = ['A', 'B', 'C'];
+  const sectionNames = ['A'];
   const insertedClasses = [];
   const insertedSections = [];
-  const academicDepts = insertedDepts.filter(d => ['Science Department', 'Arts & Humanities'].includes(d.name));
+  const academicDepts = insertedDepts;
   let teacherIdx = 0;
   let classIdx = 0;
 
@@ -315,7 +302,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   const parentIds = [];
   const parents = [];
   const parentRecords = [];
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 5; i++) {
     const name = getRandomName();
     const email = `parent${i}@school.com`;
     const pId = new ObjectId();
@@ -326,7 +313,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
       firstName: name.firstName,
       lastName: name.lastName,
       phone: `555-30${i.toString().padStart(2, '0')}`,
-      role: roleIds['PARENT'],
+      roles: [roleIds['PARENT']],
       roleType: 'PARENT',
       isActive: true,
       relationshipType: i % 5 === 0 ? 'Mother' : 'Father',
@@ -356,9 +343,8 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
 
   for (const section of insertedSections) {
     studentsBySection[section._id] = [];
-    // 10 students per section = 150 students
-    for (let i = 0; i < 10; i++) {
-      // Randomly assign to a pool of 60 parents, forcing some parents to have multiple kids
+    // 1 student per section = 5 students
+    for (let i = 0; i < 1; i++) {
       const parent = parents[Math.floor(Math.random() * parents.length)];
       const name = {
         firstName: firstNames[Math.floor(Math.random() * firstNames.length)],
@@ -378,9 +364,9 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
         firstName: name.firstName,
         lastName: name.lastName,
         phone: `555-40${studentCount1.toString().padStart(3, '0')}`,
-        role: roleIds['STUDENT'],
+        roles: [roleIds['STUDENT']],
         roleType: 'STUDENT',
-        isActive: studentCount1 % 15 !== 0, // 1 in 15 inactive
+        isActive: true,
         admissionNumber: `ADM-${currentYear}-${studentCount1.toString().padStart(4, '0')}`,
         rollNumber: `R-${clsName}-${section.name}-${i + 1}`,
         dob,
@@ -430,103 +416,83 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   ];
 
   const timetables = [];
-  for (const section of insertedSections) {
-    for (const day of days) {
-      for (let slot = 0; slot < times.length; slot++) {
-        const subject =
-          insertedSubjects[Math.floor(Math.random() * insertedSubjects.length)];
-        // Force finding a teacher skilled in this subject
-        const eligibleTeachers = teachers.filter((t) =>
-          t.subjects.map((s) => s.toString()).includes(subject._id.toString()),
-        );
-        const teacher =
-          eligibleTeachers.length > 0
-            ? eligibleTeachers[
-            Math.floor(Math.random() * eligibleTeachers.length)
-            ]
-            : teachers[Math.floor(Math.random() * teachers.length)];
+  for (let i = 0; i < 5; i++) {
+    const section = insertedSections[i % insertedSections.length];
+    const day = days[i % days.length];
+    const slot = times[i % times.length];
+    const subject = insertedSubjects[i % insertedSubjects.length];
+    const teacherId = teacherIds[i % teacherIds.length];
 
-        timetables.push({
-          class: section.classId,
-          academicYear: activeYearId,
-          teacher: teacher._id,
-          subject: subject._id,
-          section: section._id,
-          dayOfWeek: day,
-          startTime: times[slot].start,
-          endTime: times[slot].end,
-          room: `Room ${100 + Math.floor(Math.random() * 50)}`,
-          isActive: true,
-          createdAt: new Date(),
-        });
-      }
-    }
+    timetables.push({
+      class: section.classId,
+      academicYear: activeYearId,
+      teacher: teacherId,
+      subject: subject._id,
+      section: section._id,
+      dayOfWeek: day,
+      startTime: slot.start,
+      endTime: slot.end,
+      room: `Room ${100 + i}`,
+      isActive: true,
+      school: schoolId,
+      schoolId: schoolId,
+      createdAt: new Date(),
+    });
   }
   await db.collection('timetables').insertMany(timetables);
 
   // --- 10. Exams & Marks ---
   console.log('Seeding Exams & Marks...');
-  const examTypes = ['Mid Term', 'Final'];
   const exams = [];
-  for (const cls of insertedClasses) {
-    for (const type of examTypes) {
-      const examDate =
-        type === 'Mid Term'
-          ? new Date(currentYear, 9, 15)
-          : new Date(currentYear + 1, 2, 10);
-      const res = await db.collection('exams').insertOne({
-        name: `${type} Examination`,
-        type: type,
-        date: examDate,
-        class: cls._id,
-        school: schoolId,
-        isPublished: true,
-        schedule: insertedSubjects.slice(0, 5).map((s, idx) => ({
-          date: new Date(examDate.getTime() + idx * 86400000),
-          subject: s._id,
-          startTime: '09:00',
-          endTime: '12:00',
-        })),
-        createdAt: new Date(),
-      });
-      exams.push({
-        _id: res.insertedId,
-        classId: cls._id,
-        subjects: insertedSubjects.slice(0, 5),
-      });
-    }
+  for (let idx = 0; idx < insertedClasses.length; idx++) {
+    const cls = insertedClasses[idx];
+    const examDate = new Date(currentYear, 9, 15);
+    const res = await db.collection('exams').insertOne({
+      name: `Mid Term Examination`,
+      type: 'Mid Term',
+      date: examDate,
+      class: cls._id,
+      school: schoolId,
+      schoolId: schoolId,
+      isPublished: true,
+      schedule: insertedSubjects.slice(0, 5).map((s, idx) => ({
+        date: new Date(examDate.getTime() + idx * 86400000),
+        subject: s._id,
+        startTime: '09:00',
+        endTime: '12:00',
+      })),
+      createdAt: new Date(),
+    });
+    exams.push({
+      _id: res.insertedId,
+      classId: cls._id,
+      subjects: insertedSubjects.slice(0, 5),
+    });
   }
 
   const marks = [];
-  for (const exam of exams) {
-    const classSections = insertedSections.filter(
-      (s) => s.classId.toString() === exam.classId.toString(),
-    );
-    for (const section of classSections) {
-      const sIds = studentsBySection[section._id];
-      for (const sId of sIds) {
-        for (const sub of exam.subjects) {
-          // Weighted random toward top-to-average performers
-          const marksObtained = 40 + Math.floor(Math.random() * 60);
-          marks.push({
-            studentId: sId,
-            subjectId: sub._id,
-            examId: exam._id,
-            marksObtained,
-            maxMarks: 100,
-            grade:
-              marksObtained >= 90
-                ? 'A'
-                : marksObtained >= 75
-                  ? 'B'
-                  : marksObtained >= 60
-                    ? 'C'
-                    : 'D',
-            createdAt: new Date(),
-          });
-        }
-      }
-    }
+  for (let i = 0; i < 5; i++) {
+    const exam = exams[i % exams.length];
+    const sId = studentIds[i % studentIds.length];
+    const sub = exam.subjects[i % exam.subjects.length];
+    const marksObtained = 40 + Math.floor(Math.random() * 60);
+    marks.push({
+      studentId: sId,
+      subjectId: sub._id,
+      examId: exam._id,
+      marksObtained,
+      maxMarks: 100,
+      grade:
+        marksObtained >= 90
+          ? 'A'
+          : marksObtained >= 75
+            ? 'B'
+            : marksObtained >= 60
+              ? 'C'
+              : 'D',
+      schoolId: schoolId,
+      createdAt: new Date(),
+    });
   }
   await db.collection('marks').insertMany(marks);
 
@@ -534,21 +500,19 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   console.log('Seeding Attendance...');
   const attendances = [];
   const today = new Date();
-  for (let d = 0; d < 15; d++) {
-    const attDate = new Date(today.getTime() - d * 86400000);
-    if (attDate.getDay() === 0 || attDate.getDay() === 6) continue; // skip weekends
-
-    // Students attendance
-    for (const sId of studentIds) {
-      const rand = Math.random();
-      const status =
-        rand > 0.1
-          ? 'PRESENT'
-          : rand > 0.05
-            ? 'ABSENT'
-            : rand > 0.02
-              ? 'LATE'
-              : 'EXCUSED';
+  for (let i = 0; i < 5; i++) {
+    const attDate = new Date(today.getTime() - i * 86400000);
+    const rand = Math.random();
+    const status =
+      rand > 0.1
+        ? 'PRESENT'
+        : rand > 0.05
+          ? 'ABSENT'
+          : rand > 0.02
+            ? 'LATE'
+            : 'EXCUSED';
+    if (i < 3) {
+      const sId = studentIds[i % studentIds.length];
       attendances.push({
         attendeeType: 'STUDENT',
         attendeeId: sId,
@@ -556,31 +520,26 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
         status,
         date: attDate,
         school: schoolId,
+        schoolId: schoolId,
         createdAt: new Date(),
       });
-    }
-    // Teachers attendance
-    for (const tId of teacherIds) {
+    } else {
+      const tId = teacherIds[(i - 3) % teacherIds.length];
       attendances.push({
         attendeeType: 'TEACHER',
         attendeeId: tId,
-        status: Math.random() > 0.05 ? 'PRESENT' : 'ABSENT',
+        status,
         date: attDate,
         school: schoolId,
+        schoolId: schoolId,
         createdAt: new Date(),
       });
     }
   }
-  // Batch insertion to avoid memory overflow limits
-  for (let i = 0; i < attendances.length; i += 1000) {
-    await db
-      .collection('attendances')
-      .insertMany(attendances.slice(i, i + 1000));
-  }
+  await db.collection('attendances').insertMany(attendances);
 
   // --- 12. Fees ---
   console.log('Seeding Fees...');
-  // Seed Fee Categories
   const feeCategoriesRes = await db.collection('feecategories').insertMany([
     { name: 'Tuition Fee', description: 'Standard Tuition', isActive: true, schoolId: schoolId, createdAt: new Date() },
     { name: 'Transport Fee', description: 'Bus service', isActive: true, schoolId: schoolId, createdAt: new Date() },
@@ -588,7 +547,6 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   ]);
   const feeCategoryIds = Object.values(feeCategoriesRes.insertedIds);
 
-  // Seed Fee Structures
   const feeStructuresRes = await db.collection('feestructures').insertMany([
     {
       feeName: 'Grade 6-8 Tuition',
@@ -625,55 +583,26 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   const invoices = [];
   const feeCollections = [];
   let invNumber = 1000;
-  for (const sId of studentIds) {
+  for (let idx = 0; idx < studentIds.length; idx++) {
+    const sId = studentIds[idx];
     const netAmount = 5000;
-
-    // Invoice 1: Fully Paid (Past Date)
-    const inv1Id = new ObjectId();
-    invoices.push({
-      _id: inv1Id,
-      studentId: sId,
-      invoiceNumber: `INV-${invNumber++}`,
-      invoiceDate: new Date(currentYear, 5, 1),
-      dueDate: new Date(currentYear, 5, 15),
-      netAmount,
-      paidAmount: netAmount,
-      pendingAmount: 0,
-      status: 'paid',
-      schoolId: schoolId,
-      feeItems: [{ name: 'Term 1 Tuition', amount: 5000, feeType: 'Tuition', categoryId: feeCategoryIds[0] }],
-      createdAt: new Date(),
-    });
-    feeCollections.push({
-      invoiceId: inv1Id,
-      studentId: sId,
-      amountPaid: netAmount,
-      paymentDate: new Date(currentYear, 5, 10),
-      paymentMethod: 'Card',
-      status: 'completed',
-      receiptNumber: `REC-${invNumber}`,
-      schoolId: schoolId,
-      createdAt: new Date(),
-    });
-
-    // Invoice 2: Mixed Status (paid, partial, overdue)
-    const inv2Id = new ObjectId();
-    const rand = Math.random();
-    let paidAmt = 0;
+    const invId = new ObjectId();
+    
     let status = 'pending';
-
-    if (rand > 0.7) {
-      paidAmt = 2000;
-      status = 'partially_paid';
-    } else if (rand > 0.9) {
-      paidAmt = netAmount;
+    let paidAmt = 0;
+    if (idx === 0 || idx === 1) {
       status = 'paid';
-    } else if (rand < 0.2) {
+      paidAmt = 5000;
+    } else if (idx === 2) {
+      status = 'partially_paid';
+      paidAmt = 2000;
+    } else if (idx === 3) {
       status = 'overdue';
+      paidAmt = 0;
     }
 
     invoices.push({
-      _id: inv2Id,
+      _id: invId,
       studentId: sId,
       invoiceNumber: `INV-${invNumber++}`,
       invoiceDate: new Date(currentYear, 10, 1),
@@ -683,15 +612,16 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
       pendingAmount: netAmount - paidAmt,
       status,
       schoolId: schoolId,
-      feeItems: [{ name: 'Term 2 Tuition', amount: 5000, feeType: 'Tuition', categoryId: feeCategoryIds[0] }],
+      feeItems: [{ name: 'Tuition Fee', amount: 5000, feeType: 'Tuition', categoryId: feeCategoryIds[0] }],
       createdAt: new Date(),
     });
+
     if (paidAmt > 0) {
       feeCollections.push({
-        invoiceId: inv2Id,
+        invoiceId: invId,
         studentId: sId,
         amountPaid: paidAmt,
-        paymentDate: new Date(currentYear, 10, 5),
+        paymentDate: new Date(currentYear, 10, 10),
         paymentMethod: 'Bank Transfer',
         status: 'completed',
         receiptNumber: `REC-${invNumber}`,
@@ -708,9 +638,9 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   // --- 13. Notifications ---
   console.log('Seeding Notifications...');
 
-  // Seed Notification Preferences
   const preferences = [];
-  for (const uId of [...studentIds, ...parentIds, ...teacherIds, ...staffIds, adminId].filter(Boolean)) {
+  const usersToPref = [...studentIds, ...parentIds, ...teacherIds, ...staffIds, adminId].filter(Boolean).slice(0, 5);
+  for (const uId of usersToPref) {
     preferences.push({
       userId: uId,
       emailNotifications: true,
@@ -718,6 +648,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
       inAppNotifications: true,
       doNotDisturb: false,
       isActive: true,
+      schoolId: schoolId,
       createdAt: new Date(),
       updatedAt: new Date()
     });
@@ -726,7 +657,6 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
     await db.collection('notificationpreferences').insertMany(preferences);
   }
 
-  // Seed Notification Templates
   const templateRes = await db.collection('notificationtemplates').insertOne({
     name: 'Standard Fee Alert',
     eventType: 'fee-alert',
@@ -743,57 +673,39 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   const notifEvents = [];
   const eventTypes = ['attendance-alert', 'fee-alert', 'result-alert', 'exam-schedule', 'timetable-change', 'announcement'];
 
-  // Student notifications for infinite scrolling testing
-  for (const sId of studentIds) {
-    for (let i = 0; i < 5; i++) {
-      const eType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-      const eventId = new ObjectId();
-      const notifId = new ObjectId();
+  for (let i = 0; i < 5; i++) {
+    const sId = studentIds[i % studentIds.length];
+    const eType = eventTypes[i % eventTypes.length];
+    const eventId = new ObjectId();
+    const notifId = new ObjectId();
 
-      notifEvents.push({
-        _id: eventId,
-        eventType: eType,
-        triggeredBy: adminId || sId,
-        relatedEntityId: sId,
-        relatedEntityType: 'Student',
-        notificationIds: [notifId],
-        eventData: { generatedBySeed: true },
-        successCount: 1,
-        failureCount: 0,
-        isActive: true,
-        schoolId: schoolId,
-        createdAt: new Date()
-      });
-
-      notifications.push({
-        _id: notifId,
-        recipientId: sId,
-        eventType: eType,
-        channel: 'in-app',
-        subject: `Sample ${eType}`,
-        message:
-          'This is an autogenerated notification for testing UI/UX and infinite scroll.',
-        status: Math.random() > 0.5 ? 'delivered' : 'opened',
-        isRead: Math.random() > 0.5,
-        schoolId: schoolId,
-        createdAt: getRandomDate(new Date(currentYear, 5, 1), new Date()),
-      });
-    }
-  }
-
-  // Parent overdue fee notifications
-  for (const pId of parentIds) {
-    notifications.push({
-      recipientId: pId,
-      eventType: 'fee-alert',
-      channel: 'in-app',
-      templateId: templateId,
-      subject: 'Fee Reminder',
-      message: 'Your upcoming fee is due or overdue.',
-      status: 'sent',
-      isRead: false,
+    notifEvents.push({
+      _id: eventId,
+      eventType: eType,
+      triggeredBy: adminId || sId,
+      relatedEntityId: sId,
+      relatedEntityType: 'Student',
+      notificationIds: [notifId],
+      eventData: { generatedBySeed: true },
+      successCount: 1,
+      failureCount: 0,
+      isActive: true,
       schoolId: schoolId,
-      createdAt: new Date(),
+      createdAt: new Date()
+    });
+
+    notifications.push({
+      _id: notifId,
+      recipientId: sId,
+      eventType: eType,
+      channel: 'in-app',
+      subject: `Sample ${eType}`,
+      message:
+        'This is an autogenerated notification for testing UI/UX and infinite scroll.',
+      status: 'delivered',
+      isRead: i % 2 === 0,
+      schoolId: schoolId,
+      createdAt: getRandomDate(new Date(currentYear, 5, 1), new Date()),
     });
   }
   await db.collection('notificationevents').insertMany(notifEvents);
@@ -824,6 +736,7 @@ async function seedNewFeatures(db, schoolId, adminId) {
     const leaveRequests = [
       {
         school: schoolId,
+        schoolId: schoolId,
         requesterId: studentIds[0],
         requesterType: 'STUDENT',
         startDate: new Date(Date.now() + 86400000), // tomorrow
@@ -836,7 +749,8 @@ async function seedNewFeatures(db, schoolId, adminId) {
       },
       {
         school: schoolId,
-        requesterId: studentIds[1],
+        schoolId: schoolId,
+        requesterId: studentIds[1 % studentIds.length],
         requesterType: 'STUDENT',
         startDate: new Date(Date.now() - 86400000 * 5),
         endDate: new Date(Date.now() - 86400000 * 3),
@@ -850,12 +764,41 @@ async function seedNewFeatures(db, schoolId, adminId) {
       },
       {
         school: schoolId,
+        schoolId: schoolId,
         requesterId: teacherIds[0],
         requesterType: 'TEACHER',
         startDate: new Date(Date.now() + 86400000 * 2),
         endDate: new Date(Date.now() + 86400000 * 3),
         type: 'Casual',
         reason: 'Personal legal business',
+        status: 'PENDING',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        school: schoolId,
+        schoolId: schoolId,
+        requesterId: teacherIds[1 % teacherIds.length],
+        requesterType: 'TEACHER',
+        startDate: new Date(Date.now() - 86400000 * 2),
+        endDate: new Date(Date.now() - 86400000 * 1),
+        type: 'Sick',
+        reason: 'Dental appointment',
+        status: 'APPROVED',
+        approvedBy: adminId,
+        remarks: 'Approved.',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        school: schoolId,
+        schoolId: schoolId,
+        requesterId: studentIds[2 % studentIds.length],
+        requesterType: 'STUDENT',
+        startDate: new Date(Date.now() + 86400000 * 5),
+        endDate: new Date(Date.now() + 86400000 * 6),
+        type: 'Casual',
+        reason: 'National sports event participation',
         status: 'PENDING',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -871,6 +814,7 @@ async function seedNewFeatures(db, schoolId, adminId) {
     const admissionApplications = [
       {
         school: schoolId,
+        schoolId: schoolId,
         applicantName: 'Harry Potter Jr.',
         gradeLevel: 'Grade 6',
         entranceScore: 92,
@@ -881,6 +825,7 @@ async function seedNewFeatures(db, schoolId, adminId) {
       },
       {
         school: schoolId,
+        schoolId: schoolId,
         applicantName: 'Hermione Granger Jr.',
         gradeLevel: 'Grade 7',
         entranceScore: 99,
@@ -891,11 +836,34 @@ async function seedNewFeatures(db, schoolId, adminId) {
       },
       {
         school: schoolId,
+        schoolId: schoolId,
         applicantName: 'Ronald Weasley Jr.',
         gradeLevel: 'Grade 6',
         entranceScore: 65,
         status: 'Interview Scheduled',
         parentEmail: 'arthur.weasley@ministry.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        school: schoolId,
+        schoolId: schoolId,
+        applicantName: 'Luna Lovegood Jr.',
+        gradeLevel: 'Grade 8',
+        entranceScore: 88,
+        status: 'Approved',
+        parentEmail: 'xenophilius@quibbler.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        school: schoolId,
+        schoolId: schoolId,
+        applicantName: 'Neville Longbottom Jr.',
+        gradeLevel: 'Grade 7',
+        entranceScore: 78,
+        status: 'Rejected',
+        parentEmail: 'longbottoms@auror.com',
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -925,6 +893,7 @@ async function seedNewFeatures(db, schoolId, adminId) {
         assignments.push({
           _id: assId,
           school: schoolId,
+          schoolId: schoolId,
           title: `${cls.name} Assignment ${idx + 1}`,
           description: 'Please read chapter 3 and complete review questions 1-10.',
           subject: subjectId,
@@ -943,14 +912,15 @@ async function seedNewFeatures(db, schoolId, adminId) {
           class: cls._id,
         }).toArray();
 
-        for (let sIdx = 0; sIdx < Math.min(3, classStudents.length); sIdx++) {
+        for (let sIdx = 0; sIdx < Math.min(1, classStudents.length); sIdx++) {
           const student = classStudents[sIdx];
-          const status = sIdx === 0 ? 'Graded' : 'Submitted';
-          const marks = status === 'Graded' ? 88 + sIdx * 2 : undefined;
-          const fb = status === 'Graded' ? 'Excellent analysis.' : undefined;
+          const status = idx % 2 === 0 ? 'Graded' : 'Submitted';
+          const marks = status === 'Graded' ? 85 + idx * 2 : undefined;
+          const fb = status === 'Graded' ? 'Good effort.' : undefined;
 
           submissions.push({
             school: schoolId,
+            schoolId: schoolId,
             assignment: assId,
             student: student._id,
             fileUrl: 'https://example.com/submission.pdf',
@@ -1153,205 +1123,7 @@ async function initDB() {
     const salt = await bcrypt.genSalt(10);
     const defaultPasswordHash = await bcrypt.hash('ChangeMe123!', salt);
 
-    function splitName(fullName) {
-      if (!fullName) return { firstName: 'N/A', lastName: 'N/A' };
-      const parts = fullName.trim().split(/\s+/);
-      const firstName = parts[0] || 'N/A';
-      const lastName = parts.slice(1).join(' ') || 'N/A';
-      return { firstName, lastName };
-    }
 
-    // Teachers
-    const teacherCol = db.collection('teachers');
-    if ((await teacherCol.countDocuments()) > 0) {
-      for (const t of await teacherCol.find().toArray()) {
-        if (
-          !(await User.findOne({
-            $or: [{ _id: t._id }, { email: t.email?.toLowerCase() }],
-          }))
-        ) {
-          const { firstName, lastName } = splitName(t.name);
-          await User.create({
-            _id: t._id,
-            email: t.email?.toLowerCase(),
-            passwordHash: defaultPasswordHash,
-            firstName,
-            lastName,
-            phone: t.phone || '',
-            role: roleIds['TEACHER'],
-            roleType: 'TEACHER',
-            isActive: t.isActive !== false,
-            subjects: t.subjects || [],
-            classes: t.classes || [],
-            profile: t.profile || '',
-            createdAt: t.createdAt || new Date(),
-            updatedAt: t.updatedAt || new Date(),
-            schoolId: defaultSchoolId,
-          });
-        }
-      }
-      await teacherCol.rename('backup_teachers');
-    }
-
-    // Staff
-    const staffCol = db.collection('staffs');
-    if ((await staffCol.countDocuments()) > 0) {
-      for (const s of await staffCol.find().toArray()) {
-        if (
-          !(await User.findOne({
-            $or: [{ _id: s._id }, { email: s.email?.toLowerCase() }],
-          }))
-        ) {
-          const { firstName, lastName } = splitName(s.name);
-          await User.create({
-            _id: s._id,
-            email: s.email?.toLowerCase(),
-            passwordHash: defaultPasswordHash,
-            firstName,
-            lastName,
-            phone: s.phone || '',
-            role: roleIds['STAFF'],
-            roleType: 'STAFF',
-            isActive: s.isActive !== false,
-            department: s.department || null,
-            createdAt: s.createdAt || new Date(),
-            updatedAt: s.updatedAt || new Date(),
-            schoolId: defaultSchoolId,
-          });
-        }
-      }
-      await staffCol.rename('backup_staffs');
-    }
-
-    // Parents & Students
-    const studentCol = db.collection('students');
-    if ((await studentCol.countDocuments()) > 0) {
-      const parentsCol = db.collection('parents');
-      const parentDetailsMap = new Map();
-      for (const p of await parentsCol.find().toArray()) {
-        const pName =
-          p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'N/A';
-        parentDetailsMap.set(p._id.toString(), {
-          id: p._id,
-          name: pName,
-          email: p.email
-            ? p.email.toLowerCase()
-            : `parent.${p._id.toString()}@school.com`,
-          phone: p.phone || '',
-          firstName: p.firstName || pName.split(/\s+/)[0] || 'N/A',
-          lastName: p.lastName || pName.split(/\s+/).slice(1).join(' ') || '',
-          relationshipType: p.relationshipType || 'Guardian',
-          occupation: p.occupation || '',
-          address: p.address || '',
-        });
-      }
-
-      async function getNextSeq(counterName) {
-        const result = await db
-          .collection('counters')
-          .findOneAndUpdate(
-            { _id: counterName },
-            { $inc: { seq: 1 } },
-            { returnDocument: 'after', upsert: true },
-          );
-        return (result.value || result).seq;
-      }
-
-      for (const st of await studentCol.find().toArray()) {
-        let parentId = null,
-          parentName = 'N/A';
-        if (st.parent && parentDetailsMap.has(st.parent.toString())) {
-          const pDet = parentDetailsMap.get(st.parent.toString());
-          parentName = pDet.name;
-          let parentUser = await User.findOne({ email: pDet.email });
-          if (!parentUser) {
-            parentUser = await User.create({
-              email: pDet.email,
-              passwordHash: defaultPasswordHash,
-              firstName: pDet.firstName,
-              lastName: pDet.lastName,
-              phone: pDet.phone,
-              role: roleIds['PARENT'],
-              roleType: 'PARENT',
-              isActive: true,
-              children: [st._id],
-              relationshipType: pDet.relationshipType,
-              occupation: pDet.occupation,
-              address: pDet.address,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              schoolId: defaultSchoolId,
-            });
-          } else if (
-            !(parentUser.children || [])
-              .map((c) => c.toString())
-              .includes(st._id.toString())
-          ) {
-            await User.updateOne(
-              { _id: parentUser._id },
-              { $addToSet: { children: st._id } },
-            );
-          }
-          parentId = parentUser._id;
-        }
-
-        const activeYearDoc = await db
-          .collection('academicyears')
-          .findOne({ isActive: true });
-        const activeYearId = activeYearDoc ? activeYearDoc._id : 'default';
-
-        const admissionNumber =
-          st.admissionNumber ||
-          `ADM-${new Date().getFullYear()}-${String(await getNextSeq(`admission_number:${new Date().getFullYear()}`)).padStart(6, '0')}`;
-        const classIdStr = st.class ? st.class.toString() : 'default';
-        const yearIdStr = activeYearId.toString();
-        const shortClassId =
-          classIdStr.length > 6
-            ? classIdStr.substring(classIdStr.length - 6)
-            : classIdStr;
-        const rollNumber =
-          st.rollNumber ||
-          `ROLL-${shortClassId}-${String(await getNextSeq(`roll_number:${classIdStr}:${yearIdStr}`)).padStart(6, '0')}`;
-
-        const email = st.email
-          ? st.email.toLowerCase()
-          : `student.${admissionNumber}@school.com`;
-        if (!(await User.findOne({ $or: [{ _id: st._id }, { email }] }))) {
-          await User.create({
-            _id: st._id,
-            email,
-            passwordHash: defaultPasswordHash,
-            firstName: st.firstName || 'N/A',
-            lastName: st.lastName || 'N/A',
-            phone: st.phone || '',
-            role: roleIds['STUDENT'],
-            roleType: 'STUDENT',
-            isActive: st.isActive !== false,
-            admissionNumber,
-            rollNumber,
-            dob: st.dob || null,
-            gender: st.gender || '',
-            bloodGroup: st.bloodGroup || '',
-            address: st.address || '',
-            parent: parentName,
-            parentId: parentId,
-            class: st.class || null,
-            section: st.section || null,
-            history: st.history || [],
-            createdAt: st.createdAt || new Date(),
-            updatedAt: st.updatedAt || new Date(),
-            schoolId: defaultSchoolId,
-          });
-        }
-      }
-      await studentCol.rename('backup_students');
-
-      const colls = await db.listCollections().toArray();
-      const collNames = colls.map((c) => c.name);
-      if (collNames.includes('parents')) {
-        await db.collection('parents').rename('backup_parents');
-      }
-    }
 
     // --- PART 3: SEED ADMIN ---
     console.log('--- Step 3: Seed Admin User ---');
@@ -1363,7 +1135,7 @@ async function initDB() {
         passwordHash: defaultPasswordHash,
         firstName: 'Super',
         lastName: 'Admin',
-        role: roleIds['SUPER_ADMIN'],
+        roles: [roleIds['SUPER_ADMIN']],
         roleType: 'SUPER_ADMIN',
         schoolId: defaultSchoolId,
         isActive: true,

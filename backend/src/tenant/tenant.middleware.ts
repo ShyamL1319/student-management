@@ -14,6 +14,9 @@ import { TenantContext } from './tenant.context';
 
 @Injectable()
 export class TenantMiddleware implements NestMiddleware {
+  private static readonly contextCache = new Map<string, { data: { tenantId: string; schoolId: string; subdomain: string }; expiresAt: number }>();
+  private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
   constructor(
     @InjectModel(Tenant.name) private tenantModel: Model<TenantDocument>,
     @InjectModel(School.name) private schoolModel: Model<SchoolDocument>,
@@ -75,7 +78,7 @@ export class TenantMiddleware implements NestMiddleware {
       if (authHeader && authHeader.startsWith('Bearer ')) {
         try {
           const token = authHeader.split(' ')[1];
-          const decoded = this.jwtService.decode(token);
+          const decoded = this.jwtService.decode(token) as any;
           // In the database user record, we'll store schoolId. If they are authenticated, their claims will contain schoolId
           if (decoded && decoded.schoolId) {
             resolvedIdentifier = decoded.schoolId;
@@ -90,6 +93,16 @@ export class TenantMiddleware implements NestMiddleware {
 
     if (!resolvedIdentifier) {
       return next();
+    }
+
+    // Check Cache
+    const now = Date.now();
+    const cached = TenantMiddleware.contextCache.get(resolvedIdentifier);
+    if (cached && cached.expiresAt > now) {
+      TenantContext.run(cached.data, () => {
+        next();
+      });
+      return;
     }
 
     try {
@@ -141,16 +154,21 @@ export class TenantMiddleware implements NestMiddleware {
         );
       }
 
-      TenantContext.run(
-        {
-          tenantId: tenant._id.toString(),
-          schoolId: school._id.toString(),
-          subdomain: tenant.subdomain,
-        },
-        () => {
-          next();
-        },
-      );
+      const contextData = {
+        tenantId: tenant._id.toString(),
+        schoolId: school._id.toString(),
+        subdomain: tenant.subdomain,
+      };
+
+      // Update cache
+      TenantMiddleware.contextCache.set(resolvedIdentifier, {
+        data: contextData,
+        expiresAt: now + this.CACHE_TTL_MS,
+      });
+
+      TenantContext.run(contextData, () => {
+        next();
+      });
     } catch (error) {
       next(error);
     }

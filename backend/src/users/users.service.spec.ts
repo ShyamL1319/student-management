@@ -21,6 +21,9 @@ describe('UsersService', () => {
     findById: jest.fn().mockReturnThis(),
     findByIdAndUpdate: jest.fn().mockReturnThis(),
     populate: jest.fn().mockReturnThis(),
+    skip: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    countDocuments: jest.fn().mockReturnThis(),
     exec: jest.fn().mockImplementation(() => mockUserInstance),
     db: {
       model: jest.fn().mockImplementation((name: string) => {
@@ -75,7 +78,7 @@ describe('UsersService', () => {
       await service.updateUserRole('targetUserId', 'adminRoleId', requester);
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'targetUserId',
-        { role: 'adminRoleId', roleType: 'ADMIN', roles: ['adminRoleId'] },
+        { roleType: 'ADMIN', roles: ['adminRoleId'] },
         { new: true },
       );
     });
@@ -109,12 +112,59 @@ describe('UsersService', () => {
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'targetUserId',
         {
-          role: 'superAdminRoleId',
           roleType: 'SUPER_ADMIN',
           roles: ['superAdminRoleId'],
         },
         { new: true },
       );
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return all users as array if no query parameters provided', async () => {
+      mockUserModel.exec.mockResolvedValueOnce([mockUserInstance]);
+
+      const result = await service.findAll();
+
+      expect(mockUserModel.find).toHaveBeenCalledWith();
+      expect(result).toEqual([mockUserInstance]);
+    });
+
+    it('should query with pagination and search parameters if provided', async () => {
+      mockUserModel.exec.mockResolvedValueOnce([mockUserInstance]);
+      mockUserModel.exec.mockResolvedValueOnce(5);
+
+      const query = { page: '2', limit: '5', search: 'John' };
+      const result = await service.findAll(query);
+
+      expect(mockUserModel.find).toHaveBeenCalledWith({
+        $or: [
+          { firstName: { $regex: '^John', $options: 'i' } },
+          { lastName: { $regex: '^John', $options: 'i' } },
+          { email: { $regex: '^John', $options: 'i' } },
+          { roleType: { $regex: '^John', $options: 'i' } },
+        ],
+      });
+      expect(mockUserModel.skip).toHaveBeenCalledWith(5);
+      expect(mockUserModel.limit).toHaveBeenCalledWith(5);
+      expect(result).toEqual({
+        data: [mockUserInstance],
+        total: 5,
+        page: 2,
+        totalPages: 1,
+      });
+    });
+
+    it('should query with roleId filter if provided', async () => {
+      mockUserModel.exec.mockResolvedValueOnce([mockUserInstance]);
+      mockUserModel.exec.mockResolvedValueOnce(1);
+
+      const query = { roleId: 'role123' };
+      await service.findAll(query);
+
+      expect(mockUserModel.find).toHaveBeenCalledWith({
+        roles: 'role123',
+      });
     });
   });
 });

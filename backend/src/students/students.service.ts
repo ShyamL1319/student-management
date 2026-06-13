@@ -41,7 +41,7 @@ export class StudentsService {
       ...data,
       admissionNumber,
       rollNumber,
-      role: studentRole._id,
+      roles: [studentRole._id],
       passwordHash,
     };
     return this.studentModel.create(studentData);

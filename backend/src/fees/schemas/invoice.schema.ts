@@ -61,3 +61,6 @@ export class Invoice {
 }
 
 export const InvoiceSchema = SchemaFactory.createForClass(Invoice);
+
+InvoiceSchema.index({ studentId: 1, status: 1 });
+InvoiceSchema.index({ classId: 1, academicYearId: 1 });

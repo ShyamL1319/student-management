@@ -35,3 +35,5 @@ export class QueueJob {
 }
 
 export const QueueJobSchema = SchemaFactory.createForClass(QueueJob);
+
+QueueJobSchema.index({ status: 1, processAfter: 1, createdAt: 1 });

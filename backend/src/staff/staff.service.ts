@@ -25,7 +25,7 @@ export class StaffService {
 
     const staffData = {
       ...data,
-      role: staffRole._id,
+      roles: [staffRole._id],
       passwordHash,
       roleType: 'STAFF',
     };

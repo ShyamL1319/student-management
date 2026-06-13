@@ -41,7 +41,7 @@ describe('TeachersService', () => {
     const created = {
       firstName: 'John',
       lastName: 'Doe',
-      role: 'mockRoleId',
+      roles: ['mockRoleId'],
       roleType: 'TEACHER',
     };
     teacherModel.create.mockResolvedValue(created);
@@ -52,7 +52,7 @@ describe('TeachersService', () => {
       expect.objectContaining({
         firstName: 'John',
         lastName: 'Doe',
-        role: 'mockRoleId',
+        roles: ['mockRoleId'],
         roleType: 'TEACHER',
         passwordHash: expect.any(String),
       }),

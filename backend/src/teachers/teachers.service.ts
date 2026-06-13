@@ -25,7 +25,7 @@ export class TeachersService {
 
     const teacherData: Partial<Teacher> = {
       ...data,
-      role: teacherRole._id,
+      roles: [teacherRole._id],
       passwordHash,
       roleType: 'TEACHER',
     };
