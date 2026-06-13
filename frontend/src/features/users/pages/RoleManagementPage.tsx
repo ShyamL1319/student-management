@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Container,
   Typography,
@@ -33,6 +33,7 @@ import {
   CircularProgress,
   InputAdornment,
   Checkbox,
+  Pagination,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -75,11 +76,21 @@ const roleColorHex: Record<string, { bg: string; border: string; text: string }>
 const getColorHex = (name: string) =>
   roleColorHex[name] || { bg: '#f8fafc', border: '#cbd5e1', text: '#475569' };
 
+const getInitials = (firstName: string, lastName: string) =>
+  `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
+
 export const RoleManagementPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingRole, setSavingRole] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+
+  // User search
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [localUserSearchQuery, setLocalUserSearchQuery] = useState('');
 
   // Assign Role Dialog
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
@@ -88,14 +99,17 @@ export const RoleManagementPage: React.FC = () => {
   const [roleSearchQuery, setRoleSearchQuery] = useState('');
 
   const isUserInRole = (u: User, roleId: string) => {
-    const uRoles = u.roles && Array.isArray(u.roles)
-      ? u.roles
-      : (u.role ? [u.role] : []);
+    const uRoles = u.roles || [];
     return uRoles.some((r: any) => typeof r === 'string' ? r === roleId : r?._id === roleId);
   };
 
-  // User search
-  const [userSearchQuery, setUserSearchQuery] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setUserSearchQuery(localUserSearchQuery);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [localUserSearchQuery]);
 
   // Create Role Dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -109,44 +123,66 @@ export const RoleManagementPage: React.FC = () => {
     severity: 'success' as 'success' | 'error',
   });
 
-  const fetchData = async () => {
+  const fetchRoles = async () => {
     try {
-      setLoading(true);
-      const [usersData, rolesData] = await Promise.all([
-        usersApi.getUsers(),
-        roleApi.getRoles(),
-      ]);
-      setUsers(usersData);
+      const rolesData = await roleApi.getRoles();
       setRoles(rolesData);
     } catch {
-      setSnackbar({ open: true, message: 'Failed to fetch data', severity: 'error' });
+      setSnackbar({ open: true, message: 'Failed to fetch roles', severity: 'error' });
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await usersApi.getUsers({
+        page,
+        limit: 10,
+        search: userSearchQuery || undefined,
+      });
+      if (Array.isArray(res)) {
+        setUsers(res);
+        setTotalUsers(res.length);
+        setTotalPages(1);
+      } else {
+        setUsers(res.data || []);
+        setTotalUsers(res.total || 0);
+        setTotalPages(res.totalPages || 1);
+      }
+    } catch {
+      setSnackbar({ open: true, message: 'Failed to fetch users', severity: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchData();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    fetchRoles();
   }, []);
 
-  // Count how many users are in each role
-  const usersPerRole = (roleId: string) =>
-    users.filter((u) => isUserInRole(u, roleId)).length;
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    fetchUsers();
+  }, [page, userSearchQuery]);
 
-  const handleAssignClick = (user: User) => {
+  const fetchData = async () => {
+    await Promise.all([fetchRoles(), fetchUsers()]);
+  };
+
+  // Count how many users are in each role
+  const usersPerRole = (roleId: string) => {
+    const roleObj = roles.find((r) => r._id === roleId);
+    return roleObj?.memberCount ?? 0;
+  };
+
+  const handleAssignClick = useCallback((user: User) => {
     setSelectedUser(user);
-    let currentRoleIds: string[] = [];
-    if (user.roles && Array.isArray(user.roles)) {
-      currentRoleIds = user.roles.map((r: any) => typeof r === 'string' ? r : r._id);
-    } else if (user.role) {
-      const id = typeof user.role === 'string' ? user.role : user.role._id;
-      if (id) currentRoleIds = [id];
-    }
+    const currentRoleIds = (user.roles || []).map((r: any) => typeof r === 'string' ? r : r._id);
     setSelectedRoleIds(currentRoleIds);
     setRoleSearchQuery('');
     setAssignDialogOpen(true);
-  };
+  }, []);
 
   const handleSaveRole = async () => {
     if (!selectedUser || selectedRoleIds.length === 0) return;
@@ -204,20 +240,125 @@ export const RoleManagementPage: React.FC = () => {
 
 
 
-  const getInitials = (firstName: string, lastName: string) =>
-    `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
-
   const filteredRoles = roles.filter((r) =>
     r.name.toLowerCase().includes(roleSearchQuery.toLowerCase()) ||
     (r.description || '').toLowerCase().includes(roleSearchQuery.toLowerCase())
   );
 
-  const filteredUsers = users.filter((u) => {
-    const q = userSearchQuery.toLowerCase().trim();
-    if (!q) return true;
-    const fullName = `${u.firstName} ${u.lastName}`.toLowerCase();
-    return fullName.includes(q) || u.email.toLowerCase().includes(q);
-  });
+  const filteredUsers = users;
+
+  const userTable = useMemo(() => {
+    if (loading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+          <CircularProgress size={32} />
+        </Box>
+      );
+    }
+    return (
+      <TableContainer>
+        <Table aria-label="user roles table">
+          <TableHead>
+            <TableRow sx={{ bgcolor: 'grey.50' }}>
+              <TableCell sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>User</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Assigned Role</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }} align="right">Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredUsers.map((user) => {
+              const userRoles = user.roles && Array.isArray(user.roles) && user.roles.length > 0
+                ? user.roles
+                : (user.role ? [user.role] : []);
+              return (
+                <TableRow key={user._id} hover sx={{ transition: 'background-color 0.15s' }}>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Avatar
+                        sx={{
+                          width: 36, height: 36,
+                          bgcolor: 'primary.light',
+                          color: 'primary.contrastText',
+                          fontWeight: 700, fontSize: '0.8rem',
+                        }}
+                      >
+                        {getInitials(user.firstName, user.lastName)}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {user.firstName} {user.lastName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">{user.email}</Typography>
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {userRoles.map((r: any, idx) => {
+                        const name = typeof r === 'string' ? r : r.name;
+                        const colors = getColorHex(name);
+                        return (
+                          <Chip
+                            key={idx}
+                            icon={getRoleIcon(name)}
+                            label={name}
+                            size="small"
+                            sx={{
+                              bgcolor: colors.bg,
+                              color: colors.text,
+                              border: `1px solid ${colors.border}`,
+                              fontWeight: 600,
+                              '& .MuiChip-icon': { color: colors.text },
+                            }}
+                          />
+                        );
+                      })}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Button
+                      size="small"
+                      variant="contained"
+                      disableElevation
+                      startIcon={<EditIcon fontSize="small" />}
+                      onClick={() => handleAssignClick(user)}
+                      sx={{
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        bgcolor: 'primary.main',
+                        '&:hover': { bgcolor: 'primary.dark' },
+                      }}
+                    >
+                      Assign Role
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            {filteredUsers.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
+                  {userSearchQuery ? (
+                    <Box>
+                      <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
+                        No users match &ldquo;{userSearchQuery}&rdquo;
+                      </Typography>
+                      <Typography variant="caption" color="text.disabled">
+                        Try a different name or email address
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography color="text.secondary">No users found.</Typography>
+                  )}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  }, [filteredUsers, loading, userSearchQuery, handleAssignClick]);
 
   // Deprecated single selection logic
 
@@ -286,8 +427,8 @@ export const RoleManagementPage: React.FC = () => {
                   <Chip
                     label={
                       userSearchQuery
-                        ? `${filteredUsers.length} of ${users.length}`
-                        : `${users.length} users`
+                        ? `${totalUsers} matches`
+                        : `${totalUsers} users`
                     }
                     size="small"
                     color="primary"
@@ -305,17 +446,17 @@ export const RoleManagementPage: React.FC = () => {
                 fullWidth
                 size="small"
                 placeholder="Search by name or email…"
-                value={userSearchQuery}
-                onChange={(e) => setUserSearchQuery(e.target.value)}
+                value={localUserSearchQuery}
+                onChange={(e) => setLocalUserSearchQuery(e.target.value)}
                 slotProps={{ input: {
                   startAdornment: (
                     <InputAdornment position="start">
                       <SearchIcon fontSize="small" color="action" />
                     </InputAdornment>
                   ),
-                  endAdornment: userSearchQuery ? (
+                  endAdornment: localUserSearchQuery ? (
                     <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => setUserSearchQuery('')} edge="end">
+                      <IconButton size="small" onClick={() => setLocalUserSearchQuery('')} edge="end">
                         <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', lineHeight: 1 }}>✕</Typography>
                       </IconButton>
                     </InputAdornment>
@@ -331,112 +472,17 @@ export const RoleManagementPage: React.FC = () => {
             </Box>
 
             <CardContent sx={{ p: 0 }}>
-              {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                  <CircularProgress size={32} />
+              {userTable}
+              {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={(_: React.ChangeEvent<unknown>, p: number) => setPage(p)}
+                    color="primary"
+                    size="small"
+                  />
                 </Box>
-              ) : (
-                <TableContainer>
-                  <Table aria-label="user roles table">
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: 'grey.50' }}>
-                        <TableCell sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>User</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Assigned Role</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }} align="right">Action</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredUsers.map((user) => {
-                        const userRoles = user.roles && Array.isArray(user.roles) && user.roles.length > 0
-                          ? user.roles
-                          : (user.role ? [user.role] : []);
-                        return (
-                          <TableRow key={user._id} hover sx={{ transition: 'background-color 0.15s' }}>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Avatar
-                                  sx={{
-                                    width: 36, height: 36,
-                                    bgcolor: 'primary.light',
-                                    color: 'primary.contrastText',
-                                    fontWeight: 700, fontSize: '0.8rem',
-                                  }}
-                                >
-                                  {getInitials(user.firstName, user.lastName)}
-                                </Avatar>
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                    {user.firstName} {user.lastName}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">{user.email}</Typography>
-                                </Box>
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                {userRoles.map((r: any, idx) => {
-                                  const name = typeof r === 'string' ? r : r.name;
-                                  const colors = getColorHex(name);
-                                  return (
-                                    <Chip
-                                      key={idx}
-                                      icon={getRoleIcon(name)}
-                                      label={name}
-                                      size="small"
-                                      sx={{
-                                        bgcolor: colors.bg,
-                                        color: colors.text,
-                                        border: `1px solid ${colors.border}`,
-                                        fontWeight: 600,
-                                        '& .MuiChip-icon': { color: colors.text },
-                                      }}
-                                    />
-                                  );
-                                })}
-                              </Box>
-                            </TableCell>
-                            <TableCell align="right">
-                              <Button
-                                size="small"
-                                variant="contained"
-                                disableElevation
-                                startIcon={<EditIcon fontSize="small" />}
-                                onClick={() => handleAssignClick(user)}
-                                sx={{
-                                  fontWeight: 600,
-                                  borderRadius: 2,
-                                  textTransform: 'none',
-                                  bgcolor: 'primary.main',
-                                  '&:hover': { bgcolor: 'primary.dark' },
-                                }}
-                              >
-                                Assign Role
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                      {filteredUsers.length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
-                            {userSearchQuery ? (
-                              <Box>
-                                  <Typography color="text.secondary" sx={{ fontWeight: 600 }} >
-                                  No users match &ldquo;{userSearchQuery}&rdquo;
-                                </Typography>
-                                <Typography variant="caption" color="text.disabled">
-                                  Try a different name or email address
-                                </Typography>
-                              </Box>
-                            ) : (
-                              <Typography color="text.secondary">No users found.</Typography>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
               )}
             </CardContent>
           </Card>
@@ -470,9 +516,9 @@ export const RoleManagementPage: React.FC = () => {
                   const systemRoles = ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STAFF', 'STUDENT'];
                   const isSystem = systemRoles.includes(role.name);
                   const colors = getColorHex(role.name);
-                  // Users that belong to this role
-                  const roleMembers = users.filter((u) => isUserInRole(u, role._id));
-                  const count = roleMembers.length;
+                  // Users that belong to this role (pre-computed on server)
+                  const roleMembers = role.topMembers ?? [];
+                  const count = role.memberCount ?? 0;
                   return (
                     <React.Fragment key={role._id}>
                       <ListItem
@@ -613,7 +659,7 @@ export const RoleManagementPage: React.FC = () => {
         <Grid container spacing={2}>
           {roles.map((role) => {
             const colors = getColorHex(role.name);
-            const roleMembers = users.filter((u) => isUserInRole(u, role._id));
+            const roleMembers = role.topMembers ?? [];
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={role._id}>
                 <Card
@@ -701,7 +747,7 @@ export const RoleManagementPage: React.FC = () => {
                                   <IconButton
                                     size="small"
                                     color="primary"
-                                    onClick={() => handleAssignClick(member)}
+                                    onClick={() => handleAssignClick(member as any)}
                                     sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
                                   >
                                     <EditIcon sx={{ fontSize: 14 }} />
@@ -825,10 +871,8 @@ export const RoleManagementPage: React.FC = () => {
             {filteredRoles.map((role) => {
               const isSelected = selectedRoleIds.includes(role._id);
               const colors = getColorHex(role.name);
-              const count = usersPerRole(role._id);
-              const userRoles = selectedUser?.roles && Array.isArray(selectedUser.roles)
-                ? selectedUser.roles
-                : (selectedUser?.role ? [selectedUser.role] : []);
+              const count = role.memberCount ?? 0;
+              const userRoles = selectedUser?.roles || [];
               const userRoleIds = userRoles.map((r: any) => typeof r === 'string' ? r : r._id);
               const isCurrent = userRoleIds.includes(role._id);
 
@@ -931,9 +975,7 @@ export const RoleManagementPage: React.FC = () => {
               savingRole ||
               selectedRoleIds.length === 0 ||
               (() => {
-                const currentRoleIds = selectedUser?.roles && Array.isArray(selectedUser.roles)
-                  ? selectedUser.roles.map((r: any) => typeof r === 'string' ? r : r._id)
-                  : (selectedUser?.role ? [typeof selectedUser.role === 'string' ? selectedUser.role : selectedUser.role._id] : []);
+                const currentRoleIds = (selectedUser?.roles || []).map((r: any) => typeof r === 'string' ? r : r._id);
                 if (currentRoleIds.length !== selectedRoleIds.length) return false;
                 return currentRoleIds.every(id => selectedRoleIds.includes(id));
               })()

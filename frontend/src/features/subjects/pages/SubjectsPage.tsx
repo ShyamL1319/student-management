@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from '../../../hooks/useDebounce';
 import {
   Box,
   Typography,
@@ -36,7 +37,8 @@ import { teachersApi } from '../../teachers/api/teachers.api';
 export const SubjectsPage: FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -45,7 +47,7 @@ export const SubjectsPage: FC = () => {
   const { data: coursesData } = useQuery({ queryKey: ['coursesOptions'], queryFn: () => coursesApi.getCourses({ limit: 100 }) });
   const { data: teachersData } = useQuery({ queryKey: ['teachersOptions'], queryFn: () => teachersApi.getTeachers({ limit: 100 }) });
 
-  const filterParams = { page, limit: 10, search: search || undefined, course: selectedCourse || undefined };
+  const filterParams = { page, limit: 10, search: debouncedSearch || undefined, course: selectedCourse || undefined };
   const { data, isLoading } = useQuery({ queryKey: ['subjects', filterParams], queryFn: () => subjectsApi.getSubjects(filterParams) });
 
   const createMutation = useMutation({ mutationFn: (data: any) => subjectsApi.createSubject(data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['subjects'] }) });
@@ -72,7 +74,7 @@ export const SubjectsPage: FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h4">Subjects</Typography>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <TextField label="Search" value={search} onChange={(e) => setSearch(e.target.value)} size="small" />
+          <TextField label="Search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} size="small" />
           <FormControl size="small" sx={{ minWidth: 160 }}>
             <InputLabel>Course</InputLabel>
             <Select label="Course" value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)}>

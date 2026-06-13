@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from '../../../hooks/useDebounce';
 import {
   Box,
   Typography,
@@ -69,7 +70,8 @@ interface ParentPayload {
 export const ParentsPage: FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ParentListItem | null>(null);
   const [formValues, setFormValues] = useState({
@@ -85,7 +87,7 @@ export const ParentsPage: FC = () => {
     isActive: true,
   });
 
-  const filterParams = { page, limit: 10, search: search || undefined };
+  const filterParams = { page, limit: 10, search: debouncedSearch || undefined };
 
   // Fetch Parents
   const { data, isLoading } = useQuery<{ data: ParentListItem[]; total: number }>({
@@ -183,7 +185,7 @@ export const ParentsPage: FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h4" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700 }}>Parents Directory</Typography>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <TextField label="Search" value={search} onChange={(e) => setSearch(e.target.value)} size="small" />
+          <TextField label="Search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} size="small" />
           <Button variant="contained" color="secondary" onClick={openCreateDialog}>Add Parent</Button>
         </Box>
       </Box>

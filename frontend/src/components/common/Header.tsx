@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -13,8 +13,10 @@ import {
   Avatar,
   Divider,
   Tooltip,
-  InputBase,
   alpha,
+  Autocomplete,
+  CircularProgress,
+  TextField,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -31,6 +33,8 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useThemeMode } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../../api/api';
+import { useDebounce } from '../../hooks/useDebounce';
 
 interface HeaderProps {
   drawerWidth: number;
@@ -41,6 +45,59 @@ export const Header: FC<HeaderProps> = ({ onDrawerToggle }) => {
   const { logout, isAuthenticated, user } = useAuth();
   const { mode, toggleThemeMode } = useThemeMode();
   const navigate = useNavigate();
+
+  // Autocomplete Search State
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedQuery = useDebounce(searchQuery, 400);
+  const [options, setOptions] = useState<Array<{ id: string; label: string; type: string }>>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    if (debouncedQuery.trim() === '') {
+      setOptions([]);
+      return;
+    }
+
+    setLoading(true);
+    api.get('/search/suggestions', { params: { q: debouncedQuery } })
+      .then((res) => {
+        if (active) {
+          setOptions(res.data.results || []);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setOptions([]);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [debouncedQuery]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+        const input = document.getElementById('header-directory-search');
+        if (input) {
+          input.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Popover Anchor States
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
@@ -93,13 +150,7 @@ export const Header: FC<HeaderProps> = ({ onDrawerToggle }) => {
 
   const roles = userTyped?.roles || [];
   const roleNames = roles.map((r: any) => typeof r === 'string' ? r : r?.name).filter(Boolean);
-  const displayRoles = roleNames.length > 0 ? roleNames : [
-    userTyped?.role
-      ? typeof userTyped.role === 'string'
-        ? userTyped.role
-        : userTyped.role.name
-      : 'Member'
-  ];
+  const displayRoles = roleNames.length > 0 ? roleNames : ['Member'];
 
   return (
     <AppBar
@@ -167,36 +218,63 @@ export const Header: FC<HeaderProps> = ({ onDrawerToggle }) => {
 
         {/* Middle Side: Command Search */}
         {isAuthenticated && (
-          <Box
-            sx={{
-              position: 'relative',
-              borderRadius: '8px',
-              backgroundColor: (theme) => alpha(theme.palette.text.primary, 0.05),
-              '&:hover': {
-                backgroundColor: (theme) => alpha(theme.palette.text.primary, 0.08),
-              },
-              marginRight: 2,
-              marginLeft: 3,
-              width: '100%',
-              maxWidth: 400,
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              border: (theme) => `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <Box sx={{ p: '8px 12px', display: 'flex', alignItems: 'center', pointerEvents: 'none', color: 'text.secondary' }}>
-              <SearchIcon fontSize="small" />
-            </Box>
-            <InputBase
-              placeholder="Search directory... (⌘K)"
-              sx={{
-                color: 'inherit',
-                width: '100%',
-                '& .MuiInputBase-input': {
-                  p: '6px 8px 6px 0',
-                  fontSize: '0.875rem',
-                  width: '100%',
-                },
+          <Box sx={{ display: { xs: 'none', md: 'block' }, width: '100%', maxWidth: 400, mx: 3 }}>
+            <Autocomplete
+              id="header-directory-search"
+              open={searchOpen}
+              onOpen={() => setSearchOpen(true)}
+              onClose={() => setSearchOpen(false)}
+              inputValue={searchQuery}
+              onInputChange={(_, newValue) => setSearchQuery(newValue)}
+              options={options}
+              loading={loading}
+              getOptionLabel={(option) => option.label}
+              onChange={(_, value) => {
+                if (value) {
+                  if (value.type === 'student') {
+                    navigate(`/students`);
+                  } else if (value.type === 'teacher') {
+                    navigate(`/teachers`);
+                  } else if (value.type === 'staff') {
+                    navigate(`/staff`);
+                  }
+                }
+              }}
+              renderInput={(params) => {
+                const { InputProps, ...rest } = params as any;
+                return (
+                  <TextField
+                    {...rest}
+                    placeholder="Search directory... (⌘K)"
+                    size="small"
+                    slotProps={{
+                      input: {
+                        ...InputProps,
+                        startAdornment: (
+                          <SearchIcon fontSize="small" sx={{ ml: 1, mr: -0.5, color: 'text.secondary' }} />
+                        ),
+                        endAdornment: (
+                          <>
+                            {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                            {InputProps?.endAdornment}
+                          </>
+                        ),
+                      }
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        backgroundColor: (theme) => alpha(theme.palette.text.primary, 0.05),
+                        '&:hover': {
+                          backgroundColor: (theme) => alpha(theme.palette.text.primary, 0.08),
+                        },
+                        '& fieldset': {
+                          border: (theme) => `1px solid ${theme.palette.divider}`,
+                        },
+                      },
+                    }}
+                  />
+                );
               }}
             />
           </Box>

@@ -23,8 +23,8 @@ export interface UpdateProfileDto {
 }
 
 export const usersApi = {
-  getUsers: async (): Promise<User[]> => {
-    const response = await api.get('/users');
+  getUsers: async (params?: { page?: number; limit?: number; search?: string }): Promise<any> => {
+    const response = await api.get('/users', { params });
     return response.data;
   },
 

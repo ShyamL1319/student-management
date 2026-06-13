@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from '../../../hooks/useDebounce';
 import {
   Box,
   Typography,
@@ -32,7 +33,8 @@ import { departmentApi } from '../../departments/api/departments.api';
 export const CoursesPage: FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -40,7 +42,7 @@ export const CoursesPage: FC = () => {
 
   const { data: departmentsData } = useQuery({ queryKey: ['departmentsOptions'], queryFn: () => departmentApi.getDepartments({ limit: 100 }) });
 
-  const filterParams = { page, limit: 10, search: search || undefined, department: selectedDepartment || undefined };
+  const filterParams = { page, limit: 10, search: debouncedSearch || undefined, department: selectedDepartment || undefined };
 
   const { data, isLoading } = useQuery({ queryKey: ['courses', filterParams], queryFn: () => coursesApi.getCourses(filterParams) });
 
@@ -74,7 +76,7 @@ export const CoursesPage: FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h4">Courses</Typography>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <TextField label="Search" value={search} onChange={(e) => setSearch(e.target.value)} size="small" />
+          <TextField label="Search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} size="small" />
           <FormControl size="small" sx={{ minWidth: 160 }}>
             <InputLabel>Department</InputLabel>
             <Select label="Department" value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value)}>

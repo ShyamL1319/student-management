@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from '../../../hooks/useDebounce';
 import {
   Box,
   Typography,
@@ -31,12 +32,13 @@ import { teachersApi } from '../api/teachers.api';
 export const TeachersPage: FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [formValues, setFormValues] = useState({ name: '', email: '', phone: '', subjects: '', profile: '', isActive: true });
 
-  const filterParams = { page, limit: 10, search: search || undefined };
+  const filterParams = { page, limit: 10, search: debouncedSearch || undefined };
 
   const { data, isLoading } = useQuery({ queryKey: ['teachers', filterParams], queryFn: () => teachersApi.getTeachers(filterParams) });
 
@@ -87,7 +89,7 @@ export const TeachersPage: FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h4">Teachers</Typography>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <TextField label="Search" value={search} onChange={(e) => setSearch(e.target.value)} size="small" />
+          <TextField label="Search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} size="small" />
           <Button variant="contained" color="secondary" onClick={openCreateDialog}>Add Teacher</Button>
         </Box>
       </Box>
