@@ -18,6 +18,8 @@ services:
     container_name: school-management-backend
     ports:
       - '3000:3000'
+    env_file:
+      - ./backend/.env
     environment:
       - MONGODB_URI=mongodb://root:examplepassword@mongodb:27017/school-management?authSource=admin
       - PORT=3000
@@ -26,6 +28,7 @@ services:
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
+      - ./secrets:/secrets
 
   frontend:
     build:
@@ -34,11 +37,12 @@ services:
     container_name: school-management-frontend
     ports:
       - '5173:5173'
-    environment:
-      - VITE_API_URL=http://localhost:3000
+    env_file:
+      - ./frontend/.env
     volumes:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
+      - ./secrets:/secrets
     depends_on:
       - backend
 

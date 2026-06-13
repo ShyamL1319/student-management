@@ -4,11 +4,13 @@ import {
   Body,
   UseGuards,
   Req,
+  Res,
   HttpCode,
   HttpStatus,
   Get,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -17,12 +19,18 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
+import { GoogleAuthGuard } from './guards/google-oauth.guard';
+import { FacebookAuthGuard } from './guards/facebook-oauth.guard';
+import { GithubAuthGuard } from './guards/github-oauth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Public()
   @Throttle({ sensitive: { limit: 5, ttl: 60000 } })
@@ -77,6 +85,7 @@ export class AuthController {
     );
   }
 
+  @SkipThrottle({ default: true, sensitive: true, exports: true })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('profile')
@@ -122,5 +131,92 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async mfaDisable(@CurrentUser() user: any) {
     return this.authService.disableMfa(user._id.toString());
+  }
+
+  @Public()
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({ summary: 'Login via Google OAuth' })
+  async googleAuth() {}
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({ summary: 'Google OAuth callback' })
+  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
+    try {
+      const tokens = await this.authService.validateOAuthUser(req.user);
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'https://psei.school.com:5173';
+      return res.redirect(
+        `${frontendUrl}/oauth-callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+      );
+    } catch (error: any) {
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'https://psei.school.com:5173';
+      return res.redirect(
+        `${frontendUrl}/login?error=${encodeURIComponent(error.message || 'Authentication failed')}`,
+      );
+    }
+  }
+
+  @Public()
+  @Get('facebook')
+  @UseGuards(FacebookAuthGuard)
+  @ApiOperation({ summary: 'Login via Facebook OAuth' })
+  async facebookAuth() {}
+
+  @Public()
+  @Get('facebook/callback')
+  @UseGuards(FacebookAuthGuard)
+  @ApiOperation({ summary: 'Facebook OAuth callback' })
+  async facebookAuthRedirect(@Req() req: any, @Res() res: any) {
+    try {
+      const tokens = await this.authService.validateOAuthUser(req.user);
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'https://psei.school.com:5173';
+      return res.redirect(
+        `${frontendUrl}/oauth-callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+      );
+    } catch (error: any) {
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'https://psei.school.com:5173';
+      return res.redirect(
+        `${frontendUrl}/login?error=${encodeURIComponent(error.message || 'Authentication failed')}`,
+      );
+    }
+  }
+
+  @Public()
+  @Get('github')
+  @UseGuards(GithubAuthGuard)
+  @ApiOperation({ summary: 'Login via GitHub OAuth' })
+  async githubAuth() {}
+
+  @Public()
+  @Get('github/callback')
+  @UseGuards(GithubAuthGuard)
+  @ApiOperation({ summary: 'GitHub OAuth callback' })
+  async githubAuthRedirect(@Req() req: any, @Res() res: any) {
+    try {
+      const tokens = await this.authService.validateOAuthUser(req.user);
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'https://psei.school.com:5173';
+      return res.redirect(
+        `${frontendUrl}/oauth-callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+      );
+    } catch (error: any) {
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'https://psei.school.com:5173';
+      return res.redirect(
+        `${frontendUrl}/login?error=${encodeURIComponent(error.message || 'Authentication failed')}`,
+      );
+    }
   }
 }

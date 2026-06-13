@@ -157,8 +157,8 @@ export class PaymentService implements OnModuleInit {
       };
     } else if (gateway === 'PHONEPE') {
       const transactionId = `TXN-INV-${invoice.invoiceNumber}-${Date.now()}`;
-      const redirectUrl = `${this.configService.get<string>('CORS_ORIGIN') || 'http://127.0.0.1:5173'}/parent/payment/callback`;
-      const callbackUrl = `${this.configService.get<string>('VITE_API_BASE_URL') || 'http://localhost:3000/api'}/payments/webhook/phonepe`;
+      const redirectUrl = `${this.configService.get<string>('CORS_ORIGIN') || 'https://psei.school.com:5173'}/parent/payment/callback`;
+      const callbackUrl = `${this.configService.get<string>('VITE_API_BASE_URL') || 'https://api.psei.school.com:3000'}/payments/webhook/phonepe`;
 
       const phonepeReq = await this.phonepeService.createPaymentRequest(
         amount,

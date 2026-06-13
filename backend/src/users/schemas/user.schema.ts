@@ -12,8 +12,26 @@ export class User {
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email!: string;
 
-  @Prop({ required: true })
-  passwordHash!: string;
+  @Prop({ required: false })
+  passwordHash?: string;
+
+  @Prop({ index: { sparse: true } })
+  googleId?: string;
+
+  @Prop({ index: { sparse: true } })
+  facebookId?: string;
+
+  @Prop({ index: { sparse: true } })
+  githubId?: string;
+
+  @Prop()
+  avatar?: string;
+
+  @Prop({ type: [String], default: [] })
+  oauthProviders!: string[];
+
+  @Prop({ type: Object, default: {} })
+  providerMetadata?: Record<string, any>;
 
   @Prop({ required: false })
   firstName!: string;

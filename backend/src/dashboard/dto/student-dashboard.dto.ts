@@ -185,7 +185,7 @@ export class FeeHistoryItemDto {
   amount!: number;
 
   @ApiProperty({ enum: ['paid', 'pending'] })
-  status!: 'paid' | 'pending';
+  status!: string;
 }
 
 export class FeesSummaryDto {

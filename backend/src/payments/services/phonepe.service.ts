@@ -210,7 +210,7 @@ export class PhonepeService {
       merchantTransactionId: refundTransactionId,
       originalTransactionId: originalTransactionId,
       amount: amount,
-      callbackUrl: `${this.configService.get<string>('VITE_API_BASE_URL') || 'http://localhost:3000/api'}/payments/webhook/phonepe`,
+      callbackUrl: `${this.configService.get<string>('VITE_API_BASE_URL') || 'https://api.psei.school.com:3000'}/payments/webhook/phonepe`,
     };
 
     const base64Payload = Buffer.from(JSON.stringify(payload)).toString(

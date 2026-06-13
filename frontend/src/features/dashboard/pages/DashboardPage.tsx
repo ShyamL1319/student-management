@@ -358,8 +358,59 @@ export const DashboardPage: FC = () => {
           </Grid>
         )}
 
+        {/* --- ROLE: USER (OAuth Registered) --- */}
+        {role === 'USER' && (
+          <Grid size={{ xs: 12 }}>
+            <Card sx={{ p: 2, borderRadius: '16px' }}>
+              <CardContent>
+                <Typography variant="h5" sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, mb: 2 }}>
+                  Your Account Status
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary', fontFamily: "'Inter', sans-serif" }}>
+                  Welcome to PS Educational Institute! Your account has been successfully registered and linked via your OAuth provider.
+                </Typography>
+                
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <Card variant="outlined" sx={{ p: 2, borderRadius: '12px', height: '100%' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, fontFamily: "'Outfit', sans-serif" }}>
+                        ℹ️ Pending Admission
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        To access class schedules, report cards, or fee portals, your account must be assigned to an active student, teacher, or parent profile by the administration.
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <Card variant="outlined" sx={{ p: 2, borderRadius: '12px', height: '100%' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, fontFamily: "'Outfit', sans-serif" }}>
+                        🏫 School Details
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Name:</strong> PS Educational Institute<br />
+                        <strong>Address:</strong> Sikar, Rajasthan, India<br />
+                        <strong>Email:</strong> admin@school.com
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <Card variant="outlined" sx={{ p: 2, borderRadius: '12px', height: '100%' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, fontFamily: "'Outfit', sans-serif" }}>
+                        📞 Contact Support
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        If you believe this is an error or need your role updated, please reach out to the administrative office at support@school.com.
+                      </Typography>
+                    </Card>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+
         {/* --- ROLE: STAFF & OTHERS --- */}
-        {role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'TEACHER' && role !== 'STUDENT' && role !== 'PARENT' && (
+        {role !== 'SUPER_ADMIN' && role !== 'ADMIN' && role !== 'TEACHER' && role !== 'STUDENT' && role !== 'PARENT' && role !== 'USER' && (
           <>
             {/* Left Workspace: Interactive checklist */}
             <Grid size={{ xs: 12, lg: 8 }}>
