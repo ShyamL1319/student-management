@@ -465,7 +465,7 @@ export class DashboardService {
           day: 'numeric',
         }),
         amount: invoice.netAmount,
-        status: (invoice.pendingAmount > 0 ? 'pending' : 'paid') as 'pending' | 'paid',
+        status: invoice.pendingAmount > 0 ? 'pending' : 'paid',
       };
     });
 

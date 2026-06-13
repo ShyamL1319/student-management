@@ -5,4 +5,5 @@ export enum RoleEnum {
   STAFF = 'STAFF',
   STUDENT = 'STUDENT',
   PARENT = 'PARENT',
+  USER = 'USER',
 }

@@ -12,6 +12,10 @@ import { UpdateProfileDto } from './dto/update-user.dto';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
+  getUserModel() {
+    return this.userModel;
+  }
+
   async findAll(): Promise<UserDocument[]> {
     return this.userModel.find().populate('role').exec();
   }

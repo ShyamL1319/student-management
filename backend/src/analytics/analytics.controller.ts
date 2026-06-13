@@ -1,4 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { AnalyticsService } from './analytics.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -9,6 +10,7 @@ import { RoleEnum } from '../common/enums/role.enum';
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
+  @SkipThrottle({ default: true, sensitive: true, exports: true })
   @Get('dashboard')
   async getDashboard(
     @CurrentUser()

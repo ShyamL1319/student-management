@@ -6,6 +6,7 @@ import { TenantProvider } from './contexts/TenantContext';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { ForgotPasswordPage } from './features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
+import { OAuthCallbackPage } from './features/auth/pages/OAuthCallbackPage';
 import { ProfilePage } from './features/users/pages/ProfilePage';
 import { RoleManagementPage } from './features/users/pages/RoleManagementPage';
 
@@ -60,6 +61,7 @@ function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
         {/* Protected Routes */}
         <Route
           path="/profile"

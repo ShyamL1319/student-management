@@ -3,9 +3,29 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
+import * as fs from 'fs';
+import * as path from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  let keyPath = '/secrets/key.pem';
+  let certPath = '/secrets/cert.pem';
+  
+  if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
+    keyPath = path.join(process.cwd(), 'secrets', 'key.pem');
+    certPath = path.join(process.cwd(), 'secrets', 'cert.pem');
+  }
+  
+  const httpsOptions = fs.existsSync(keyPath) && fs.existsSync(certPath)
+    ? {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath),
+      }
+    : undefined;
+
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true,
+    ...(httpsOptions ? { httpsOptions } : {}),
+  });
 
   // 1. Enable Helmet secure headers
   app.use(
@@ -15,10 +35,23 @@ async function bootstrap() {
         directives: {
           defaultSrc: ["'self'"],
           scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            'https://fonts.googleapis.com',
+          ],
           fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-          imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://s3.amazonaws.com'],
-          connectSrc: ["'self'", 'https://api.stripe.com', 'https://api.razorpay.com'],
+          imgSrc: [
+            "'self'",
+            'data:',
+            'https://res.cloudinary.com',
+            'https://s3.amazonaws.com',
+          ],
+          connectSrc: [
+            "'self'",
+            'https://api.stripe.com',
+            'https://api.razorpay.com',
+          ],
           frameSrc: ["'self'", 'https://js.stripe.com'],
           objectSrc: ["'none'"],
           upgradeInsecureRequests: [],

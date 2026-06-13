@@ -15,6 +15,7 @@ import { generateSecret, generateURI, verify as verifyTotp } from 'otplib';
 import * as QRCode from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
+import { TenantContext } from '../tenant/tenant.context';
 
 @Injectable()
 export class AuthService {
@@ -26,11 +27,124 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    if (user && (await bcrypt.compare(pass, user.passwordHash))) {
+    if (
+      user &&
+      user.passwordHash &&
+      (await bcrypt.compare(pass, user.passwordHash))
+    ) {
       const { passwordHash, ...result } = user.toObject();
       return result;
     }
     return null;
+  }
+
+  async validateOAuthUser(profile: {
+    provider: string;
+    providerId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatar: string;
+    metadata: any;
+  }): Promise<any> {
+    let user = await this.usersService.findByEmail(profile.email);
+
+    if (user) {
+      // User exists: link provider if not already linked
+      let updated = false;
+      const providers = user.oauthProviders || [];
+      if (!providers.includes(profile.provider)) {
+        providers.push(profile.provider);
+        user.oauthProviders = providers;
+        updated = true;
+      }
+
+      // Link provider-specific ID
+      if (profile.provider === 'google' && !user.googleId) {
+        user.googleId = profile.providerId;
+        updated = true;
+      } else if (profile.provider === 'facebook' && !user.facebookId) {
+        user.facebookId = profile.providerId;
+        updated = true;
+      } else if (profile.provider === 'github' && !user.githubId) {
+        user.githubId = profile.providerId;
+        updated = true;
+      }
+
+      // Sync avatar if user does not have one
+      if (profile.avatar && !user.avatar) {
+        user.avatar = profile.avatar;
+        updated = true;
+      }
+
+      // Sync provider metadata
+      if (profile.metadata) {
+        user.providerMetadata = {
+          ...(user.providerMetadata || {}),
+          [profile.provider]: profile.metadata,
+        };
+        updated = true;
+      }
+
+      if (updated) {
+        await user.save();
+      }
+    } else {
+      // User does not exist: create user record with USER role
+      const RoleModel = this.usersService.getUserModel().db.model('Role');
+      let userRole = await RoleModel.findOne({ name: 'USER' }).exec();
+      if (!userRole) {
+        // If USER role is missing, dynamically create it!
+        userRole = await RoleModel.create({
+          name: 'USER',
+          description: 'Standard registered user with basic access',
+          permissions: [],
+        });
+      }
+
+      // Determine default schoolId
+      let schoolId = undefined;
+      const tenantSchoolId = TenantContext.getSchoolId();
+      if (tenantSchoolId) {
+        schoolId = tenantSchoolId;
+      } else {
+        const SchoolModel = this.usersService.getUserModel().db.model('School');
+        const defaultSchool = await SchoolModel.findOne().exec();
+        if (defaultSchool) {
+          schoolId = defaultSchool._id;
+        }
+      }
+
+      const newUserData: any = {
+        email: profile.email,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        avatar: profile.avatar,
+        role: userRole._id,
+        roleType: 'USER',
+        isActive: true,
+        oauthProviders: [profile.provider],
+        providerMetadata: {
+          [profile.provider]: profile.metadata,
+        },
+      };
+
+      if (profile.provider === 'google') {
+        newUserData.googleId = profile.providerId;
+      } else if (profile.provider === 'facebook') {
+        newUserData.facebookId = profile.providerId;
+      } else if (profile.provider === 'github') {
+        newUserData.githubId = profile.providerId;
+      }
+
+      if (schoolId) {
+        newUserData.schoolId = schoolId;
+      }
+
+      user = await this.usersService.create(newUserData);
+    }
+
+    return this.generateUserTokens(user);
   }
 
   async login(loginDto: LoginDto) {

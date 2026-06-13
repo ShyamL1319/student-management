@@ -54,4 +54,10 @@ export const TimetableSchema = SchemaFactory.createForClass(Timetable);
 TimetableSchema.index({ class: 1, academicYear: 1, dayOfWeek: 1 });
 TimetableSchema.index({ teacher: 1, academicYear: 1 });
 TimetableSchema.index({ class: 1, dayOfWeek: 1, startTime: 1, endTime: 1 });
-TimetableSchema.index({ schoolId: 1, class: 1, dayOfWeek: 1, startTime: 1, endTime: 1 });
+TimetableSchema.index({
+  schoolId: 1,
+  class: 1,
+  dayOfWeek: 1,
+  startTime: 1,
+  endTime: 1,
+});

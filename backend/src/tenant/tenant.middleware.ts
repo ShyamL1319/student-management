@@ -34,7 +34,11 @@ export class TenantMiddleware implements NestMiddleware {
           parts[0] !== 'www' &&
           parts[0] !== 'localhost'
         ) {
-          resolvedIdentifier = parts[0];
+          if (parts[0] === 'api' && parts.length > 2) {
+            resolvedIdentifier = parts[1];
+          } else {
+            resolvedIdentifier = parts[0];
+          }
         } else {
           resolvedIdentifier = headerTenant;
         }
@@ -56,7 +60,11 @@ export class TenantMiddleware implements NestMiddleware {
           parts[0] !== 'www' &&
           parts[0] !== 'localhost'
         ) {
-          resolvedIdentifier = parts[0];
+          if (parts[0] === 'api' && parts.length > 2) {
+            resolvedIdentifier = parts[1];
+          } else {
+            resolvedIdentifier = parts[0];
+          }
         }
       }
     }
@@ -105,6 +113,11 @@ export class TenantMiddleware implements NestMiddleware {
             { customDomain: resolvedIdentifier.toLowerCase() },
           ],
         });
+      }
+
+      if (!tenant && (resolvedIdentifier.toLowerCase() === 'localhost' || resolvedIdentifier.toLowerCase() === 'localhost-dev')) {
+        // Fallback to the first tenant in local development
+        tenant = await this.tenantModel.findOne().exec();
       }
 
       if (!tenant) {
