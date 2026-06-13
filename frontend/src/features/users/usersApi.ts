@@ -6,6 +6,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: string | { _id: string; name: string };
+  roles?: (string | { _id: string; name: string })[];
   phone?: string;
   address?: string;
   avatar?: string;
@@ -39,6 +40,21 @@ export const usersApi = {
 
   updateUserRole: async (userId: string, roleId: string): Promise<User> => {
     const response = await api.patch(`/users/${userId}/role`, { roleId });
+    return response.data;
+  },
+
+  addUserRole: async (userId: string, roleId: string): Promise<User> => {
+    const response = await api.post(`/users/${userId}/roles`, { roleId });
+    return response.data;
+  },
+
+  removeUserRole: async (userId: string, roleId: string): Promise<User> => {
+    const response = await api.delete(`/users/${userId}/roles/${roleId}`);
+    return response.data;
+  },
+
+  replaceUserRoles: async (userId: string, roleIds: string[]): Promise<User> => {
+    const response = await api.put(`/users/${userId}/roles`, { roleIds });
     return response.data;
   },
 };

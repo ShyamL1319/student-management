@@ -50,15 +50,7 @@ interface SidebarProps {
 export const Sidebar: FC<SidebarProps> = ({ drawerWidth, mobileOpen, onDrawerToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-
-  // Resolve user role name
-  const userTyped = user as any;
-  const roleName = userTyped?.role
-    ? typeof userTyped.role === 'string'
-      ? userTyped.role
-      : userTyped.role.name
-    : '';
+  const { user, hasAnyRole } = useAuth();
 
   // Collapsible Submenu States
   const [registryOpen, setRegistryOpen] = useState(false);
@@ -80,8 +72,7 @@ export const Sidebar: FC<SidebarProps> = ({ drawerWidth, mobileOpen, onDrawerTog
   // Helper to filter role-restricted items
   const checkAccess = (restricted?: string[]) => {
     if (!restricted) return true;
-    if (roleName === 'SUPER_ADMIN') return true;
-    return restricted.includes(roleName || '');
+    return hasAnyRole(restricted);
   };
 
   // Render a standard link item

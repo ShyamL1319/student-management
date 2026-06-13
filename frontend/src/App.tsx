@@ -41,12 +41,11 @@ import { AssignmentsPage } from './features/assignments/pages/AssignmentsPage';
 
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, hasAnyRole } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" />;
 
   if (allowedRoles) {
-    const roleName = typeof user?.role === 'string' ? user.role : (user?.role as { name?: string })?.name;
-    if (!roleName || !allowedRoles.includes(roleName)) {
+    if (!hasAnyRole(allowedRoles)) {
       return <Navigate to="/" />;
     }
   }

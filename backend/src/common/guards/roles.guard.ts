@@ -6,9 +6,9 @@ import { ROLES_KEY } from '../decorators/roles.decorator';
 
 type RequestWithUserRole = Request & {
   user?: {
-    role?: {
-      name?: RoleEnum;
-    };
+    roles?: Array<string | { name?: RoleEnum }>;
+    role?: string | { name?: RoleEnum };
+    roleType?: string;
   };
 };
 
@@ -25,10 +25,38 @@ export class RolesGuard implements CanActivate {
       return true;
     }
     const req = context.switchToHttp().getRequest<RequestWithUserRole>();
-    const roleName = req.user?.role?.name;
-    if (!roleName) return false;
+    const user = req.user;
+    if (!user) return false;
+
+    const roleNames = new Set<string>();
+
+    if (user.roles && Array.isArray(user.roles)) {
+      user.roles.forEach((r: any) => {
+        if (typeof r === 'string') {
+          roleNames.add(r);
+        } else if (r && typeof r.name === 'string') {
+          roleNames.add(r.name);
+        }
+      });
+    }
+
+    if (user.role) {
+      if (typeof user.role === 'string') {
+        roleNames.add(user.role);
+      } else if (user.role.name) {
+        roleNames.add(user.role.name);
+      }
+    }
+
+    if (user.roleType) {
+      roleNames.add(user.roleType);
+    }
+
     // Grant full access to SUPER_ADMIN regardless of required roles
-    if (roleName === RoleEnum.SUPER_ADMIN) return true;
-    return requiredRoles.includes(roleName);
+    if (roleNames.has(RoleEnum.SUPER_ADMIN)) {
+      return true;
+    }
+
+    return requiredRoles.some((role) => roleNames.has(role));
   }
 }

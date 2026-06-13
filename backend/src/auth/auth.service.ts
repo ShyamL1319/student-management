@@ -121,6 +121,7 @@ export class AuthService {
         lastName: profile.lastName,
         avatar: profile.avatar,
         role: userRole._id,
+        roles: [userRole._id],
         roleType: 'USER',
         isActive: true,
         oauthProviders: [profile.provider],
@@ -173,9 +174,29 @@ export class AuthService {
   }
 
   private async generateUserTokens(user: any) {
+    let roleNames: string[] = [];
+    if (user.roles && user.roles.length > 0) {
+      roleNames = user.roles
+        .map((r: any) => {
+          if (typeof r === 'string') return r;
+          if (r && typeof r === 'object' && r.name) return r.name;
+          return '';
+        })
+        .filter(Boolean);
+    }
+    if (roleNames.length === 0) {
+      if (user.roleType) {
+        roleNames.push(user.roleType);
+      } else if (user.role) {
+        const name = typeof user.role === 'string' ? user.role : user.role.name;
+        if (name) roleNames.push(name);
+      }
+    }
+
     const payload = {
       email: user.email,
       sub: user._id,
+      roles: roleNames,
       role: user.role,
       schoolId: user.schoolId?.toString(),
     };
@@ -243,9 +264,29 @@ export class AuthService {
       );
     }
 
+    let roleNames: string[] = [];
+    if (user.roles && user.roles.length > 0) {
+      roleNames = user.roles
+        .map((r: any) => {
+          if (typeof r === 'string') return r;
+          if (r && typeof r === 'object' && r.name) return r.name;
+          return '';
+        })
+        .filter(Boolean);
+    }
+    if (roleNames.length === 0) {
+      if (user.roleType) {
+        roleNames.push(user.roleType);
+      } else if (user.role) {
+        const name = typeof user.role === 'string' ? user.role : user.role.name;
+        if (name) roleNames.push(name);
+      }
+    }
+
     const payload = {
       email: user.email,
       sub: user._id,
+      roles: roleNames,
       role: user.role,
       schoolId: user.schoolId?.toString(),
     };

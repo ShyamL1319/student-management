@@ -1,8 +1,11 @@
-/* eslint-disable react-refresh/only-export-components */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authApi } from '../features/auth/api/auth.api';
+import {
+  hasRole as checkRole,
+  hasAnyRole as checkAnyRole,
+  hasAllRoles as checkAllRoles,
+} from '../utils/role.utils';
 
 interface User {
   [key: string]: unknown;
@@ -13,6 +16,9 @@ interface AuthContextType {
   user: User | null;
   login: (data: AuthData) => void;
   logout: () => void;
+  hasRole: (roleName: string) => boolean;
+  hasAnyRole: (roleNames: string[]) => boolean;
+  hasAllRoles: (roleNames: string[]) => boolean;
 }
 
 interface AuthData {
@@ -60,8 +66,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
+  const hasRole = (roleName: string) => checkRole(user, roleName);
+  const hasAnyRole = (roleNames: string[]) => checkAnyRole(user, roleNames);
+  const hasAllRoles = (roleNames: string[]) => checkAllRoles(user, roleNames);
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        login,
+        logout,
+        hasRole,
+        hasAnyRole,
+        hasAllRoles,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

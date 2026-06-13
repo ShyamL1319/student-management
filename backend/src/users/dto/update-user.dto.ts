@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsObject,
+  IsArray,
 } from 'class-validator';
 
 export class UpdateProfileDto {
@@ -39,4 +40,15 @@ export class UpdateProfileDto {
 export class UpdateUserRoleDto {
   @IsString()
   roleId!: string;
+}
+
+export class AddRoleDto {
+  @IsString()
+  roleId!: string;
+}
+
+export class ReplaceRolesDto {
+  @IsArray()
+  @IsString({ each: true })
+  roleIds!: string[];
 }

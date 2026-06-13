@@ -75,7 +75,7 @@ describe('UsersService', () => {
       await service.updateUserRole('targetUserId', 'adminRoleId', requester);
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'targetUserId',
-        { role: 'adminRoleId', roleType: 'ADMIN' },
+        { role: 'adminRoleId', roleType: 'ADMIN', roles: ['adminRoleId'] },
         { new: true },
       );
     });
@@ -108,7 +108,11 @@ describe('UsersService', () => {
       );
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'targetUserId',
-        { role: 'superAdminRoleId', roleType: 'SUPER_ADMIN' },
+        {
+          role: 'superAdminRoleId',
+          roleType: 'SUPER_ADMIN',
+          roles: ['superAdminRoleId'],
+        },
         { new: true },
       );
     });

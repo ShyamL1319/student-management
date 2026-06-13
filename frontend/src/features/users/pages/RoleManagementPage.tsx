@@ -31,9 +31,8 @@ import {
   Tooltip,
   Avatar,
   CircularProgress,
-  RadioGroup,
-  Radio,
   InputAdornment,
+  Checkbox,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -85,8 +84,15 @@ export const RoleManagementPage: React.FC = () => {
   // Assign Role Dialog
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedRoleId, setSelectedRoleId] = useState('');
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
   const [roleSearchQuery, setRoleSearchQuery] = useState('');
+
+  const isUserInRole = (u: User, roleId: string) => {
+    const uRoles = u.roles && Array.isArray(u.roles)
+      ? u.roles
+      : (u.role ? [u.role] : []);
+    return uRoles.some((r: any) => typeof r === 'string' ? r === roleId : r?._id === roleId);
+  };
 
   // User search
   const [userSearchQuery, setUserSearchQuery] = useState('');
@@ -126,33 +132,32 @@ export const RoleManagementPage: React.FC = () => {
 
   // Count how many users are in each role
   const usersPerRole = (roleId: string) =>
-    users.filter((u) => {
-      if (!u.role) return false;
-      if (typeof u.role === 'string') return u.role === roleId;
-      return u.role._id === roleId;
-    }).length;
+    users.filter((u) => isUserInRole(u, roleId)).length;
 
   const handleAssignClick = (user: User) => {
     setSelectedUser(user);
-    let currentRoleId = '';
-    if (user.role) {
-      currentRoleId = typeof user.role === 'string' ? user.role : user.role._id;
+    let currentRoleIds: string[] = [];
+    if (user.roles && Array.isArray(user.roles)) {
+      currentRoleIds = user.roles.map((r: any) => typeof r === 'string' ? r : r._id);
+    } else if (user.role) {
+      const id = typeof user.role === 'string' ? user.role : user.role._id;
+      if (id) currentRoleIds = [id];
     }
-    setSelectedRoleId(currentRoleId);
+    setSelectedRoleIds(currentRoleIds);
     setRoleSearchQuery('');
     setAssignDialogOpen(true);
   };
 
   const handleSaveRole = async () => {
-    if (!selectedUser || !selectedRoleId) return;
+    if (!selectedUser || selectedRoleIds.length === 0) return;
     try {
       setSavingRole(true);
-      await usersApi.updateUserRole(selectedUser._id, selectedRoleId);
-      setSnackbar({ open: true, message: 'User role updated successfully', severity: 'success' });
+      await usersApi.replaceUserRoles(selectedUser._id, selectedRoleIds);
+      setSnackbar({ open: true, message: 'User roles updated successfully', severity: 'success' });
       setAssignDialogOpen(false);
       fetchData();
     } catch {
-      setSnackbar({ open: true, message: 'Failed to update role', severity: 'error' });
+      setSnackbar({ open: true, message: 'Failed to update roles', severity: 'error' });
     } finally {
       setSavingRole(false);
     }
@@ -197,10 +202,7 @@ export const RoleManagementPage: React.FC = () => {
     }
   };
 
-  const getRoleName = (role: string | { name: string } | null | undefined) => {
-    if (!role) return 'No Role';
-    return typeof role === 'string' ? role : role.name || 'No Role';
-  };
+
 
   const getInitials = (firstName: string, lastName: string) =>
     `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
@@ -217,7 +219,7 @@ export const RoleManagementPage: React.FC = () => {
     return fullName.includes(q) || u.email.toLowerCase().includes(q);
   });
 
-  const selectedRoleObj = roles.find((r) => r._id === selectedRoleId);
+  // Deprecated single selection logic
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
@@ -345,8 +347,9 @@ export const RoleManagementPage: React.FC = () => {
                     </TableHead>
                     <TableBody>
                       {filteredUsers.map((user) => {
-                        const roleName = getRoleName(user.role);
-                        const colors = getColorHex(roleName);
+                        const userRoles = user.roles && Array.isArray(user.roles) && user.roles.length > 0
+                          ? user.roles
+                          : (user.role ? [user.role] : []);
                         return (
                           <TableRow key={user._id} hover sx={{ transition: 'background-color 0.15s' }}>
                             <TableCell>
@@ -354,8 +357,8 @@ export const RoleManagementPage: React.FC = () => {
                                 <Avatar
                                   sx={{
                                     width: 36, height: 36,
-                                    bgcolor: colors.border,
-                                    color: colors.text,
+                                    bgcolor: 'primary.light',
+                                    color: 'primary.contrastText',
                                     fontWeight: 700, fontSize: '0.8rem',
                                   }}
                                 >
@@ -370,18 +373,27 @@ export const RoleManagementPage: React.FC = () => {
                               </Box>
                             </TableCell>
                             <TableCell>
-                              <Chip
-                                icon={getRoleIcon(roleName)}
-                                label={roleName}
-                                size="small"
-                                sx={{
-                                  bgcolor: colors.bg,
-                                  color: colors.text,
-                                  border: `1px solid ${colors.border}`,
-                                  fontWeight: 600,
-                                  '& .MuiChip-icon': { color: colors.text },
-                                }}
-                              />
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {userRoles.map((r: any, idx) => {
+                                  const name = typeof r === 'string' ? r : r.name;
+                                  const colors = getColorHex(name);
+                                  return (
+                                    <Chip
+                                      key={idx}
+                                      icon={getRoleIcon(name)}
+                                      label={name}
+                                      size="small"
+                                      sx={{
+                                        bgcolor: colors.bg,
+                                        color: colors.text,
+                                        border: `1px solid ${colors.border}`,
+                                        fontWeight: 600,
+                                        '& .MuiChip-icon': { color: colors.text },
+                                      }}
+                                    />
+                                  );
+                                })}
+                              </Box>
                             </TableCell>
                             <TableCell align="right">
                               <Button
@@ -459,11 +471,7 @@ export const RoleManagementPage: React.FC = () => {
                   const isSystem = systemRoles.includes(role.name);
                   const colors = getColorHex(role.name);
                   // Users that belong to this role
-                  const roleMembers = users.filter((u) => {
-                    if (!u.role) return false;
-                    if (typeof u.role === 'string') return u.role === role._id;
-                    return (u.role as { _id: string })._id === role._id;
-                  });
+                  const roleMembers = users.filter((u) => isUserInRole(u, role._id));
                   const count = roleMembers.length;
                   return (
                     <React.Fragment key={role._id}>
@@ -605,11 +613,7 @@ export const RoleManagementPage: React.FC = () => {
         <Grid container spacing={2}>
           {roles.map((role) => {
             const colors = getColorHex(role.name);
-            const roleMembers = users.filter((u) => {
-              if (!u.role) return false;
-              if (typeof u.role === 'string') return u.role === role._id;
-              return (u.role as { _id: string })._id === role._id;
-            });
+            const roleMembers = users.filter((u) => isUserInRole(u, role._id));
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={role._id}>
                 <Card
@@ -746,37 +750,54 @@ export const RoleManagementPage: React.FC = () => {
             >
               {getInitials(selectedUser?.firstName ?? '', selectedUser?.lastName ?? '')}
             </Avatar>
-            <Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                Assign Role
+                Assign Roles
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+              <Typography variant="body2" sx={{ opacity: 0.8 }} noWrap>
                 {selectedUser?.firstName} {selectedUser?.lastName} &middot; {selectedUser?.email}
               </Typography>
             </Box>
           </Box>
 
-          {/* Current role indicator */}
-          {selectedRoleObj && (
-            <Box sx={{ mt: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="caption" sx={{ opacity: 0.7 }}>Current role:</Typography>
-              <Chip
-                label={getRoleName(selectedUser?.role)}
-                size="small"
-                sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 600, height: 20, fontSize: '0.7rem' }}
-              />
-              {selectedRoleId !== (
-                typeof selectedUser?.role === 'string' ? selectedUser.role : (selectedUser?.role as { _id: string })?._id
-              ) && (
-                  <>
-                    <Typography variant="caption" sx={{ opacity: 0.6 }}>→ will change to:</Typography>
+          {/* Current roles indicator */}
+          {selectedUser && (
+            <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.75 }}>
+                <Typography variant="caption" sx={{ opacity: 0.7 }}>Current roles:</Typography>
+                {(() => {
+                  const userRoles = selectedUser.roles && Array.isArray(selectedUser.roles) && selectedUser.roles.length > 0
+                    ? selectedUser.roles
+                    : (selectedUser.role ? [selectedUser.role] : []);
+                  if (userRoles.length === 0) return <Typography variant="caption" sx={{ fontStyle: 'italic', opacity: 0.6 }}>None</Typography>;
+                  return userRoles.map((r: any, i) => (
                     <Chip
-                      label={selectedRoleObj.name}
+                      key={i}
+                      label={typeof r === 'string' ? r : r.name}
                       size="small"
-                      sx={{ bgcolor: 'rgba(255,255,255,0.35)', color: 'white', fontWeight: 700, height: 20, fontSize: '0.7rem' }}
+                      sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 600, height: 20, fontSize: '0.7rem' }}
                     />
-                  </>
+                  ));
+                })()}
+              </Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.75 }}>
+                <Typography variant="caption" sx={{ opacity: 0.7 }}>Will change to:</Typography>
+                {selectedRoleIds.length === 0 ? (
+                  <Typography variant="caption" sx={{ fontStyle: 'italic', opacity: 0.6 }}>None selected</Typography>
+                ) : (
+                  selectedRoleIds.map((rid, i) => {
+                    const rObj = roles.find(r => r._id === rid);
+                    return rObj ? (
+                      <Chip
+                        key={i}
+                        label={rObj.name}
+                        size="small"
+                        sx={{ bgcolor: 'rgba(255,255,255,0.35)', color: 'white', fontWeight: 700, height: 20, fontSize: '0.7rem' }}
+                      />
+                    ) : null;
+                  })
                 )}
+              </Box>
             </Box>
           )}
         </Box>
@@ -799,94 +820,99 @@ export const RoleManagementPage: React.FC = () => {
             sx={{ mb: 2 }}
           />
 
-          {/* Role cards as radio group */}
-          <RadioGroup
-            value={selectedRoleId}
-            onChange={(e) => setSelectedRoleId(e.target.value)}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {filteredRoles.map((role) => {
-                const isSelected = selectedRoleId === role._id;
-                const colors = getColorHex(role.name);
-                const count = usersPerRole(role._id);
-                const currentRoleId = typeof selectedUser?.role === 'string'
-                  ? selectedUser.role
-                  : (selectedUser?.role as { _id: string })?._id;
-                const isCurrent = role._id === currentRoleId;
+          {/* Role cards as checkbox list */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {filteredRoles.map((role) => {
+              const isSelected = selectedRoleIds.includes(role._id);
+              const colors = getColorHex(role.name);
+              const count = usersPerRole(role._id);
+              const userRoles = selectedUser?.roles && Array.isArray(selectedUser.roles)
+                ? selectedUser.roles
+                : (selectedUser?.role ? [selectedUser.role] : []);
+              const userRoleIds = userRoles.map((r: any) => typeof r === 'string' ? r : r._id);
+              const isCurrent = userRoleIds.includes(role._id);
 
-                return (
+              const handleToggle = () => {
+                if (isSelected) {
+                  setSelectedRoleIds(prev => prev.filter(id => id !== role._id));
+                } else {
+                  setSelectedRoleIds(prev => [...prev, role._id]);
+                }
+              };
+
+              return (
+                <Box
+                  key={role._id}
+                  onClick={handleToggle}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    p: 2,
+                    borderRadius: 2,
+                    border: '2px solid',
+                    borderColor: isSelected ? colors.border : 'divider',
+                    bgcolor: isSelected ? colors.bg : 'background.paper',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    '&:hover': {
+                      borderColor: colors.border,
+                      bgcolor: colors.bg,
+                      transform: 'translateX(2px)',
+                    },
+                  }}
+                >
+                  {/* Role icon */}
                   <Box
-                    key={role._id}
-                    onClick={() => setSelectedRoleId(role._id)}
                     sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2,
-                      p: 2,
-                      borderRadius: 2,
-                      border: '2px solid',
-                      borderColor: isSelected ? colors.border : 'divider',
-                      bgcolor: isSelected ? colors.bg : 'background.paper',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      '&:hover': {
-                        borderColor: colors.border,
-                        bgcolor: colors.bg,
-                        transform: 'translateX(2px)',
-                      },
+                      width: 42, height: 42, borderRadius: 2,
+                      bgcolor: isSelected ? colors.border : 'grey.100',
+                      color: isSelected ? colors.text : 'text.secondary',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0, transition: 'all 0.15s',
                     }}
                   >
-                    {/* Role icon */}
-                    <Box
-                      sx={{
-                        width: 42, height: 42, borderRadius: 2,
-                        bgcolor: isSelected ? colors.border : 'grey.100',
-                        color: isSelected ? colors.text : 'text.secondary',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0, transition: 'all 0.15s',
-                      }}
-                    >
-                      {getRoleIcon(role.name)}
-                    </Box>
-
-                    {/* Role info */}
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
-                        <Typography variant="body2" sx={{ color: isSelected ? colors.text : 'text.primary' , fontWeight:700}}>
-                          {role.name}
-                        </Typography>
-                        {isCurrent && (
-                          <Chip label="Current" size="small" color="default" sx={{ height: 16, fontSize: '0.65rem' }} />
-                        )}
-                      </Box>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }} noWrap>
-                        {role.description || 'No description provided.'}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {count} {count === 1 ? 'user' : 'users'} assigned
-                      </Typography>
-                    </Box>
-
-                    {/* Radio / check */}
-                    <Box sx={{ flexShrink: 0, color: isSelected ? colors.text : 'text.disabled' }}>
-                      {isSelected
-                        ? <CheckCircleIcon fontSize="small" />
-                        : <Radio value={role._id} size="small" sx={{ p: 0 }} />
-                      }
-                    </Box>
+                    {getRoleIcon(role.name)}
                   </Box>
-                );
-              })}
 
-              {filteredRoles.length === 0 && (
-                <Box sx={{ py: 4, textAlign: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">
-                    No roles match your search.
-                  </Typography>
+                  {/* Role info */}
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
+                      <Typography variant="body2" sx={{ color: isSelected ? colors.text : 'text.primary', fontWeight: 700 }}>
+                        {role.name}
+                      </Typography>
+                      {isCurrent && (
+                        <Chip label="Current" size="small" color="default" sx={{ height: 16, fontSize: '0.65rem' }} />
+                      )}
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }} noWrap>
+                      {role.description || 'No description provided.'}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {count} {count === 1 ? 'user' : 'users'} assigned
+                    </Typography>
+                  </Box>
+
+                  {/* Checkbox */}
+                  <Box sx={{ flexShrink: 0 }}>
+                    <Checkbox
+                      checked={isSelected}
+                      size="small"
+                      sx={{ p: 0, color: isSelected ? colors.text : 'text.disabled' }}
+                    />
+                  </Box>
                 </Box>
-              )}
-            </Box>
-          </RadioGroup>
+              );
+            })}
+
+            {filteredRoles.length === 0 && (
+              <Box sx={{ py: 4, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  No roles match your search.
+                </Typography>
+              </Box>
+            )}
+          </Box>
         </DialogContent>
 
         <Divider />
@@ -903,10 +929,14 @@ export const RoleManagementPage: React.FC = () => {
             variant="contained"
             disabled={
               savingRole ||
-              !selectedRoleId ||
-              selectedRoleId === (typeof selectedUser?.role === 'string'
-                ? selectedUser.role
-                : (selectedUser?.role as { _id: string })?._id)
+              selectedRoleIds.length === 0 ||
+              (() => {
+                const currentRoleIds = selectedUser?.roles && Array.isArray(selectedUser.roles)
+                  ? selectedUser.roles.map((r: any) => typeof r === 'string' ? r : r._id)
+                  : (selectedUser?.role ? [typeof selectedUser.role === 'string' ? selectedUser.role : selectedUser.role._id] : []);
+                if (currentRoleIds.length !== selectedRoleIds.length) return false;
+                return currentRoleIds.every(id => selectedRoleIds.includes(id));
+              })()
             }
             startIcon={savingRole ? <CircularProgress size={16} color="inherit" /> : <CheckCircleIcon />}
             sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2, px: 3 }}

@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Role } from '../../roles/schemas/role.schema';
@@ -42,8 +47,15 @@ export class User {
   @Prop()
   phone?: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Role', required: true })
-  role!: Role;
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: 'Role' }],
+    required: true,
+    default: [],
+  })
+  roles!: Role[];
+
+  @Prop({ type: Types.ObjectId, ref: 'Role', required: false })
+  role?: Role;
 
   roleType!: string;
 
@@ -73,3 +85,72 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.pre('save', async function () {
+  const self = this as any;
+
+  // Enforce roles initialization from legacy role field if roles array is empty
+  if ((!self.roles || self.roles.length === 0) && self.role) {
+    self.roles = [self.role];
+  }
+
+  if (self.roles && self.roles.length > 0) {
+    // Prevent duplicate role IDs
+    const roleIds = self.roles.map((id: any) => id.toString());
+    const uniqueIds = Array.from(new Set<string>(roleIds)).map(
+      (id) => new Types.ObjectId(id),
+    );
+    self.roles = uniqueIds;
+
+    // Fetch role documents to determine name and primary roleType
+    const RoleModel = self.$model('Role');
+    const roles = await RoleModel.find({ _id: { $in: self.roles } }).exec();
+
+    // Normalize role names
+    const roleNames = roles.map((r: any) => r.name);
+
+    // Prioritize discriminators: STUDENT, TEACHER, STAFF, PARENT, others
+    const priority = ['STUDENT', 'TEACHER', 'STAFF', 'PARENT'];
+    let primaryRoleName = 'USER';
+
+    // Find highest priority discriminator role name
+    for (const p of priority) {
+      if (roleNames.includes(p)) {
+        primaryRoleName = p;
+        break;
+      }
+    }
+
+    // If none of priority roles are present, fallback to ADMIN, SUPER_ADMIN or first role
+    if (!roleNames.includes(primaryRoleName)) {
+      if (roleNames.includes('SUPER_ADMIN')) {
+        primaryRoleName = 'SUPER_ADMIN';
+      } else if (roleNames.includes('ADMIN')) {
+        primaryRoleName = 'ADMIN';
+      } else {
+        primaryRoleName = roleNames[0] || 'USER';
+      }
+    }
+
+    const primaryRole =
+      roles.find((r: any) => r.name === primaryRoleName) || roles[0];
+    if (primaryRole) {
+      self.role = primaryRole._id;
+      self.roleType = primaryRole.name;
+    }
+  } else {
+    // If no roles specified at all, default to USER role
+    const RoleModel = self.$model('Role');
+    let userRole = await RoleModel.findOne({ name: 'USER' }).exec();
+    if (!userRole) {
+      userRole = await RoleModel.create({
+        name: 'USER',
+        description: 'Standard registered user with basic access',
+        permissions: [],
+      });
+    }
+    self.roles = [userRole._id];
+    self.role = userRole._id;
+    self.roleType = 'USER';
+  }
+});

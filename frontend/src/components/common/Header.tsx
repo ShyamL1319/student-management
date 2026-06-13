@@ -91,11 +91,15 @@ export const Header: FC<HeaderProps> = ({ onDrawerToggle }) => {
   const email = userTyped?.email || '';
   const initials = `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase() || 'U';
 
-  const roleName = userTyped?.role
-    ? typeof userTyped.role === 'string'
-      ? userTyped.role
-      : userTyped.role.name
-    : '';
+  const roles = userTyped?.roles || [];
+  const roleNames = roles.map((r: any) => typeof r === 'string' ? r : r?.name).filter(Boolean);
+  const displayRoles = roleNames.length > 0 ? roleNames : [
+    userTyped?.role
+      ? typeof userTyped.role === 'string'
+        ? userTyped.role
+        : userTyped.role.name
+      : 'Member'
+  ];
 
   return (
     <AppBar
@@ -384,24 +388,27 @@ export const Header: FC<HeaderProps> = ({ onDrawerToggle }) => {
                     </Box>
                   </Box>
 
-                  {/* Role Tag */}
-                  <Box sx={{ mb: 1.5, px: 0.5 }}>
-                    <Box
-                      sx={{
-                        display: 'inline-block',
-                        bgcolor: 'primary.light',
-                        color: 'primary.contrastText',
-                        fontSize: '0.675rem',
-                        fontWeight: 700,
-                        borderRadius: '24px',
-                        px: 1.5,
-                        py: 0.25,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                      }}
-                    >
-                      {roleName || 'Member'}
-                    </Box>
+                  {/* Role Tags */}
+                  <Box sx={{ mb: 1.5, px: 0.5, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {displayRoles.map((r: string, idx: number) => (
+                      <Box
+                        key={idx}
+                        sx={{
+                          display: 'inline-block',
+                          bgcolor: 'primary.light',
+                          color: 'primary.contrastText',
+                          fontSize: '0.65rem',
+                          fontWeight: 700,
+                          borderRadius: '24px',
+                          px: 1.25,
+                          py: 0.25,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        {r}
+                      </Box>
+                    ))}
                   </Box>
                   
                   <Divider sx={{ my: 1 }} />

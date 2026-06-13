@@ -89,8 +89,28 @@ export const DashboardPage: FC = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userTyped = user as any;
-  const roleName = typeof userTyped?.role === 'string' ? userTyped.role : userTyped?.role?.name || '';
-  const role = roleName.toUpperCase();
+
+  // Resolve highest priority role from roles list
+  const priority = ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT', 'USER'];
+  let role = 'USER';
+
+  const roles = userTyped?.roles || [];
+  const roleNames = roles.map((r: any) => typeof r === 'string' ? r : r?.name).filter(Boolean);
+
+  // Fallback to legacy single role
+  const singleRole = typeof userTyped?.role === 'string' ? userTyped.role : userTyped?.role?.name || '';
+  if (singleRole && !roleNames.includes(singleRole)) {
+    roleNames.push(singleRole);
+  }
+
+  const roleNamesUpper = roleNames.map((r: string) => r.toUpperCase());
+
+  for (const p of priority) {
+    if (roleNamesUpper.includes(p)) {
+      role = p;
+      break;
+    }
+  }
   const { widgets } = data;
 
   const firstName = typeof userTyped?.firstName === 'string' ? userTyped.firstName : 'User';

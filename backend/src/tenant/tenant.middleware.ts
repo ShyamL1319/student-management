@@ -115,7 +115,11 @@ export class TenantMiddleware implements NestMiddleware {
         });
       }
 
-      if (!tenant && (resolvedIdentifier.toLowerCase() === 'localhost' || resolvedIdentifier.toLowerCase() === 'localhost-dev')) {
+      if (
+        !tenant &&
+        (resolvedIdentifier.toLowerCase() === 'localhost' ||
+          resolvedIdentifier.toLowerCase() === 'localhost-dev')
+      ) {
         // Fallback to the first tenant in local development
         tenant = await this.tenantModel.findOne().exec();
       }
