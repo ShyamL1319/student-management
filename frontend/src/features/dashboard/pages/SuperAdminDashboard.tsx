@@ -519,8 +519,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
 
           {/* TAB 0: Tenant Directory */}
           {activeTab === 0 && (
-            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-              <Table>
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, maxHeight: 400, overflowY: 'auto' }}>
+              <Table stickyHeader>
                 <TableHead sx={{ bgcolor: 'action.hover' }}>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700 }}>Tenant School</TableCell>
@@ -580,8 +580,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
 
           {/* TAB 1: Subscription Plans */}
           {activeTab === 1 && (
-            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-              <Table>
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, maxHeight: 400, overflowY: 'auto' }}>
+              <Table stickyHeader>
                 <TableHead sx={{ bgcolor: 'action.hover' }}>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700 }}>Plan Identifier</TableCell>
@@ -686,8 +686,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
                 />
               </Box>
 
-              <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                <Table>
+              <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, maxHeight: 300, overflowY: 'auto' }}>
+                <Table stickyHeader>
                   <TableHead sx={{ bgcolor: 'action.hover' }}>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 700 }}>Threat Detected Time</TableCell>
@@ -728,19 +728,21 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
               <Divider sx={{ my: 2 }} />
 
               <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>General Audit Log History</Typography>
-              <List disablePadding>
-                {(data.recentActivity || MOCK_AUDIT_LOGS).map((log: any, idx: number) => (
-                  <ListItem key={log.id || idx} sx={{ px: 0, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                    <ListItemIcon>
-                      <AuditIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{log.action || log.description}</Typography>}
-                      secondary={`Actor: ${log.user || 'System'} | ${log.time}`}
-                    />
-                  </ListItem>
-                ))}
-              </List>
+              <Box sx={{ maxHeight: 250, overflowY: 'auto', pr: 1 }}>
+                <List disablePadding>
+                  {(data.recentActivity || MOCK_AUDIT_LOGS).map((log: any, idx: number) => (
+                    <ListItem key={log.id || idx} sx={{ px: 0, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                      <ListItemIcon>
+                        <AuditIcon color="primary" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{log.action || log.description}</Typography>}
+                        secondary={`Actor: ${log.user || 'System'} | ${log.time}`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
             </Box>
           )}
 

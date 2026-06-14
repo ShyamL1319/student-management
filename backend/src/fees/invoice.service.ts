@@ -40,7 +40,18 @@ export class InvoiceService {
   }
 
   async findAll(query: InvoiceQueryDto = {}) {
-    return this.invoiceModel.find(query).lean();
+    const { page, limit, ...filter } = query;
+    if (page || limit) {
+      const p = page || 1;
+      const l = limit || 10;
+      const skip = (p - 1) * l;
+      const [data, total] = await Promise.all([
+        this.invoiceModel.find(filter).skip(skip).limit(l).lean().exec(),
+        this.invoiceModel.countDocuments(filter).exec(),
+      ]);
+      return { data, total, page: p, totalPages: Math.ceil(total / l) };
+    }
+    return this.invoiceModel.find(filter).lean().exec();
   }
 
   async findById(id: string) {

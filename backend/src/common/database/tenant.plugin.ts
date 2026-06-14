@@ -56,7 +56,21 @@ export function tenantPlugin(schema: Schema, options?: TenantPluginOptions) {
   schema.pre('find', applyTenantFilter);
   schema.pre('findOne', applyTenantFilter);
   schema.pre('countDocuments', applyTenantFilter);
-  schema.pre('estimatedDocumentCount', applyTenantFilter);
+  schema.pre('estimatedDocumentCount', function (this: any) {
+    const queryOptions = this.getOptions();
+    if (queryOptions && queryOptions.bypassTenant) {
+      return;
+    }
+    const modelName = this.model?.modelName;
+    if (modelName && GLOBAL_BYPASS_MODELS.includes(modelName)) {
+      return;
+    }
+    const schoolId = TenantContext.getSchoolId();
+    if (schoolId) {
+      this.op = 'countDocuments';
+      this.where({ schoolId: new Types.ObjectId(schoolId) });
+    }
+  });
   schema.pre('updateOne', applyTenantFilter);
   schema.pre('updateMany', applyTenantFilter);
   schema.pre('deleteOne', applyTenantFilter);

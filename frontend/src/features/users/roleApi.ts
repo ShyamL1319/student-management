@@ -11,6 +11,8 @@ export interface Role {
   name: string;
   description?: string;
   permissions: Permission[];
+  memberCount?: number;
+  previewMembers?: { _id: string; firstName: string; lastName: string; email: string }[];
 }
 
 export const roleApi = {

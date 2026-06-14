@@ -6,10 +6,10 @@ export type StudentDocument = Student & Document;
 
 @Schema()
 export class Student extends User {
-  @Prop({ required: true, unique: true, sparse: true })
+  @Prop({ required: true })
   admissionNumber!: string;
 
-  @Prop({ required: true, unique: true, sparse: true })
+  @Prop({ required: true })
   rollNumber!: string;
 
   @Prop()
@@ -44,3 +44,5 @@ export class Student extends User {
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);
+StudentSchema.index({ schoolId: 1, admissionNumber: 1 }, { unique: true });
+StudentSchema.index({ schoolId: 1, rollNumber: 1 }, { unique: true });

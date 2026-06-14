@@ -25,4 +25,8 @@ export const studentsApi = {
     const response = await api.post(`/students/${id}/transfer`, data);
     return response.data;
   },
+  suggestStudents: async (q: string) => {
+    const response = await api.get('/students/suggest', { params: { q } });
+    return response.data;
+  },
 };

@@ -16,7 +16,9 @@ export class AuditLogsService {
     return newLog.save();
   }
 
-  async findAll(query: QueryAuditLogDto): Promise<AuditLog[]> {
+  async findAll(
+    query: QueryAuditLogDto,
+  ): Promise<{ data: AuditLog[]; total: number }> {
     const filter: any = {};
 
     if (query.action) {
@@ -41,10 +43,21 @@ export class AuditLogsService {
       }
     }
 
-    return this.auditLogModel
-      .find(filter)
-      .sort({ createdAt: -1 })
-      .populate('performedBy', 'firstName lastName email role')
-      .exec();
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.auditLogModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('performedBy', 'firstName lastName email role')
+        .exec(),
+      this.auditLogModel.countDocuments(filter).exec(),
+    ]);
+
+    return { data, total };
   }
 }

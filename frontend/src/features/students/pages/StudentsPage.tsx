@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from '../../../hooks/useDebounce';
 import {
   Box,
   Typography,
@@ -40,12 +41,15 @@ export const StudentsPage: FC = () => {
   const [editing, setEditing] = useState<any>(null);
   const [formValues, setFormValues] = useState({ admissionNumber: '', rollNumber: '', firstName: '', lastName: '', dob: '', gender: '', bloodGroup: '', address: '', email: '', phone: '', parent: '', class: '', section: '', isActive: true });
 
-  const { data: classesData } = useQuery({ queryKey: ['classesOptions'], queryFn: () => classesApi.getClasses({ limit: 200 }) });
-  const { data: sectionsData } = useQuery({ queryKey: ['sectionsOptions'], queryFn: () => sectionApi.getSections({ limit: 200 }) });
+  const { data: classesData } = useQuery({ queryKey: ['classesOptions'], queryFn: () => classesApi.getClasses({ limit: 200 }), staleTime: 5 * 60 * 1000 });
+  const { data: sectionsData } = useQuery({ queryKey: ['sectionsOptions'], queryFn: () => sectionApi.getSections({ limit: 200 }), staleTime: 5 * 60 * 1000 });
 
-  const filterParams = { page, limit: 10, search: search || undefined, class: selectedClass || undefined, section: selectedSection || undefined };
+
+  const debouncedSearch = useDebounce(search, 300);
+  const filterParams = { page, limit: 10, search: debouncedSearch || undefined, class: selectedClass || undefined, section: selectedSection || undefined };
 
   const { data, isLoading } = useQuery({ queryKey: ['students', filterParams], queryFn: () => studentsApi.getStudents(filterParams) });
+
 
   const createMutation = useMutation({ mutationFn: (data: any) => studentsApi.createStudent(data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['students'] }) });
   const updateMutation = useMutation({ mutationFn: (data: any) => studentsApi.updateStudent(editing._id || editing.id, data), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['students'] }); setEditing(null); } });

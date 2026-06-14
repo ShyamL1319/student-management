@@ -5,16 +5,16 @@ export type InvoiceDocument = Invoice & Document;
 
 @Schema({ timestamps: true })
 export class Invoice {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   invoiceNumber: string;
 
-  @Prop({ required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   studentId: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ type: Types.ObjectId, ref: 'Class', required: true })
   classId: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ type: Types.ObjectId, ref: 'AcademicYear', required: true })
   academicYearId: Types.ObjectId;
 
   @Prop({ required: true })
@@ -61,3 +61,5 @@ export class Invoice {
 }
 
 export const InvoiceSchema = SchemaFactory.createForClass(Invoice);
+InvoiceSchema.index({ schoolId: 1, invoiceNumber: 1 }, { unique: true });
+InvoiceSchema.index({ schoolId: 1, studentId: 1, status: 1 });

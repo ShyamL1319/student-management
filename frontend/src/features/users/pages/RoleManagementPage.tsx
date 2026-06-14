@@ -76,10 +76,81 @@ const roleColorHex: Record<string, { bg: string; border: string; text: string }>
 const getColorHex = (name: string) =>
   roleColorHex[name] || { bg: '#f8fafc', border: '#cbd5e1', text: '#475569' };
 
+interface DebouncedSearchInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  delay?: number;
+}
+
+const DebouncedSearchInput: React.FC<DebouncedSearchInputProps> = ({
+  value,
+  onChange,
+  placeholder = 'Search…',
+  delay = 300,
+}) => {
+  const [prevValue, setPrevValue] = useState(value);
+  const [localValue, setLocalValue] = useState(value);
+
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setLocalValue(value);
+  }
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      onChange(localValue);
+    }, delay);
+    return () => clearTimeout(handler);
+  }, [localValue, onChange, delay]);
+
+  return (
+    <TextField
+      fullWidth
+      size="small"
+      placeholder={placeholder}
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      slotProps={{
+        input: {
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon fontSize="small" color="action" />
+            </InputAdornment>
+          ),
+          endAdornment: localValue ? (
+            <InputAdornment position="end">
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setLocalValue('');
+                  onChange('');
+                }}
+                edge="end"
+              >
+                <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', lineHeight: 1 }}>
+                  ✕
+                </Typography>
+              </IconButton>
+            </InputAdornment>
+          ) : null,
+        },
+      }}
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          borderRadius: 2,
+          bgcolor: 'grey.50',
+        },
+      }}
+    />
+  );
+};
+
 export const RoleManagementPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [savingRole, setSavingRole] = useState(false);
 
   // Assign Role Dialog
@@ -106,12 +177,12 @@ export const RoleManagementPage: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [usersData, rolesData] = await Promise.all([
-        usersApi.getUsers(),
+      const [rolesData, usersData] = await Promise.all([
         roleApi.getRoles(),
+        usersApi.suggestUsers(''),
       ]);
-      setUsers(usersData);
       setRoles(rolesData);
+      setUsers(usersData);
     } catch {
       setSnackbar({ open: true, message: 'Failed to fetch data', severity: 'error' });
     } finally {
@@ -124,13 +195,25 @@ export const RoleManagementPage: React.FC = () => {
     fetchData();
   }, []);
 
-  // Count how many users are in each role
-  const usersPerRole = (roleId: string) =>
-    users.filter((u) => {
-      if (!u.role) return false;
-      if (typeof u.role === 'string') return u.role === roleId;
-      return u.role._id === roleId;
-    }).length;
+  useEffect(() => {
+    if (loading) return;
+
+    const searchUsers = async () => {
+      try {
+        setLoadingUsers(true);
+        const usersData = await usersApi.suggestUsers(userSearchQuery);
+        setUsers(usersData);
+      } catch {
+        setSnackbar({ open: true, message: 'Failed to search users', severity: 'error' });
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    searchUsers();
+  }, [userSearchQuery, loading]);
+
+
 
   const handleAssignClick = (user: User) => {
     setSelectedUser(user);
@@ -210,12 +293,7 @@ export const RoleManagementPage: React.FC = () => {
     (r.description || '').toLowerCase().includes(roleSearchQuery.toLowerCase())
   );
 
-  const filteredUsers = users.filter((u) => {
-    const q = userSearchQuery.toLowerCase().trim();
-    if (!q) return true;
-    const fullName = `${u.firstName} ${u.lastName}`.toLowerCase();
-    return fullName.includes(q) || u.email.toLowerCase().includes(q);
-  });
+  const filteredUsers = users;
 
   const selectedRoleObj = roles.find((r) => r._id === selectedRoleId);
 
@@ -284,7 +362,7 @@ export const RoleManagementPage: React.FC = () => {
                   <Chip
                     label={
                       userSearchQuery
-                        ? `${filteredUsers.length} of ${users.length}`
+                        ? `${users.length} match${users.length === 1 ? '' : 'es'}`
                         : `${users.length} users`
                     }
                     size="small"
@@ -299,43 +377,34 @@ export const RoleManagementPage: React.FC = () => {
 
             {/* ── User Search Bar ── */}
             <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Search by name or email…"
+              <DebouncedSearchInput
                 value={userSearchQuery}
-                onChange={(e) => setUserSearchQuery(e.target.value)}
-                slotProps={{ input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" color="action" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: userSearchQuery ? (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => setUserSearchQuery('')} edge="end">
-                        <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', lineHeight: 1 }}>✕</Typography>
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null,
-                }}}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    bgcolor: 'grey.50',
-                  },
-                }}
+                onChange={setUserSearchQuery}
+                placeholder="Search by name or email…"
               />
             </Box>
 
-            <CardContent sx={{ p: 0 }}>
-              {loading ? (
+            <CardContent sx={{ p: 0, position: 'relative' }}>
+              {(loading || loadingUsers) && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    bgcolor: 'rgba(255, 255, 255, 0.6)',
+                    zIndex: 2,
+                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  }}
+                >
+                  <CircularProgress size={32} />
+                </Box>
+              )}
+              {loading && users.length === 0 ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
                   <CircularProgress size={32} />
                 </Box>
               ) : (
-                <TableContainer>
-                  <Table aria-label="user roles table">
+                <TableContainer sx={{ maxHeight: 500, overflowY: 'auto' }}>
+                  <Table aria-label="user roles table" stickyHeader>
                     <TableHead>
                       <TableRow sx={{ bgcolor: 'grey.50' }}>
                         <TableCell sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>User</TableCell>
@@ -452,19 +521,15 @@ export const RoleManagementPage: React.FC = () => {
               }
             />
             <Divider />
-            <CardContent sx={{ px: 0, py: 0 }}>
+            <CardContent sx={{ px: 0, py: 0, maxHeight: 565, overflowY: 'auto' }}>
               <List disablePadding>
                 {roles.map((role, idx) => {
                   const systemRoles = ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STAFF', 'STUDENT'];
                   const isSystem = systemRoles.includes(role.name);
                   const colors = getColorHex(role.name);
                   // Users that belong to this role
-                  const roleMembers = users.filter((u) => {
-                    if (!u.role) return false;
-                    if (typeof u.role === 'string') return u.role === role._id;
-                    return (u.role as { _id: string })._id === role._id;
-                  });
-                  const count = roleMembers.length;
+                  const roleMembers = role.previewMembers || [];
+                  const count = role.memberCount ?? 0;
                   return (
                     <React.Fragment key={role._id}>
                       <ListItem
@@ -605,11 +670,7 @@ export const RoleManagementPage: React.FC = () => {
         <Grid container spacing={2}>
           {roles.map((role) => {
             const colors = getColorHex(role.name);
-            const roleMembers = users.filter((u) => {
-              if (!u.role) return false;
-              if (typeof u.role === 'string') return u.role === role._id;
-              return (u.role as { _id: string })._id === role._id;
-            });
+            const roleMembers = role.previewMembers || [];
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={role._id}>
                 <Card
@@ -661,7 +722,7 @@ export const RoleManagementPage: React.FC = () => {
                   </Box>
 
                   {/* Member list */}
-                  <CardContent sx={{ p: 0 }}>
+                  <CardContent sx={{ p: 0, maxHeight: 200, overflowY: 'auto' }}>
                     {roleMembers.length === 0 ? (
                       <Box sx={{ py: 3, textAlign: 'center' }}>
                         <Typography variant="caption" sx={{ color: "text.disabled", fontStyle: "italic" }}>
@@ -697,7 +758,11 @@ export const RoleManagementPage: React.FC = () => {
                                   <IconButton
                                     size="small"
                                     color="primary"
-                                    onClick={() => handleAssignClick(member)}
+                                    onClick={() => handleAssignClick({
+                                    ...member,
+                                    role: role._id,
+                                    createdAt: '',
+                                  } as User)}
                                     sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
                                   >
                                     <EditIcon sx={{ fontSize: 14 }} />
@@ -808,7 +873,7 @@ export const RoleManagementPage: React.FC = () => {
               {filteredRoles.map((role) => {
                 const isSelected = selectedRoleId === role._id;
                 const colors = getColorHex(role.name);
-                const count = usersPerRole(role._id);
+                 const count = role.memberCount ?? 0;
                 const currentRoleId = typeof selectedUser?.role === 'string'
                   ? selectedUser.role
                   : (selectedUser?.role as { _id: string })?._id;

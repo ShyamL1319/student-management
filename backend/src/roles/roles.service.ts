@@ -8,8 +8,25 @@ import { CreateRoleDto, UpdateRoleDto } from './dto/role.dto';
 export class RolesService {
   constructor(@InjectModel(Role.name) private roleModel: Model<RoleDocument>) {}
 
-  async findAll(): Promise<Role[]> {
-    return this.roleModel.find().populate('permissions').exec();
+  async findAll(): Promise<any[]> {
+    const roles = await this.roleModel.find().populate('permissions').exec();
+    const UserModel = this.roleModel.db.model('User');
+
+    return Promise.all(
+      roles.map(async (role) => {
+        const count = await UserModel.countDocuments({ role: role._id }).exec();
+        const previewMembers = await UserModel.find({ role: role._id })
+          .select('firstName lastName email')
+          .limit(10)
+          .lean()
+          .exec();
+        return {
+          ...role.toObject(),
+          memberCount: count,
+          previewMembers,
+        };
+      }),
+    );
   }
 
   async findOne(id: string): Promise<Role> {
