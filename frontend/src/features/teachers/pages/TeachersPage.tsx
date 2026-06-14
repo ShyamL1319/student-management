@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from '../../../hooks/useDebounce';
 import {
   Box,
   Typography,
@@ -36,9 +37,11 @@ export const TeachersPage: FC = () => {
   const [editing, setEditing] = useState<any>(null);
   const [formValues, setFormValues] = useState({ name: '', email: '', phone: '', subjects: '', profile: '', isActive: true });
 
-  const filterParams = { page, limit: 10, search: search || undefined };
+  const debouncedSearch = useDebounce(search, 300);
+  const filterParams = { page, limit: 10, search: debouncedSearch || undefined };
 
   const { data, isLoading } = useQuery({ queryKey: ['teachers', filterParams], queryFn: () => teachersApi.getTeachers(filterParams) });
+
 
   const createMutation = useMutation({ mutationFn: (data: any) => teachersApi.createTeacher(data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teachers'] }) });
   const updateMutation = useMutation({ mutationFn: (data: any) => teachersApi.updateTeacher(editing._id || editing.id, data), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['teachers'] }); setEditing(null); } });

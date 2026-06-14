@@ -92,7 +92,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   const studentCount = await db
     .collection('users')
     .countDocuments({ roleType: 'STUDENT' });
-  if (studentCount >= 50) {
+  if (studentCount >= 5) {
     console.log(
       'Database already has sufficient seed data. Skipping massive seed.',
     );
@@ -195,7 +195,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   console.log('Seeding Staff...');
   const staffIds = [];
   const staffRecords = [];
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 5; i++) {
     const name = getRandomName();
     const email = `staff${i}@school.com`;
     // Map to all departments except the last 'Empty Department'
@@ -238,7 +238,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   const teacherIds = [];
   const teachers = [];
   const teacherRecords = [];
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 5; i++) {
     const name = getRandomName();
     const email = `teacher${i}@school.com`;
     const tSubjects = [
@@ -315,7 +315,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   const parentIds = [];
   const parents = [];
   const parentRecords = [];
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 5; i++) {
     const name = getRandomName();
     const email = `parent${i}@school.com`;
     const pId = new ObjectId();
@@ -357,7 +357,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   for (const section of insertedSections) {
     studentsBySection[section._id] = [];
     // 10 students per section = 150 students
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       // Randomly assign to a pool of 60 parents, forcing some parents to have multiple kids
       const parent = parents[Math.floor(Math.random() * parents.length)];
       const name = {
@@ -534,7 +534,7 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
   console.log('Seeding Attendance...');
   const attendances = [];
   const today = new Date();
-  for (let d = 0; d < 15; d++) {
+  for (let d = 0; d < 5; d++) {
     const attDate = new Date(today.getTime() - d * 86400000);
     if (attDate.getDay() === 0 || attDate.getDay() === 6) continue; // skip weekends
 

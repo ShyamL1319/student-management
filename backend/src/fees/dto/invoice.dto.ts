@@ -6,7 +6,10 @@ import {
   IsEnum,
   IsMongoId,
   IsArray,
+  IsInt,
+  Min,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateInvoiceDto {
   @IsMongoId()
@@ -78,4 +81,16 @@ export class InvoiceQueryDto {
   @IsOptional()
   @IsEnum(['DRAFT', 'ISSUED', 'PARTIAL', 'PAID', 'OVERDUE', 'CANCELLED'])
   status?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number;
 }

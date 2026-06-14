@@ -1,17 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type MarkDocument = Mark & Document;
 
 @Schema({ timestamps: true })
 export class Mark {
-  @Prop({ required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   studentId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Subject', required: true })
   subjectId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Exam', required: true })
   examId: string;
 
   @Prop({ required: true })
@@ -28,3 +28,5 @@ export class Mark {
 }
 
 export const MarkSchema = SchemaFactory.createForClass(Mark);
+MarkSchema.index({ schoolId: 1, studentId: 1, examId: 1 });
+MarkSchema.index({ schoolId: 1, subjectId: 1 });

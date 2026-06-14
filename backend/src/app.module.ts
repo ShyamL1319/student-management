@@ -127,10 +127,6 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     },
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-    {
-      provide: APP_GUARD,
       useClass: TenantGuard,
     },
   ],

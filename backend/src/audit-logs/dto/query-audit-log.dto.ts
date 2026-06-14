@@ -1,4 +1,12 @@
-import { IsEnum, IsMongoId, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  IsInt,
+  Min,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 import { AuditAction, AuditStatus } from '../schemas/audit-log.schema';
 
 export class QueryAuditLogDto {
@@ -25,4 +33,16 @@ export class QueryAuditLogDto {
   @IsOptional()
   @IsString()
   endDate?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number;
 }

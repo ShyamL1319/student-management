@@ -12,6 +12,17 @@ import { Tenant, TenantDocument } from './schemas/tenant.schema';
 import { School, SchoolDocument } from '../schools/schemas/school.schema';
 import { TenantContext } from './tenant.context';
 
+interface CachedTenantConfig {
+  tenantId: string;
+  schoolId: string;
+  subdomain: string;
+  isActive: boolean;
+  expiry: number;
+}
+
+const TENANT_CACHE = new Map<string, CachedTenantConfig>();
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
 @Injectable()
 export class TenantMiddleware implements NestMiddleware {
   constructor(
@@ -92,6 +103,26 @@ export class TenantMiddleware implements NestMiddleware {
       return next();
     }
 
+    const cacheKey = resolvedIdentifier.toLowerCase();
+    const cachedConfig = TENANT_CACHE.get(cacheKey);
+    const now = Date.now();
+
+    if (cachedConfig && cachedConfig.expiry > now) {
+      if (!cachedConfig.isActive) {
+        throw new BadRequestException('Tenant account is inactive');
+      }
+      return TenantContext.run(
+        {
+          tenantId: cachedConfig.tenantId,
+          schoolId: cachedConfig.schoolId,
+          subdomain: cachedConfig.subdomain,
+        },
+        () => {
+          next();
+        },
+      );
+    }
+
     try {
       let tenant: TenantDocument | null = null;
 
@@ -115,7 +146,11 @@ export class TenantMiddleware implements NestMiddleware {
         });
       }
 
-      if (!tenant && (resolvedIdentifier.toLowerCase() === 'localhost' || resolvedIdentifier.toLowerCase() === 'localhost-dev')) {
+      if (
+        !tenant &&
+        (resolvedIdentifier.toLowerCase() === 'localhost' ||
+          resolvedIdentifier.toLowerCase() === 'localhost-dev')
+      ) {
         // Fallback to the first tenant in local development
         tenant = await this.tenantModel.findOne().exec();
       }
@@ -127,6 +162,13 @@ export class TenantMiddleware implements NestMiddleware {
       }
 
       if (!tenant.isActive) {
+        TENANT_CACHE.set(cacheKey, {
+          tenantId: tenant._id.toString(),
+          schoolId: '',
+          subdomain: tenant.subdomain,
+          isActive: false,
+          expiry: now + CACHE_TTL_MS,
+        });
         throw new BadRequestException('Tenant account is inactive');
       }
 
@@ -137,11 +179,21 @@ export class TenantMiddleware implements NestMiddleware {
         );
       }
 
+      const config: CachedTenantConfig = {
+        tenantId: tenant._id.toString(),
+        schoolId: school._id.toString(),
+        subdomain: tenant.subdomain,
+        isActive: true,
+        expiry: now + CACHE_TTL_MS,
+      };
+
+      TENANT_CACHE.set(cacheKey, config);
+
       TenantContext.run(
         {
-          tenantId: tenant._id.toString(),
-          schoolId: school._id.toString(),
-          subdomain: tenant.subdomain,
+          tenantId: config.tenantId,
+          schoolId: config.schoolId,
+          subdomain: config.subdomain,
         },
         () => {
           next();

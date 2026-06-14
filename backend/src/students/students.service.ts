@@ -129,4 +129,21 @@ export class StudentsService {
     // For now transfer behaves similarly to promote but could be expanded
     return this.promote(id, payload);
   }
+
+  async suggest(q: string) {
+    if (!q) return [];
+    const filter = {
+      $or: [
+        { firstName: { $regex: '^' + q, $options: 'i' } },
+        { lastName: { $regex: '^' + q, $options: 'i' } },
+        { admissionNumber: { $regex: '^' + q, $options: 'i' } },
+      ],
+    };
+    return this.studentModel
+      .find(filter)
+      .select('firstName lastName admissionNumber _id')
+      .limit(10)
+      .lean()
+      .exec();
+  }
 }

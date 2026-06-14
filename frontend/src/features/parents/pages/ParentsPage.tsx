@@ -21,15 +21,11 @@ import {
   Switch,
   Pagination,
   CircularProgress,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  OutlinedInput,
-  Chip,
+  Autocomplete,
 } from '@mui/material';
 import { parentsApi } from '../api/parents.api';
 import { studentsApi } from '../../students/api/students.api';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 interface StudentListItem {
   _id: string;
@@ -93,13 +89,36 @@ export const ParentsPage: FC = () => {
     queryFn: () => parentsApi.getParents(filterParams),
   });
 
-  // Fetch Students for association dropdown
-  const { data: studentsData } = useQuery<{ data: StudentListItem[] }>({
-    queryKey: ['students', { limit: 200 }],
-    queryFn: () => studentsApi.getStudents({ limit: 200 }),
+  const [childSearch, setChildSearch] = useState('');
+  const debouncedChildSearch = useDebounce(childSearch, 300);
+
+  // Fetch Student suggestions dynamically based on user typing
+  const { data: studentSuggestions, isLoading: loadingSuggestions } = useQuery<StudentListItem[]>({
+    queryKey: ['studentSuggestions', debouncedChildSearch],
+    queryFn: () => studentsApi.suggestStudents(debouncedChildSearch),
+    enabled: debouncedChildSearch.length > 1,
   });
 
-  const studentsList = studentsData?.data || [];
+  // Map IDs to student objects to correctly resolve names of currently selected items
+  const childrenOptionsMap = new Map<string, StudentListItem>();
+
+  if (editing?.children) {
+    editing.children.forEach((c) => {
+      if (c._id || c.id) {
+        childrenOptionsMap.set(c._id || c.id || '', c);
+      }
+    });
+  }
+
+  if (studentSuggestions) {
+    studentSuggestions.forEach((s) => {
+      if (s._id || s.id) {
+        childrenOptionsMap.set(s._id || s.id || '', s);
+      }
+    });
+  }
+
+  const childrenOptions = Array.from(childrenOptionsMap.values());
 
   const createMutation = useMutation({
     mutationFn: (payload: ParentPayload) => parentsApi.createParent(payload),
@@ -254,36 +273,58 @@ export const ParentsPage: FC = () => {
           <TextField label="Occupation" value={formValues.occupation} onChange={(e) => setFormValues({ ...formValues, occupation: e.target.value })} fullWidth />
           <TextField label="Address" value={formValues.address} onChange={(e) => setFormValues({ ...formValues, address: e.target.value })} fullWidth multiline minRows={2} />
           
-          <FormControl fullWidth>
-            <InputLabel id="children-label">Associated Children</InputLabel>
-            <Select
-              labelId="children-label"
-              id="children-select"
-              multiple
-              value={formValues.children}
-              onChange={(e) => setFormValues({ ...formValues, children: typeof e.target.value === 'string' ? e.target.value.split(',') : (e.target.value as string[]) })}
-              input={<OutlinedInput label="Associated Children" />}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) => {
-                    const studentObj = studentsList.find((s) => (s._id || s.id) === value);
-                    return (
-                      <Chip
-                        key={value}
-                        label={studentObj ? `${studentObj.firstName} ${studentObj.lastName}` : value}
-                      />
-                    );
-                  })}
-                </Box>
-              )}
-            >
-              {studentsList.map((student) => (
-                <MenuItem key={student._id || student.id} value={student._id || student.id}>
-                  {student.firstName} {student.lastName} ({student.admissionNumber})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            multiple
+            id="children-select"
+            options={childrenOptions}
+            getOptionLabel={(option) =>
+              option.firstName
+                ? `${option.firstName} ${option.lastName || ''} (${option.admissionNumber || 'N/A'})`
+                : 'Unknown student'
+            }
+            isOptionEqualToValue={(option, val) =>
+              (option._id || option.id) === (val._id || val.id)
+            }
+            value={formValues.children.map(
+              (id) =>
+                childrenOptionsMap.get(id) || {
+                  _id: id,
+                  firstName: 'Linked Child ID: ' + id,
+                  lastName: '',
+                  admissionNumber: '',
+                },
+            )}
+            onChange={(event, newValue) => {
+              setFormValues({
+                ...formValues,
+                children: newValue.map((v) => v._id || v.id || ''),
+              });
+            }}
+            onInputChange={(event, newInputValue) => {
+              setChildSearch(newInputValue);
+            }}
+            loading={loadingSuggestions}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Associated Children"
+                placeholder="Type student name to search..."
+                slotProps={{
+                  input: {
+                    ...params.slotProps.input,
+                    endAdornment: (
+                      <>
+                        {loadingSuggestions ? (
+                          <CircularProgress color="inherit" size={20} />
+                        ) : null}
+                        {params.slotProps.input.endAdornment}
+                      </>
+                    ),
+                  },
+                }}
+              />
+            )}
+          />
 
           <FormControlLabel control={<Switch checked={formValues.isActive} onChange={(e) => setFormValues({ ...formValues, isActive: e.target.checked })} />} label="Active" />
         </DialogContent>

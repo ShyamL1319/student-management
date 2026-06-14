@@ -12,16 +12,21 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: true, // temporary, should be false in production
+      ignoreExpiration: false, // Security: Enforce expiration checks
       secretOrKey: configService.get<string>('JWT_SECRET') || 'supersecret',
     });
   }
 
   async validate(payload: any) {
-    const user = await this.usersService.findById(payload.sub);
-    if (!user) {
-      throw new UnauthorizedException();
+    if (!payload.sub || !payload.role) {
+      throw new UnauthorizedException('Invalid token claims');
     }
-    return user;
+    // Return claims directly, saving an expensive user DB lookup on every call
+    return {
+      _id: payload.sub,
+      email: payload.email,
+      role: payload.role,
+      schoolId: payload.schoolId,
+    };
   }
 }

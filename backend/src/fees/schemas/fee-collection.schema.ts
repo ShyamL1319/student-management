@@ -52,3 +52,4 @@ export class FeeCollection {
 }
 
 export const FeeCollectionSchema = SchemaFactory.createForClass(FeeCollection);
+FeeCollectionSchema.index({ schoolId: 1, studentId: 1, status: 1 });

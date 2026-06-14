@@ -20,6 +20,23 @@ export class UsersService {
     return this.userModel.find().populate('role').exec();
   }
 
+  async suggest(q?: string): Promise<UserDocument[]> {
+    const filter: any = {};
+    if (q) {
+      const regex = new RegExp(q.trim(), 'i');
+      filter.$or = [
+        { firstName: regex },
+        { lastName: regex },
+        { email: regex },
+      ];
+    }
+    return this.userModel
+      .find(filter)
+      .populate('role')
+      .limit(50)
+      .exec();
+  }
+
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel
       .findOne({ email })

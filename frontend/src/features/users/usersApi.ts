@@ -27,6 +27,11 @@ export const usersApi = {
     return response.data;
   },
 
+  suggestUsers: async (q: string): Promise<User[]> => {
+    const response = await api.get('/users/suggest', { params: { q } });
+    return response.data;
+  },
+
   getProfile: async (): Promise<User> => {
     const response = await api.get('/users/profile');
     return response.data;

@@ -253,27 +253,30 @@ export class AnalyticsService {
       { $group: { _id: null, totalAmount: { $sum: '$amountPaid' } } },
     ]);
     const totalRevenue: number =
-      feesResult.length > 0 ? feesResult[0].totalAmount : 0;
+      feesResult && feesResult.length > 0 ? feesResult[0].totalAmount : 0;
 
-    // Calculate outstanding pending fees for this school
-    const outstandingInvoices = await this.invoiceModel
-      .find(schoolFilter)
-      .exec();
-    const pendingFees = outstandingInvoices.reduce(
-      (sum, inv) => sum + (inv.pendingAmount || 0),
-      0,
-    );
+    const outstandingResult = await this.invoiceModel.aggregate<{
+      totalPending: number;
+    }>([
+      { $match: schoolFilter },
+      { $group: { _id: null, totalPending: { $sum: '$pendingAmount' } } },
+    ]);
+    const pendingFees =
+      outstandingResult && outstandingResult.length > 0
+        ? outstandingResult[0].totalPending
+        : 0;
 
     // Aggregate monthly actual vs projected fee payments
-    const collectionsByMonth = await this.feeCollectionModel.aggregate([
-      { $match: schoolFilter },
-      {
-        $group: {
-          _id: { $month: '$paymentDate' },
-          collected: { $sum: '$amountPaid' },
+    const collectionsByMonth =
+      (await this.feeCollectionModel.aggregate([
+        { $match: schoolFilter },
+        {
+          $group: {
+            _id: { $month: '$paymentDate' },
+            collected: { $sum: '$amountPaid' },
+          },
         },
-      },
-    ]);
+      ])) || [];
     const monthNames = [
       'Jan',
       'Feb',
@@ -298,26 +301,36 @@ export class AnalyticsService {
     });
 
     // Subject averages aggregated from Mark collection
-    const marksBySubject = await this.markModel.aggregate([
-      {
-        $group: {
-          _id: '$subjectId',
-          average: { $avg: '$marksObtained' },
-          total: { $count: {} },
-          passed: {
-            $sum: {
-              $cond: [{ $gte: ['$marksObtained', 40] }, 1, 0],
+    const marksBySubject =
+      (await this.markModel.aggregate([
+        {
+          $group: {
+            _id: '$subjectId',
+            average: { $avg: '$marksObtained' },
+            total: { $count: {} },
+            passed: {
+              $sum: {
+                $cond: [{ $gte: ['$marksObtained', 40] }, 1, 0],
+              },
             },
           },
         },
-      },
-    ]);
+      ])) || [];
+
+    const subjectIds = marksBySubject
+      .filter((item) => item._id && Types.ObjectId.isValid(item._id))
+      .map((item) => new Types.ObjectId(item._id));
+
+    const subjects = await this.classModel.db
+      .collection('subjects')
+      .find({ _id: { $in: subjectIds } })
+      .toArray();
 
     const academicStats = [];
     for (const item of marksBySubject) {
-      const subject = await this.classModel.db
-        .collection('subjects')
-        .findOne({ _id: item._id });
+      const subject = subjects.find(
+        (s) => s._id.toString() === item._id?.toString(),
+      );
       if (subject) {
         academicStats.push({
           subject: subject.name,
@@ -447,21 +460,40 @@ export class AnalyticsService {
       })
       .toArray();
 
-    const scheduleToday = [];
-    for (const t of timetablesToday) {
-      const cls = await this.classModel.findById(t.class).exec();
-      const subject = await this.classModel.db
+    const scheduleClassIds = timetablesToday
+      .map((t) => t.class)
+      .filter(Boolean);
+    const scheduleSubjectIds = timetablesToday
+      .map((t) => t.subject)
+      .filter(Boolean);
+
+    const [scheduleClasses, scheduleSubjects] = await Promise.all([
+      this.classModel
+        .find({ _id: { $in: scheduleClassIds } })
+        .lean()
+        .exec(),
+      this.classModel.db
         .collection('subjects')
-        .findOne({ _id: t.subject });
-      scheduleToday.push({
+        .find({ _id: { $in: scheduleSubjectIds } })
+        .toArray(),
+    ]);
+
+    const scheduleToday = timetablesToday.map((t) => {
+      const cls = scheduleClasses.find(
+        (c) => c._id.toString() === t.class?.toString(),
+      );
+      const subject = scheduleSubjects.find(
+        (s) => s._id.toString() === t.subject?.toString(),
+      );
+      return {
         id: t._id.toString(),
         subject: subject ? subject.name : 'Unknown Subject',
         gradeClass: cls ? cls.name : 'N/A',
         time: `${t.startTime} – ${t.endTime}`,
         location: t.room || 'Lab 2',
         status: 'upcoming',
-      });
-    }
+      };
+    });
 
     if (scheduleToday.length === 0) {
       scheduleToday.push(
@@ -493,22 +525,38 @@ export class AnalyticsService {
       .populate('class', 'name')
       .exec();
 
-    const assignmentList = [];
-    for (const a of assignments) {
-      const submissions = await this.submissionModel
-        .find({ assignment: a._id })
-        .exec();
-      const submittedCount = submissions.length;
-      const totalCount = await this.studentModel.countDocuments({
-        class: a.class,
-      });
-      assignmentList.push({
+    const assignmentIds = assignments.map((a) => a._id);
+    const allSubmissions = await this.submissionModel
+      .find({ assignment: { $in: assignmentIds } })
+      .lean()
+      .exec();
+
+    const classIdsForAssignments = assignments
+      .map((a) => a.class)
+      .filter(Boolean);
+    const studentCounts = await this.studentModel.aggregate([
+      { $match: { class: { $in: classIdsForAssignments } } },
+      { $group: { _id: '$class', count: { $sum: 1 } } },
+    ]);
+
+    const assignmentList = assignments.map((a) => {
+      const submissions = allSubmissions.filter(
+        (s) => s.assignment.toString() === a._id.toString(),
+      );
+      const studentCountObj = studentCounts.find(
+        (sc) =>
+          sc._id.toString() === (a.class as any)?._id?.toString() ||
+          sc._id.toString() === a.class?.toString(),
+      );
+      const totalCount = studentCountObj ? studentCountObj.count : 30;
+
+      return {
         id: a._id.toString(),
         title: a.title,
         subject: (a.subject as any).name,
         class: (a.class as any).name,
-        submitted: submittedCount,
-        total: totalCount || 30,
+        submitted: submissions.length,
+        total: totalCount,
         status: a.dueDate > new Date() ? 'active' : 'evaluating',
         daysLeft: Math.max(
           0,
@@ -516,8 +564,8 @@ export class AnalyticsService {
             (a.dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
           ),
         ),
-      });
-    }
+      };
+    });
 
     if (assignmentList.length === 0) {
       assignmentList.push({
@@ -805,13 +853,32 @@ export class AnalyticsService {
       })
       .toArray();
 
-    const scheduleToday = [];
-    for (const t of timetablesToday) {
-      const subject = await this.classModel.db
+    const scheduleSubjectIds = timetablesToday
+      .map((t) => t.subject)
+      .filter(Boolean);
+    const scheduleTeacherIds = timetablesToday
+      .map((t) => t.teacher)
+      .filter(Boolean);
+
+    const [scheduleSubjects, scheduleTeachers] = await Promise.all([
+      this.classModel.db
         .collection('subjects')
-        .findOne({ _id: t.subject });
-      const teacher = await this.userModel.findById(t.teacher).exec();
-      scheduleToday.push({
+        .find({ _id: { $in: scheduleSubjectIds } })
+        .toArray(),
+      this.userModel
+        .find({ _id: { $in: scheduleTeacherIds } })
+        .lean()
+        .exec(),
+    ]);
+
+    const scheduleToday = timetablesToday.map((t) => {
+      const subject = scheduleSubjects.find(
+        (s) => s._id.toString() === t.subject?.toString(),
+      );
+      const teacher = scheduleTeachers.find(
+        (u) => u._id.toString() === t.teacher?.toString(),
+      );
+      return {
         id: t._id.toString(),
         subject: subject ? subject.name : 'Class',
         teacher: teacher
@@ -821,8 +888,8 @@ export class AnalyticsService {
         room: t.room || 'Room 301',
         status: 'upcoming',
         color: '#6366f1',
-      });
-    }
+      };
+    });
 
     if (scheduleToday.length === 0) {
       scheduleToday.push(

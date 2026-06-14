@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateProfileDto, UpdateUserRoleDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -16,6 +16,12 @@ export class UsersController {
   @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN)
   findAll() {
     return this.usersService.findAll();
+  }
+
+  @Get('suggest')
+  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN)
+  suggest(@Query('q') q?: string) {
+    return this.usersService.suggest(q);
   }
 
   @Get('profile')

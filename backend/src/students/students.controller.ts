@@ -39,6 +39,15 @@ export class StudentsController {
     return this.studentsService.findAll(query);
   }
 
+  @Get('suggest')
+  @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN, RoleEnum.TEACHER)
+  @ApiOperation({
+    summary: 'Get student suggestions for autocomplete dropdowns',
+  })
+  suggest(@Query('q') q: string) {
+    return this.studentsService.suggest(q);
+  }
+
   @Get(':id')
   @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN, RoleEnum.TEACHER)
   @ApiOperation({ summary: 'Get student by id' })
