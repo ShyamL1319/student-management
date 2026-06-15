@@ -1,5 +1,8 @@
 import { Schema, Types } from 'mongoose';
 import { TenantContext } from '../../tenant/tenant.context';
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('Database');
 
 export interface TenantPluginOptions {
   bypass?: boolean;
@@ -27,7 +30,6 @@ export function tenantPlugin(schema: Schema, options?: TenantPluginOptions) {
     'School',
     'Role',
     'Permission',
-    'AuditLog',
     'Counter',
   ];
 
@@ -53,10 +55,47 @@ export function tenantPlugin(schema: Schema, options?: TenantPluginOptions) {
     }
   };
 
-  schema.pre('find', applyTenantFilter);
-  schema.pre('findOne', applyTenantFilter);
-  schema.pre('countDocuments', applyTenantFilter);
+  const recordStartTime = function (this: any) {
+    this._startTime = Date.now();
+  };
+
+  const logSlowQuery = function (this: any) {
+    if (this._startTime) {
+      const durationMs = Date.now() - this._startTime;
+      if (durationMs > 100) {
+        const modelName = this.model?.modelName || 'unknown';
+        const filter = this.getFilter ? this.getFilter() : {};
+        logger.warn({
+          message: `Slow query detected on collection '${modelName}' - Duration: ${durationMs}ms`,
+          collection: modelName,
+          durationMs,
+          filter: JSON.stringify(filter),
+          op: this.op || 'unknown',
+        });
+      }
+    }
+  };
+
+  schema.pre('find', function(this: any) {
+    recordStartTime.call(this);
+    applyTenantFilter.call(this);
+  });
+  schema.post('find', function(this: any) { logSlowQuery.call(this); });
+
+  schema.pre('findOne', function(this: any) {
+    recordStartTime.call(this);
+    applyTenantFilter.call(this);
+  });
+  schema.post('findOne', function(this: any) { logSlowQuery.call(this); });
+
+  schema.pre('countDocuments', function(this: any) {
+    recordStartTime.call(this);
+    applyTenantFilter.call(this);
+  });
+  schema.post('countDocuments', function(this: any) { logSlowQuery.call(this); });
+
   schema.pre('estimatedDocumentCount', function (this: any) {
+    recordStartTime.call(this);
     const queryOptions = this.getOptions();
     if (queryOptions && queryOptions.bypassTenant) {
       return;
@@ -71,13 +110,35 @@ export function tenantPlugin(schema: Schema, options?: TenantPluginOptions) {
       this.where({ schoolId: new Types.ObjectId(schoolId) });
     }
   });
-  schema.pre('updateOne', applyTenantFilter);
-  schema.pre('updateMany', applyTenantFilter);
-  schema.pre('deleteOne', applyTenantFilter);
-  schema.pre('deleteMany', applyTenantFilter);
+  schema.post('estimatedDocumentCount', function(this: any) { logSlowQuery.call(this); });
+
+  schema.pre('updateOne', function(this: any) {
+    recordStartTime.call(this);
+    applyTenantFilter.call(this);
+  });
+  schema.post('updateOne', function(this: any) { logSlowQuery.call(this); });
+
+  schema.pre('updateMany', function(this: any) {
+    recordStartTime.call(this);
+    applyTenantFilter.call(this);
+  });
+  schema.post('updateMany', function(this: any) { logSlowQuery.call(this); });
+
+  schema.pre('deleteOne', function(this: any) {
+    recordStartTime.call(this);
+    applyTenantFilter.call(this);
+  });
+  schema.post('deleteOne', function(this: any) { logSlowQuery.call(this); });
+
+  schema.pre('deleteMany', function(this: any) {
+    recordStartTime.call(this);
+    applyTenantFilter.call(this);
+  });
+  schema.post('deleteMany', function(this: any) { logSlowQuery.call(this); });
 
   // 3. Intercept Aggregations
   schema.pre('aggregate', function (this: any) {
+    recordStartTime.call(this);
     const pipelineOptions = this.options || {};
     if (pipelineOptions.bypassTenant) {
       return;
@@ -93,6 +154,20 @@ export function tenantPlugin(schema: Schema, options?: TenantPluginOptions) {
       this.pipeline().unshift({
         $match: { schoolId: new Types.ObjectId(schoolId) },
       });
+    }
+  });
+  schema.post('aggregate', function (this: any) {
+    if (this._startTime) {
+      const durationMs = Date.now() - this._startTime;
+      if (durationMs > 100) {
+        const modelName = this._model?.modelName || 'unknown';
+        logger.warn({
+          message: `Slow query detected on collection '${modelName}' (Aggregate) - Duration: ${durationMs}ms`,
+          collection: modelName,
+          durationMs,
+          op: 'aggregate',
+        });
+      }
     }
   });
 

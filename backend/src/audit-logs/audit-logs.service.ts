@@ -18,6 +18,7 @@ export class AuditLogsService {
 
   async findAll(
     query: QueryAuditLogDto,
+    isSuperAdmin = false,
   ): Promise<{ data: AuditLog[]; total: number }> {
     const filter: any = {};
 
@@ -50,12 +51,16 @@ export class AuditLogsService {
     const [data, total] = await Promise.all([
       this.auditLogModel
         .find(filter)
+        .setOptions({ bypassTenant: isSuperAdmin })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate('performedBy', 'firstName lastName email role')
         .exec(),
-      this.auditLogModel.countDocuments(filter).exec(),
+      this.auditLogModel
+        .countDocuments(filter)
+        .setOptions({ bypassTenant: isSuperAdmin })
+        .exec(),
     ]);
 
     return { data, total };

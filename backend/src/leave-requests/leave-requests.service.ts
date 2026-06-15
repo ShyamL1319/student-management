@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -32,6 +33,8 @@ import {
 
 @Injectable()
 export class LeaveRequestsService {
+  private readonly logger = new Logger(LeaveRequestsService.name);
+
   constructor(
     @InjectModel(LeaveRequest.name)
     private leaveRequestModel: Model<LeaveRequestDocument>,
@@ -686,7 +689,7 @@ export class LeaveRequestsService {
         });
       }
     } catch (error) {
-      console.error('Failed to notify leave request approvers:', error);
+      this.logger.error('Failed to notify leave request approvers:', error);
     }
   }
 }

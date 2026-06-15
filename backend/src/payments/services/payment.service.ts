@@ -64,7 +64,7 @@ export class PaymentService implements OnModuleInit {
     private readonly queueProcessor: QueueJobProcessor,
     private readonly emailService: EmailService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   onModuleInit() {
     // Inject paymentService instance into queueProcessor to break circular dependencies
@@ -217,6 +217,8 @@ export class PaymentService implements OnModuleInit {
         schoolId: payment.schoolId?.toString() || '',
         tenantId: '',
         subdomain: '',
+        requestId: '',
+        correlationId: ''
       },
       async () => {
         payment.status = 'SUCCESS';
@@ -311,6 +313,8 @@ export class PaymentService implements OnModuleInit {
         schoolId: payment.schoolId?.toString() || '',
         tenantId: '',
         subdomain: '',
+        requestId: '',
+        correlationId: ''
       },
       async () => {
         payment.status = 'FAILED';
@@ -343,6 +347,8 @@ export class PaymentService implements OnModuleInit {
         schoolId: payment.schoolId?.toString() || '',
         tenantId: '',
         subdomain: '',
+        requestId: '',
+        correlationId: ''
       },
       async () => {
         const refundAmount = refundAmountMinor / 100;

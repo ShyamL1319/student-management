@@ -30,11 +30,7 @@ export class UsersService {
         { email: regex },
       ];
     }
-    return this.userModel
-      .find(filter)
-      .populate('role')
-      .limit(50)
-      .exec();
+    return this.userModel.find(filter).populate('role').limit(50).exec();
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {

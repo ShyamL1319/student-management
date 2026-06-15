@@ -49,6 +49,8 @@ export class WebhookController {
         signature,
         body: rawBody.toString('utf8'),
       },
+      requestId: (req as any).requestId,
+      correlationId: (req as any).correlationId,
       status: 'PENDING',
     });
 
@@ -82,6 +84,8 @@ export class WebhookController {
         signature,
         body: rawBody.toString('utf8'),
       },
+      requestId: (req as any).requestId,
+      correlationId: (req as any).correlationId,
       status: 'PENDING',
     });
 
@@ -115,6 +119,8 @@ export class WebhookController {
         signature,
         body: rawBody.toString('utf8'),
       },
+      requestId: (req as any).requestId,
+      correlationId: (req as any).correlationId,
       status: 'PENDING',
     });
 

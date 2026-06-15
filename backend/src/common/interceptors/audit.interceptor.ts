@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   Injectable,
   NestInterceptor,
+  Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -15,6 +16,8 @@ import {
 
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(AuditInterceptor.name);
+
   constructor(private readonly auditLogsService: AuditLogsService) {}
 
   private redactSecrets(obj: any): any {
@@ -97,7 +100,9 @@ export class AuditInterceptor implements NestInterceptor {
                 userAgent,
                 status: AuditStatus.SUCCESS,
               })
-              .catch((err) => console.error('Failed to create audit log', err));
+              .catch((err) =>
+                this.logger.error('Failed to create audit log', err),
+              );
           }
         },
         error: (error: any) => {
@@ -120,7 +125,7 @@ export class AuditInterceptor implements NestInterceptor {
                 status: AuditStatus.FAILURE,
               })
               .catch((err) =>
-                console.error('Failed to create audit log on error', err),
+                this.logger.error('Failed to create audit log on error', err),
               );
           }
         },

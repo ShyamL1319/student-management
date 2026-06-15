@@ -1,4 +1,23 @@
 import axios from 'axios';
+import * as Sentry from '@sentry/react';
+
+const generateUUID = () => {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
+// Retrieve or initialize correlation ID for session tracing
+let sessionCorrelationId = localStorage.getItem('sessionCorrelationId');
+if (!sessionCorrelationId) {
+  sessionCorrelationId = generateUUID();
+  localStorage.setItem('sessionCorrelationId', sessionCorrelationId);
+}
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://api.psei.school.com:3000',
@@ -10,12 +29,51 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
-  // Inject browser hostname as X-Tenant-ID header dynamically
+  // Inject headers for multi-tenancy and distributed tracing
   if (config.headers) {
     config.headers['X-Tenant-ID'] = window.location.hostname;
+    config.headers['X-Correlation-ID'] = sessionCorrelationId;
+    config.headers['X-Request-ID'] = generateUUID();
   }
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const requestId = error.response?.headers?.['x-request-id'] || error.response?.headers?.['X-Request-ID'];
+
+    console.error('[API Error]', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      message: error.response?.data?.message,
+      requestId,
+    });
+
+    const status = error.response?.status;
+    if (!status || status >= 500) {
+      Sentry.captureException(error, {
+        tags: {
+          requestId,
+          httpStatus: status || 'network_error',
+          apiPath: error.config?.url,
+          apiMethod: error.config?.method,
+        },
+        extra: {
+          errorMessage: error.response?.data?.message || error.message,
+        },
+      });
+    }
+
+    if (error.response?.status === 401) {
+      localStorage.removeItem('accessToken');
+      window.location.href = '/login';
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default api;
