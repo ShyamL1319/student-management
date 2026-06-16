@@ -29,6 +29,11 @@ services:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
       - ./secrets:/secrets
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
 
   frontend:
     build:

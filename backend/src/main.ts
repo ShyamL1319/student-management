@@ -1,3 +1,6 @@
+import './tracing'; // Must be imported first
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -5,8 +8,21 @@ import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import * as fs from 'fs';
 import * as path from 'path';
+import { AppLoggerService } from './common/logger/app-logger.service';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      nodeProfilingIntegration(),
+    ],
+    // Performance Monitoring
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    // Set sampling rate for profiling
+    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  });
+
   let keyPath = '/secrets/key.pem';
   let certPath = '/secrets/cert.pem';
 
@@ -23,8 +39,10 @@ async function bootstrap() {
         }
       : undefined;
 
+  const appLogger = new AppLoggerService();
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
+    logger: appLogger,
     ...(httpsOptions ? { httpsOptions } : {}),
   });
 
@@ -95,6 +113,7 @@ async function bootstrap() {
     credentials: true,
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
     .setTitle('School Management System API')
@@ -107,7 +126,29 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger is running on: http://localhost:${port}/api/docs`);
+  appLogger.log(
+    `Application is running on: http://localhost:${port}`,
+    'Bootstrap',
+  );
+  appLogger.log(
+    `Swagger is running on: http://localhost:${port}/api/docs`,
+    'Bootstrap',
+  );
 }
-bootstrap();
+bootstrap().catch((error) => {
+  const logger = new AppLoggerService();
+  const errorMsg = error instanceof Error ? `${error.message}\n${error.stack}` : String(error);
+  logger.error('CRITICAL: Application failed to bootstrap', errorMsg, 'Bootstrap');
+  
+  // Write container termination diagnostic log
+  try {
+    const termLogPath = process.env.TERMINATION_LOG_PATH || '/dev/termination-log';
+    fs.writeFileSync(termLogPath, `CRITICAL: Application failed to bootstrap. Reason: ${errorMsg}\n`);
+  } catch (writeErr) {
+    // Gracefully ignore write errors if running in non-containerized/local development
+  }
+
+  Sentry.captureException(error, { tags: { phase: 'bootstrap' } });
+  // Flush logs and let Sentry send requests before exiting
+  setTimeout(() => process.exit(1), 1000);
+});

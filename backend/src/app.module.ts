@@ -38,6 +38,8 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { ReportsModule } from './reports/reports.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 import { TenantModule } from './tenant/tenant.module';
 import { TenantGuard } from './tenant/tenant.guard';
@@ -45,6 +47,8 @@ import { TenantMiddleware } from './tenant/tenant.middleware';
 import { TenantInterceptor } from './tenant/tenant.interceptor';
 import { tenantPlugin } from './common/database/tenant.plugin';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 @Module({
   imports: [
@@ -109,6 +113,8 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     ReportsModule,
     AuditLogsModule,
     DashboardModule,
+    HealthModule,
+    MetricsModule,
     LeaveRequestsModule,
     AdmissionsModule,
     AssignmentsModule,
@@ -117,6 +123,10 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,
@@ -133,6 +143,6 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TenantMiddleware).forRoutes('*');
+    consumer.apply(RequestIdMiddleware, TenantMiddleware).forRoutes('*');
   }
 }

@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react';
 import { Layout } from './components/common/Layout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TenantProvider } from './contexts/TenantContext';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Eager imports for authentication
 import { LoginPage } from './features/auth/pages/LoginPage';
@@ -326,13 +327,15 @@ function AppRoutes() {
 
 function App() {
   return (
-    <TenantProvider>
-      <AuthProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
-      </AuthProvider>
-    </TenantProvider>
+    <ErrorBoundary>
+      <TenantProvider>
+        <AuthProvider>
+          <Router>
+            <AppRoutes />
+          </Router>
+        </AuthProvider>
+      </TenantProvider>
+    </ErrorBoundary>
   );
 }
 

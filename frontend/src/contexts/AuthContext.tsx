@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authApi } from '../features/auth/api/auth.api';
+import * as Sentry from '@sentry/react';
 
 interface User {
   [key: string]: unknown;
@@ -25,6 +26,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('accessToken'));
   const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      Sentry.setUser({
+        id: String(user._id || user.id || ''),
+        role: String(user.role || ''),
+        email: String(user.email || ''),
+      });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [user]);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');

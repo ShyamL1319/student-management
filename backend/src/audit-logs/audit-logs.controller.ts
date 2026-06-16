@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { AuditLogsService } from './audit-logs.service';
 import { QueryAuditLogDto } from './dto/query-audit-log.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -13,7 +13,8 @@ export class AuditLogsController {
 
   @Get()
   @Roles(RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN)
-  async findAll(@Query() query: QueryAuditLogDto) {
-    return this.auditLogsService.findAll(query);
+  async findAll(@Query() query: QueryAuditLogDto, @Req() req: any) {
+    const isSuperAdmin = req.user?.role?.name === RoleEnum.SUPER_ADMIN;
+    return this.auditLogsService.findAll(query, isSuperAdmin);
   }
 }

@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { TenantContext } from './tenant.context';
@@ -11,6 +12,8 @@ import { RoleEnum } from '../common/enums/role.enum';
 
 @Injectable()
 export class TenantGuard implements CanActivate {
+  private readonly logger = new Logger(TenantGuard.name);
+
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -31,6 +34,30 @@ export class TenantGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
+    // Resolve userId for telemetry tracking
+    let resolvedUserId = user?._id?.toString() || user?.id?.toString();
+    if (!resolvedUserId) {
+      const authHeader = request?.headers?.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const token = authHeader.split(' ')[1];
+          const payloadPart = token.split('.')[1];
+          if (payloadPart) {
+            const payload = JSON.parse(
+              Buffer.from(payloadPart, 'base64').toString(),
+            );
+            resolvedUserId = payload.sub || payload.id || payload._id;
+          }
+        } catch (e) {
+          // Ignore token parsing failure, authentication guards handle verification
+        }
+      }
+    }
+
+    if (resolvedUserId) {
+      TenantContext.setUserId(resolvedUserId);
+    }
+
     let userSchoolId =
       user?.schoolId?.toString() ||
       user?.school?.toString() ||
@@ -39,7 +66,7 @@ export class TenantGuard implements CanActivate {
 
     // If request.user is not populated yet (global guard execution order), extract from JWT
     if (!userSchoolId) {
-      const authHeader = request.headers.authorization;
+      const authHeader = request?.headers?.authorization;
       if (authHeader && authHeader.startsWith('Bearer ')) {
         try {
           const token = authHeader.split(' ')[1];
@@ -53,6 +80,7 @@ export class TenantGuard implements CanActivate {
             isSuperAdmin = roleName === RoleEnum.SUPER_ADMIN;
           }
         } catch (e) {
+          this.logger.warn('Failed to decode JWT payload in TenantGuard', e);
           // Ignore decoding errors, let JwtAuthGuard handle token validation
         }
       }
@@ -65,7 +93,7 @@ export class TenantGuard implements CanActivate {
       }
 
       if (userSchoolId !== schoolId) {
-        console.warn(
+        this.logger.error(
           `SECURITY ALERT: User attempted cross-tenant access. User School: ${userSchoolId}, Target School: ${schoolId}`,
         );
         throw new ForbiddenException(

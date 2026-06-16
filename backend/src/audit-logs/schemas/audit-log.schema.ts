@@ -28,6 +28,9 @@ export class AuditLog {
   @Prop({ type: String, required: false })
   entityId?: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'School', required: false, index: true })
+  schoolId?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: false })
   performedBy?: Types.ObjectId;
 

@@ -32,6 +32,12 @@ export class QueueJob {
 
   @Prop({ default: null })
   processAfter: Date;
+
+  @Prop({ default: null })
+  requestId?: string;
+
+  @Prop({ default: null })
+  correlationId?: string;
 }
 
 export const QueueJobSchema = SchemaFactory.createForClass(QueueJob);

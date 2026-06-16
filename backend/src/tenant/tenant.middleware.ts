@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Tenant, TenantDocument } from './schemas/tenant.schema';
 import { School, SchoolDocument } from '../schools/schemas/school.schema';
 import { TenantContext } from './tenant.context';
+import { randomUUID } from 'crypto';
 
 interface CachedTenantConfig {
   tenantId: string;
@@ -111,16 +112,28 @@ export class TenantMiddleware implements NestMiddleware {
       if (!cachedConfig.isActive) {
         throw new BadRequestException('Tenant account is inactive');
       }
-      return TenantContext.run(
-        {
-          tenantId: cachedConfig.tenantId,
-          schoolId: cachedConfig.schoolId,
-          subdomain: cachedConfig.subdomain,
-        },
-        () => {
-          next();
-        },
-      );
+      const store = TenantContext.get();
+      if (store) {
+        TenantContext.setTenantDetails(
+          cachedConfig.tenantId,
+          cachedConfig.schoolId,
+          cachedConfig.subdomain,
+        );
+        return next();
+      } else {
+        return TenantContext.run(
+          {
+            tenantId: cachedConfig.tenantId,
+            schoolId: cachedConfig.schoolId,
+            subdomain: cachedConfig.subdomain,
+            requestId: (req as any).requestId || randomUUID(),
+            correlationId: (req as any).correlationId || (req as any).requestId || randomUUID(),
+          },
+          () => {
+            next();
+          },
+        );
+      }
     }
 
     try {
@@ -189,16 +202,28 @@ export class TenantMiddleware implements NestMiddleware {
 
       TENANT_CACHE.set(cacheKey, config);
 
-      TenantContext.run(
-        {
-          tenantId: config.tenantId,
-          schoolId: config.schoolId,
-          subdomain: config.subdomain,
-        },
-        () => {
-          next();
-        },
-      );
+      const store = TenantContext.get();
+      if (store) {
+        TenantContext.setTenantDetails(
+          config.tenantId,
+          config.schoolId,
+          config.subdomain,
+        );
+        next();
+      } else {
+        TenantContext.run(
+          {
+            tenantId: config.tenantId,
+            schoolId: config.schoolId,
+            subdomain: config.subdomain,
+            requestId: (req as any).requestId || randomUUID(),
+            correlationId: (req as any).correlationId || (req as any).requestId || randomUUID(),
+          },
+          () => {
+            next();
+          },
+        );
+      }
     } catch (error) {
       next(error);
     }

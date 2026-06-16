@@ -10,6 +10,8 @@ import { QueueJob, QueueJobDocument } from '../schemas/queue-job.schema';
 import { StripeService } from './stripe.service';
 import { RazorpayService } from './razorpay.service';
 import { PhonepeService } from './phonepe.service';
+import { TenantContext } from '../../tenant/tenant.context';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class QueueJobProcessor implements OnModuleInit, OnModuleDestroy {
@@ -87,33 +89,43 @@ export class QueueJobProcessor implements OnModuleInit, OnModuleDestroy {
     job.attempts += 1;
     await job.save();
 
-    try {
-      switch (job.jobType) {
-        case 'PROCESS_WEBHOOK':
-          await this.handleWebhookJob(job.payload);
-          break;
-        case 'RETRY_PAYMENT_ALERT':
-          await this.handleRetryAlertJob(job.payload);
-          break;
-        default:
-          throw new Error(`Unsupported job type: ${job.jobType}`);
+    const contextStore = {
+      requestId: job.requestId || randomUUID(),
+      correlationId: job.correlationId || job.requestId || randomUUID(),
+      tenantId: job.payload?.tenantId || job.payload?.schoolId,
+      schoolId: job.payload?.schoolId,
+      subdomain: job.payload?.subdomain,
+    };
+
+    return TenantContext.run(contextStore, async () => {
+      try {
+        switch (job.jobType) {
+          case 'PROCESS_WEBHOOK':
+            await this.handleWebhookJob(job.payload);
+            break;
+          case 'RETRY_PAYMENT_ALERT':
+            await this.handleRetryAlertJob(job.payload);
+            break;
+          default:
+            throw new Error(`Unsupported job type: ${job.jobType}`);
+        }
+
+        job.status = 'COMPLETED';
+        await job.save();
+        this.logger.log(`Job ID: ${job._id.toString()} completed successfully.`);
+      } catch (error) {
+        this.logger.error(
+          `Job ID: ${job._id.toString()} failed. Error: ${error.message}`,
+        );
+        job.status = 'FAILED';
+        job.lastError = error.message;
+
+        // Exponential backoff: retry in 2^attempts minutes
+        const backoffMinutes = Math.pow(2, job.attempts);
+        job.processAfter = new Date(Date.now() + backoffMinutes * 60 * 1000);
+        await job.save();
       }
-
-      job.status = 'COMPLETED';
-      await job.save();
-      this.logger.log(`Job ID: ${job._id.toString()} completed successfully.`);
-    } catch (error) {
-      this.logger.error(
-        `Job ID: ${job._id.toString()} failed. Error: ${error.message}`,
-      );
-      job.status = 'FAILED';
-      job.lastError = error.message;
-
-      // Exponential backoff: retry in 2^attempts minutes
-      const backoffMinutes = Math.pow(2, job.attempts);
-      job.processAfter = new Date(Date.now() + backoffMinutes * 60 * 1000);
-      await job.save();
-    }
+    });
   }
 
   /**
