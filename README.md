@@ -99,3 +99,39 @@ The RoleManagementPage serves as a prime example of these architectural and UX p
 The workflow is highly defensive and user-centric. Client-side filtering ensures instant search results for users and roles without incurring backend latency. When an admin assigns a role, the system opens a focused dialog, highlights the current role natively, and disables submission buttons during the API call to prevent duplicate actions. Furthermore, the UI actively protects business logic—for instance, explicitly blocking the deletion of core system roles (like SUPER_ADMIN or STUDENT) to prevent accidental lockouts, while allowing the creation of custom roles with automatic formatting.
 
 In summary, the School Management System combines a rigidly structured NestJS backend with a highly responsive, aesthetically refined React frontend, resulting in a secure and maintainable platform.
+
+---
+
+## 4. AI Development & Custom Skills
+
+This repository includes custom agentic skills configured under `.agents/skills/` to streamline development workflows.
+
+### 4.1. Commit Description Generator (`generate-commit-description`)
+An automated skill that inspects git staged changes and generates clean, standard Conventional Commits messages.
+
+- **Location:** [.agents/skills/generate-commit-description/SKILL.md](file:///.agents/skills/generate-commit-description/SKILL.md)
+- **Convention:** Uses the Conventional Commits specification (e.g. `feat: ...`, `fix: ...`, `refactor: ...`).
+- **How to Trigger:** Ask the AI assistant to "generate a commit description" or "write a commit message for my staged changes". The agent will inspect the staged changes using `git diff --cached` and draft a professional message.
+
+### 4.2. Application Design & Architecture Guide (`update-design-architecture`)
+A reference guide detailing standards for NestJS modules, the Repository Pattern, strict DTO validation, MUI Soft UI theme requirements, and general styling/interaction conventions.
+
+- **Location:** [.agents/skills/update-design-architecture/SKILL.md](file:///.agents/skills/update-design-architecture/SKILL.md)
+- **Convention:** SOLID Principles, DRY, Clean Architecture, Soft UI theme design.
+- **How to Trigger:** Ask the AI assistant to "apply application design guidelines", "update architecture", or "add/modify features using application conventions".
+
+### 4.3. Prompt Optimization Skill (`optimize-prompt`)
+Converts informal, vague, or short human language requests into structured, professional developer prompts suitable for AI model execution.
+
+- **Location:** [.agents/skills/optimize-prompt/SKILL.md](file:///.agents/skills/optimize-prompt/SKILL.md)
+- **How to Trigger:** Ask the AI assistant to "optimize my prompt", "make this instruction professional", or "convert my human language to prompt".
+
+### 4.4. Development Rules (`.agents/rules/`)
+Modular rules split by layer to define strict standards and reduce token usage by allowing the agent to reference specific boundaries.
+- **Backend Rules:** [.agents/rules/backend-rules.md](file:///.agents/rules/backend-rules.md)
+- **Frontend Rules:** [.agents/rules/frontend-rules.md](file:///.agents/rules/frontend-rules.md)
+
+### 4.5. Prompt Workflows (`.agents/workflows/`)
+On-demand execution templates that can be triggered for specific steps, promoting progressive disclosure and minimal token usage.
+- **Feature Development Workflow:** [.agents/workflows/develop-feature.md](file:///.agents/workflows/develop-feature.md) - Guides incremental, step-by-step feature additions, mandating HLD & LLD Mermaid visualizations ("Before" & "After") in the design phase.
+- **Test Generation Workflow:** [.agents/workflows/generate-tests.md](file:///.agents/workflows/generate-tests.md) - Standardizes testing practices across the application.
