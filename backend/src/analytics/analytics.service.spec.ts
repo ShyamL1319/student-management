@@ -33,18 +33,16 @@ describe('AnalyticsService', () => {
       aggregate: jest.fn(),
       findOne: jest.fn().mockReturnThis(),
       find: jest.fn().mockReturnThis(),
+      findById: jest.fn().mockReturnThis(),
       populate: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
       sort: jest.fn().mockReturnThis(),
       select: jest.fn().mockReturnThis(),
       lean: jest.fn().mockReturnThis(),
       exec: jest.fn().mockResolvedValue([]),
+      toArray: jest.fn().mockResolvedValue([]),
       db: {
-        collection: jest.fn().mockReturnValue({
-          find: jest.fn().mockReturnThis(),
-          toArray: jest.fn().mockResolvedValue([]),
-          findOne: jest.fn().mockResolvedValue(null),
-        }),
+        collection: jest.fn().mockImplementation(() => mockModel),
       },
     };
 
@@ -189,20 +187,30 @@ describe('AnalyticsService', () => {
       const studentId = new Types.ObjectId();
       const schoolId = new Types.ObjectId();
 
-      mockModel.findOne.mockReturnValue(mockModel);
+      mockModel.findById.mockReturnValue(mockModel);
       mockModel.find.mockReturnValue(mockModel);
 
       mockModel.exec
         .mockResolvedValueOnce({
           _id: studentId,
           schoolId,
-          class: { _id: new Types.ObjectId() },
-        }) // student
-        .mockResolvedValueOnce(new Array(10)) // myMarks
+          class: { _id: new Types.ObjectId(), name: 'XII-A' },
+          section: { _id: new Types.ObjectId(), name: 'Science' },
+          firstName: 'Priya',
+          lastName: 'Sharma',
+          admissionNumber: 'STU-2024-089',
+          rollNumber: '089',
+        }) // student profile
+        .mockResolvedValueOnce(new Array(10).fill({ marksObtained: 85, maxMarks: 100, subjectId: '1', createdAt: new Date() })) // myMarks
         .mockResolvedValueOnce([]) // exams
         .mockResolvedValueOnce([]) // invoices
-        .mockResolvedValueOnce([]) // assignments
-        .mockResolvedValueOnce([]); // submissions
+        .mockResolvedValueOnce([]) // studentAssignments
+        .mockResolvedValueOnce([]) // submissions
+        .mockResolvedValueOnce([]) // messages
+        .mockResolvedValueOnce([]) // classStudents (calculateClassRank)
+        .mockResolvedValueOnce([]); // allMarks (calculateClassRank)
+
+      mockModel.findOne.mockResolvedValueOnce({ name: '2024-2025' }); // activeYear
 
       mockModel.countDocuments
         .mockResolvedValueOnce(200) // total attendance
@@ -214,6 +222,8 @@ describe('AnalyticsService', () => {
 
       expect(result.widgets.attendancePercentage).toBe(90);
       expect(result.widgets.totalMarksRecords).toBe(10);
+      expect(result.student.name).toBe('Priya Sharma');
+      expect(result.student.class).toBe('XII-A-Science');
     });
   });
 

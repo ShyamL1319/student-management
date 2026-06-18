@@ -753,10 +753,9 @@ export class AnalyticsService {
 
   async getStudentDashboard(userId: string) {
     const student = await this.studentModel
-      .findOne({
-        user: new Types.ObjectId(userId),
-      })
+      .findById(userId)
       .populate('class')
+      .populate('section')
       .exec();
     if (!student) throw new Error('Student not found');
     const schoolId = student.schoolId;
@@ -769,7 +768,7 @@ export class AnalyticsService {
       status: 'PRESENT',
     } as any);
     const attendancePercentage =
-      attendanceRecords > 0 ? (presentRecords / attendanceRecords) * 100 : 92;
+      attendanceRecords > 0 ? (presentRecords / attendanceRecords) * 100 : 0;
 
     const myMarks = await this.markModel
       .find({
@@ -783,11 +782,12 @@ export class AnalyticsService {
       0,
     );
     const totalMax = myMarks.reduce((sum, m) => sum + (m.maxMarks || 0), 0);
-    const gpaPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 85;
-    let gpa = 3.5;
+    const gpaPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+    let gpa = 0;
     if (gpaPercentage >= 90) gpa = 4.0;
     else if (gpaPercentage >= 80) gpa = 3.8;
     else if (gpaPercentage >= 70) gpa = 3.2;
+    else if (gpaPercentage >= 40) gpa = 2.0;
 
     // Upcoming exams
     const exams = await this.examModel
@@ -803,7 +803,10 @@ export class AnalyticsService {
       return {
         id: e._id.toString(),
         subject: e.name,
-        date: examDate.toLocaleDateString(),
+        date: examDate.toLocaleDateString('en-IN', {
+          month: 'short',
+          day: 'numeric',
+        }),
         time: (e as any).schedule?.[0]?.startTime || '10:00 AM',
         venue: 'Hall A',
         countdown: Math.max(
@@ -812,27 +815,6 @@ export class AnalyticsService {
         ),
       };
     });
-
-    if (upcomingExams.length === 0) {
-      upcomingExams.push(
-        {
-          id: '1',
-          subject: 'Physics',
-          date: 'Jun 20',
-          time: '10:00 AM',
-          venue: 'Hall A',
-          countdown: 14,
-        },
-        {
-          id: '2',
-          subject: 'Mathematics',
-          date: 'Jun 22',
-          time: '09:00 AM',
-          venue: 'Hall B',
-          countdown: 16,
-        },
-      );
-    }
 
     // Schedule Today
     const daysOfWeek = [
@@ -886,33 +868,10 @@ export class AnalyticsService {
           : 'Instructor',
         time: `${t.startTime} – ${t.endTime}`,
         room: t.room || 'Room 301',
-        status: 'upcoming',
+        status: this.getClassStatus(t.startTime, t.endTime),
         color: '#6366f1',
       };
     });
-
-    if (scheduleToday.length === 0) {
-      scheduleToday.push(
-        {
-          id: '1',
-          subject: 'Physics',
-          teacher: 'Dr. A. Kumar',
-          time: '08:00 – 09:00',
-          room: 'Room 301',
-          status: 'completed',
-          color: '#6366f1',
-        },
-        {
-          id: '2',
-          subject: 'Mathematics',
-          teacher: 'Prof. R. Gupta',
-          time: '09:15 – 10:15',
-          room: 'Room 204',
-          status: 'current',
-          color: '#0d9488',
-        },
-      );
-    }
 
     // Invoices and Fees collection
     const invoices = await this.invoiceModel
@@ -929,23 +888,18 @@ export class AnalyticsService {
 
     const feeHistory = invoices.map((inv) => ({
       desc: inv.feeItems?.[0]?.name || 'Tuition Dues',
-      date: inv.invoiceDate.toLocaleDateString(),
+      date: new Date(inv.invoiceDate).toLocaleDateString('en-IN', {
+        month: 'short',
+        day: 'numeric',
+      }),
       amount: inv.netAmount,
       status: inv.status.toLowerCase(),
     }));
 
-    if (feeHistory.length === 0) {
-      feeHistory.push({
-        desc: 'Term 1 Tuition',
-        date: 'Jan 5',
-        amount: 22500,
-        status: 'paid',
-      });
-    }
-
     // Query assignments count
     const studentAssignments = await this.assignmentModel
       .find({ class: student.class?._id })
+      .populate('subject')
       .exec();
     const assignmentIds = studentAssignments.map((a) => a._id);
     const submissions = await this.submissionModel
@@ -955,7 +909,211 @@ export class AnalyticsService {
       })
       .exec();
 
+    // Fetch active academic year
+    const activeYear = await this.classModel.db
+      .collection('academicyears')
+      .findOne({ isActive: true });
+    const academicYearName = activeYear ? activeYear.name : 'N/A';
+
+    // Fetch notifications
+    const notifications = await this.classModel.db
+      .collection('notifications')
+      .find({ recipientId: student._id })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .toArray();
+    const unreadNotifications = notifications.filter((n) => !n.isRead).length;
+
+    // Fetch communications
+    const messages = await this.messageModel
+      .find({
+        $or: [{ recipientId: student._id }, { senderId: student._id }],
+      })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate('senderId', 'firstName lastName roleType')
+      .lean()
+      .exec();
+
+    const SUBJECT_COLORS = [
+      '#6366f1',
+      '#0d9488',
+      '#f59e0b',
+      '#ec4899',
+      '#22c55e',
+      '#3b82f6',
+      '#8b5cf6',
+      '#ef4444',
+    ];
+
+    const communications = messages.map((m: any, index: number) => {
+      const senderName = m.senderId
+        ? `${m.senderId.firstName} ${m.senderId.lastName}`
+        : 'System';
+      const role = m.senderId?.roleType || 'User';
+      return {
+        name: senderName,
+        role: role,
+        msg: m.content,
+        time: this.formatTimeAgo(m.createdAt),
+        unread: m.isRead ? 0 : 1,
+        color: SUBJECT_COLORS[index % SUBJECT_COLORS.length],
+      };
+    });
+
+    // Subject Scores
+    const allSubjects = await this.classModel.db
+      .collection('subjects')
+      .find({ school: schoolId })
+      .toArray();
+    const subjectMap = new Map(allSubjects.map((s) => [s._id.toString(), s.name]));
+
+    const bySubject = new Map<string, { obtained: number; max: number }>();
+    for (const mark of myMarks) {
+      const key = mark.subjectId.toString();
+      const existing = bySubject.get(key) ?? { obtained: 0, max: 0 };
+      existing.obtained += mark.marksObtained || 0;
+      existing.max += mark.maxMarks || 0;
+      bySubject.set(key, existing);
+    }
+
+    const subjectsScores = Array.from(bySubject.entries()).map(
+      ([subjectId, scores], index) => ({
+        name: subjectMap.get(subjectId) ?? 'Subject',
+        score: scores.max
+          ? Math.round((scores.obtained / scores.max) * 100)
+          : 0,
+        color: SUBJECT_COLORS[index % SUBJECT_COLORS.length],
+      }),
+    );
+
+    // Subject Attendance Breakdown
+    const classTimetables = await this.classModel.db
+      .collection('timetables')
+      .find({ class: student.class?._id })
+      .toArray();
+
+    const subjectSlots = new Map<string, number>();
+    for (const entry of classTimetables) {
+      const subjectId = entry.subject?.toString();
+      if (subjectId) {
+        subjectSlots.set(subjectId, (subjectSlots.get(subjectId) ?? 0) + 1);
+      }
+    }
+
+    const totalSlots = Array.from(subjectSlots.values()).reduce((a, b) => a + b, 0);
+
+    const attendanceBreakdown = Array.from(subjectSlots.entries()).map(([subjectId, slots]) => {
+      const estimatedTotal = Math.max(
+        Math.round((slots / Math.max(totalSlots, 1)) * attendanceRecords),
+        1,
+      );
+      const estimatedAttended = Math.min(
+        Math.round((presentRecords / Math.max(attendanceRecords, 1)) * estimatedTotal),
+        estimatedTotal,
+      );
+      const pct = Math.round((estimatedAttended / estimatedTotal) * 100);
+      return {
+        subject: subjectMap.get(subjectId) ?? 'Subject',
+        attended: estimatedAttended,
+        total: estimatedTotal,
+        pct,
+      };
+    });
+
+    // GPA Growth
+    const byMonth = new Map<string, { obtained: number; max: number }>();
+    for (const mark of myMarks) {
+      const date = (mark as any).createdAt ?? new Date();
+      const month = date.toLocaleDateString('en-IN', { month: 'short' });
+      const existing = byMonth.get(month) ?? { obtained: 0, max: 0 };
+      existing.obtained += mark.marksObtained || 0;
+      existing.max += mark.maxMarks || 0;
+      byMonth.set(month, existing);
+    }
+
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
+    const gpaGrowth = months
+      .filter((m) => byMonth.has(m))
+      .map((month) => {
+        const mData = byMonth.get(month)!;
+        const pct = mData.max ? (mData.obtained / mData.max) * 100 : 0;
+        let monthlyGpa = 3.5;
+        if (pct >= 90) monthlyGpa = 4.0;
+        else if (pct >= 80) monthlyGpa = 3.8;
+        else if (pct >= 70) monthlyGpa = 3.2;
+        else monthlyGpa = 2.0;
+
+        return {
+          month,
+          gpa: monthlyGpa,
+        };
+      });
+
+    const finalGpaGrowth = gpaGrowth.length > 0 ? gpaGrowth : [{ month: 'Current', gpa }];
+
+    // Achievements
+    const achievements = (() => {
+      const list = [];
+      if (attendancePercentage >= 95) {
+        list.push({
+          id: '1',
+          title: 'Perfect Attendance',
+          subtitle: new Date().toLocaleDateString('en-IN', {
+            month: 'long',
+            year: 'numeric',
+          }),
+          icon: '🏅',
+        });
+      }
+      const hasTopScorer = myMarks.some(
+        (m) => m.marksObtained / m.maxMarks >= 0.9,
+      );
+      if (hasTopScorer) {
+        list.push({
+          id: '2',
+          title: 'Top Scorer',
+          subtitle: 'Academic Year',
+          icon: '🥇',
+        });
+      }
+      if (submissions.length >= 3) {
+        list.push({
+          id: '3',
+          title: 'Consistent Performer',
+          subtitle: `${submissions.length} Submissions`,
+          icon: '🔬',
+        });
+      }
+      return list;
+    })();
+
+    // Rank
+    const rank = await this.calculateClassRank(student._id.toString(), student.class?._id);
+
+    const className = student.class ? (student.class as any).name : 'N/A';
+    const sectionName = student.section ? (student.section as any).name : '';
+    const classLabel = sectionName ? `${className}-${sectionName}` : className;
+
     return {
+      student: {
+        name: `${student.firstName} ${student.lastName}`,
+        id: student.admissionNumber,
+        class: classLabel,
+        section: className,
+        rollNo: student.rollNumber,
+        academicYear: academicYearName,
+        gpa,
+        attendancePct: Math.round(attendancePercentage),
+        completedAssignments: submissions.length,
+        pendingAssignments: studentAssignments.length - submissions.length,
+        upcomingExams: upcomingExams.length,
+        subjectsEnrolled: subjectSlots.size || 6,
+        notifications: unreadNotifications,
+      },
       widgets: {
         attendancePercentage: Math.round(attendancePercentage),
         totalMarksRecords: myMarks.length,
@@ -964,153 +1122,139 @@ export class AnalyticsService {
         completedAssignments: submissions.length,
         pendingAssignments: studentAssignments.length - submissions.length,
         upcomingExams: upcomingExams.length,
-        subjectsEnrolled: 6,
-        notifications: 7,
+        subjectsEnrolled: subjectSlots.size || 6,
+        notifications: unreadNotifications,
       },
       charts: {
-        gpaGrowth: [
-          { month: 'Jan', gpa: 3.4 },
-          { month: 'Feb', gpa: 3.5 },
-          { month: 'Mar', gpa: 3.6 },
-          { month: 'Apr', gpa: 3.7 },
-          { month: 'May', gpa: 3.8 },
-          { month: 'Jun', gpa },
-        ],
-        subjectsScores: [
-          { name: 'Physics', score: 88, color: '#6366f1' },
-          { name: 'Mathematics', score: 95, color: '#0d9488' },
-          { name: 'Chemistry', score: 76, color: '#f59e0b' },
-        ],
+        gpaGrowth: finalGpaGrowth,
+        subjectsScores,
       },
       scheduleToday,
       assignments: studentAssignments.map((a) => {
         const sub = submissions.find(
           (s) => s.assignment.toString() === a._id.toString(),
         );
+        const subjectName = (a.subject as any)?.name || 'Class Task';
         return {
           id: a._id.toString(),
           title: a.title,
-          subject: 'Class Task',
-          due: a.dueDate.toLocaleDateString(),
+          subject: subjectName,
+          due: a.dueDate.toLocaleDateString('en-IN', {
+            month: 'short',
+            day: 'numeric',
+          }),
           status: sub ? sub.status.toLowerCase() : 'pending',
           priority:
-            a.dueDate.getTime() - Date.now() < 86400000 * 2 ? 'high' : 'medium',
+            a.dueDate.getTime() - Date.now() < 86400000 * 2 ? ('high' as const) : ('medium' as const),
           grade: sub?.marksObtained ? `${sub.marksObtained}` : undefined,
         };
       }),
       exams: upcomingExams,
-      attendanceBreakdown: [
-        { subject: 'Physics', attended: 44, total: 48, pct: 92 },
-        { subject: 'Mathematics', attended: 46, total: 50, pct: 92 },
-      ],
+      attendanceBreakdown,
       fees: {
-        paid: paidAmount || 45000,
-        outstanding: pendingAmount || 12500,
+        paid: paidAmount,
+        outstanding: pendingAmount,
         dueDate:
           invoices.length > 0
-            ? invoices[0].dueDate.toLocaleDateString()
-            : 'Jun 30, 2025',
+            ? invoices[0].dueDate.toLocaleDateString('en-IN', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : 'N/A',
         history: feeHistory,
       },
-      resources: (() => {
-        const studentResources = studentAssignments
-          .filter((a) => a.attachmentUrl)
-          .map((a) => ({
-            id: a._id.toString(),
-            title: `${a.title} Resource`,
-            type: a.attachmentUrl?.split('.').pop()?.toUpperCase() || 'PDF',
-            subject: 'Class Task',
-            size: '1.5 MB',
-          }));
-        if (studentResources.length === 0) {
-          studentResources.push(
-            {
-              id: '1',
-              title: 'Wave Optics – Chapter Notes',
-              type: 'PDF',
-              subject: 'Physics',
-              size: '2.4 MB',
-            },
-            {
-              id: '2',
-              title: 'Calculus Lecture Recording',
-              type: 'Video',
-              subject: 'Mathematics',
-              size: '480 MB',
-            },
-          );
-        }
-        return studentResources;
-      })(),
-      announcements: (() => {
-        const announcements = []; // We query notifications later or fallback
-        if (announcements.length === 0) {
-          announcements.push(
-            {
-              id: '1',
-              title: 'Term Examination Schedule Released',
-              type: 'exam',
-              time: '2 hours ago',
-              urgent: true,
-            },
-            {
-              id: '2',
-              title: 'Annual Sports Day – June 28th',
-              type: 'event',
-              time: '1 day ago',
-              urgent: false,
-            },
-          );
-        }
-        return announcements;
-      })(),
-      achievements: (() => {
-        const list = [];
-        if (attendancePercentage >= 95) {
-          list.push({
-            id: '1',
-            title: 'Perfect Attendance',
-            subtitle: 'March 2025',
-            icon: '🏅',
-          });
-        }
-        const hasTopScorer = myMarks.some(
-          (m) => m.marksObtained / m.maxMarks >= 0.9,
-        );
-        if (hasTopScorer) {
-          list.push({
-            id: '2',
-            title: 'Top Scorer',
-            subtitle: 'Academic Year',
-            icon: '🥇',
-          });
-        }
-        if (submissions.length >= 3) {
-          list.push({
-            id: '3',
-            title: 'Consistent Performer',
-            subtitle: `${submissions.length} Submissions`,
-            icon: '🔬',
-          });
-        }
-        if (list.length === 0) {
-          list.push(
-            {
-              id: '1',
-              title: 'Perfect Attendance',
-              subtitle: 'March 2025',
-              icon: '🏅',
-            },
-            {
-              id: '2',
-              title: 'Top Scorer – Math',
-              subtitle: 'Mid-term 2025',
-              icon: '🥇',
-            },
-          );
-        }
-        return list;
-      })(),
+      resources: studentAssignments
+        .filter((a) => a.attachmentUrl)
+        .map((a) => ({
+          id: a._id.toString(),
+          title: `${a.title} Resource`,
+          type: a.attachmentUrl?.split('.').pop()?.toUpperCase() || 'PDF',
+          subject: (a.subject as any)?.name || 'Class Task',
+          size: '1.5 MB',
+        })),
+      announcements: notifications.slice(0, 6).map((n) => {
+        const type = n.eventType === 'exam-schedule' ? 'exam' : n.eventType === 'announcement' ? 'event' : 'notice';
+        return {
+          id: n._id.toString(),
+          title: n.subject,
+          type,
+          time: this.formatTimeAgo(n.createdAt),
+          urgent: n.eventType === 'exam-schedule' || n.eventType === 'fee-alert',
+        };
+      }),
+      achievements,
+      rank,
+      communications,
+    };
+  }
+
+  private getClassStatus(
+    startTime: string,
+    endTime: string,
+  ): 'completed' | 'current' | 'upcoming' {
+    const now = new Date();
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    const start = this.parseTime(startTime);
+    const end = this.parseTime(endTime);
+    if (nowMins >= end) return 'completed';
+    if (nowMins >= start) return 'current';
+    return 'upcoming';
+  }
+
+  private parseTime(time: string): number {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + (m || 0);
+  }
+
+  private async calculateClassRank(
+    studentId: string,
+    classId: Types.ObjectId | undefined,
+  ) {
+    if (!classId) {
+      return { position: 0, label: 'Rank unavailable' };
+    }
+
+    const classStudents = await this.studentModel
+      .find({ class: classId, isActive: true })
+      .select('_id')
+      .lean()
+      .exec();
+    const studentIds = classStudents.map((s) => s._id.toString());
+
+    const allMarks = await this.markModel
+      .find({ studentId: { $in: studentIds } })
+      .lean()
+      .exec();
+
+    const scores = new Map<string, { obtained: number; max: number }>();
+    for (const mark of allMarks) {
+      const existing = scores.get(mark.studentId) ?? { obtained: 0, max: 0 };
+      existing.obtained += mark.marksObtained || 0;
+      existing.max += mark.maxMarks || 0;
+      scores.set(mark.studentId, existing);
+    }
+
+    const ranked = Array.from(scores.entries())
+      .map(([id, s]) => ({
+        studentId: id,
+        pct: s.max ? (s.obtained / s.max) * 100 : 0,
+      }))
+      .sort((a, b) => b.pct - a.pct);
+
+    const position = ranked.findIndex((r) => r.studentId === studentId) + 1;
+
+    if (position === 0 || ranked.length === 0) {
+      return { position: 0, label: 'Rank unavailable' };
+    }
+
+    const percentile = Math.round(
+      ((ranked.length - position + 1) / ranked.length) * 100,
+    );
+
+    return {
+      position,
+      label: `Top ${percentile}% of class`,
     };
   }
 
