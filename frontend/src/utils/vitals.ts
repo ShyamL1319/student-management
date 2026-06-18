@@ -1,10 +1,11 @@
-import { onCLS, onFID, onLCP, onTTFB } from 'web-vitals';
+import { onCLS, onINP, onLCP, onTTFB } from 'web-vitals';
+import type { Metric } from 'web-vitals';
 
 export function reportWebVitals() {
-  onCLS((metric) => sendToAnalytics('CLS', metric));
-  onFID((metric) => sendToAnalytics('FID', metric));
-  onLCP((metric) => sendToAnalytics('LCP', metric));
-  onTTFB((metric) => sendToAnalytics('TTFB', metric));
+  onCLS((metric: Metric) => sendToAnalytics('CLS', metric));
+  onINP((metric: Metric) => sendToAnalytics('INP', metric));
+  onLCP((metric: Metric) => sendToAnalytics('LCP', metric));
+  onTTFB((metric: Metric) => sendToAnalytics('TTFB', metric));
 }
 
 function sendToAnalytics(name: string, metric: any) {

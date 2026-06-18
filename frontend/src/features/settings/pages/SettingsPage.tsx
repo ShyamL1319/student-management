@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, Typography, Paper, TextField, Button, Grid, FormControlLabel, Switch, CircularProgress, Alert, Snackbar } from '@mui/material';
 import { settingsApi } from '../api/settings.api';
+import api from '../../../api/api';
 
 export const SettingsPage: FC = () => {
   const queryClient = useQueryClient();
@@ -18,6 +19,19 @@ export const SettingsPage: FC = () => {
 
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  const handleTriggerFrontendError = () => {
+    throw new Error('Simulated Frontend Sentry Test Error');
+  };
+
+  const handleTriggerBackendError = async () => {
+    try {
+      await api.get('/health/trigger-error');
+    } catch (err) {
+      setToastMessage('Backend error triggered (check logs/Sentry dashboard!)');
+      setToastOpen(true);
+    }
+  };
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['settings'],
@@ -160,6 +174,39 @@ export const SettingsPage: FC = () => {
             label={<Typography variant="body2" sx={{ fontWeight: 600 }}>Auto-backup Database Weekly</Typography>}
           />
         </Box>
+      </Paper>
+
+      <Paper sx={{ p: 3, mb: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }} elevation={0}>
+        <Typography variant="h6" gutterBottom sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 1 }}>
+          Observability & Error Diagnostics (Sentry)
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Use these buttons to simulate application crashes and verify Sentry's dashboard logging. Make sure your DSN variables are configured in the environment.
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="error"
+              onClick={handleTriggerFrontendError}
+              sx={{ textTransform: 'none', fontWeight: 700, py: 1.25, borderRadius: 2 }}
+            >
+              Trigger Frontend Test Error
+            </Button>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="warning"
+              onClick={handleTriggerBackendError}
+              sx={{ textTransform: 'none', fontWeight: 700, py: 1.25, borderRadius: 2 }}
+            >
+              Trigger Backend Test Error
+            </Button>
+          </Grid>
+        </Grid>
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
