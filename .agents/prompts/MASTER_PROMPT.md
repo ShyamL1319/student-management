@@ -27,12 +27,18 @@ Use the architecture to create a new School Management System.
 
 Before implementing any feature:
 
-1. Read PROJECT_ROADMAP.md
-2. Read PHASE_TRACKER.md
+1. Read PROJECT_ROADMAP.md (if available)
+2. Read PHASE_TRACKER.md (if available)
 3. Read GEMINI.md
 
-Rules:
+Rules & Token Consumption Optimization:
 
+* Load modular guidelines dynamically to minimize context length and token consumption:
+  - For backend changes, refer to: [.agents/rules/backend-rules.md](file:///.agents/rules/backend-rules.md)
+  - For frontend changes, refer to: [.agents/rules/frontend-rules.md](file:///.agents/rules/frontend-rules.md)
+  - Use custom workflows from: [.agents/workflows/](file:///.agents/workflows/) (e.g. `develop-feature.md`, `generate-tests.md`)
+  - Use custom skills from: [.agents/skills/](file:///.agents/skills/) (e.g. `generate-commit-description`, `update-design-architecture`, `optimize-prompt`)
+* Visualizations: Create Mermaid diagrams for High-Level Design (HLD) and Low-Level Design (LLD) (Before & After states) under the design step of any feature development or updates.
 * Never implement future phases.
 * Complete one phase at a time.
 * Generate backend first.
