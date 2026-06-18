@@ -1,6 +1,5 @@
-import './tracing'; // Must be imported first
-import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
+import './instrument'; // Must be imported first
+import * as Sentry from '@sentry/nestjs';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -12,16 +11,6 @@ import { AppLoggerService } from './common/logger/app-logger.service';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    integrations: [
-      nodeProfilingIntegration(),
-    ],
-    // Performance Monitoring
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-    // Set sampling rate for profiling
-    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-  });
 
   let keyPath = '/secrets/key.pem';
   let certPath = '/secrets/cert.pem';
@@ -123,6 +112,9 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+
+  // Enable graceful shutdown for Sentry
+  app.enableShutdownHooks();
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

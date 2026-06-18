@@ -33,7 +33,7 @@
     "@opentelemetry/auto-instrumentations-node": "^0.77.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.219.0",
     "@opentelemetry/sdk-node": "^0.219.0",
-    "@sentry/node": "^10.57.0",
+    "@sentry/nestjs": "^10.57.0",
     "@sentry/profiling-node": "^10.57.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
