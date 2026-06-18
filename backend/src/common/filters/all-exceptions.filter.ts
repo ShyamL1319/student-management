@@ -52,6 +52,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
       });
     }
 
+    try {
+      const routePath = request.route?.path || request.originalUrl;
+      Sentry.metrics.count('http.errors.total', 1, {
+        attributes: {
+          path: routePath,
+          status: String(status),
+          errorType: exception?.constructor?.name || 'UnknownError',
+        },
+      });
+    } catch (metricErr) {
+      // Ignore metrics tracking errors
+    }
+
     response.status(status).json({
       statusCode: status,
       message,

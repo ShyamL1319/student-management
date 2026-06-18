@@ -51,7 +51,11 @@ export class TenantContext {
     }
   }
 
-  static setTenantDetails(tenantId: string, schoolId: string, subdomain: string) {
+  static setTenantDetails(
+    tenantId: string,
+    schoolId: string,
+    subdomain: string,
+  ) {
     const store = this.storage.getStore();
     if (store) {
       store.tenantId = tenantId;

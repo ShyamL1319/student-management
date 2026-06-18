@@ -127,7 +127,10 @@ export class TenantMiddleware implements NestMiddleware {
             schoolId: cachedConfig.schoolId,
             subdomain: cachedConfig.subdomain,
             requestId: (req as any).requestId || randomUUID(),
-            correlationId: (req as any).correlationId || (req as any).requestId || randomUUID(),
+            correlationId:
+              (req as any).correlationId ||
+              (req as any).requestId ||
+              randomUUID(),
           },
           () => {
             next();
@@ -217,7 +220,10 @@ export class TenantMiddleware implements NestMiddleware {
             schoolId: config.schoolId,
             subdomain: config.subdomain,
             requestId: (req as any).requestId || randomUUID(),
-            correlationId: (req as any).correlationId || (req as any).requestId || randomUUID(),
+            correlationId:
+              (req as any).correlationId ||
+              (req as any).requestId ||
+              randomUUID(),
           },
           () => {
             next();

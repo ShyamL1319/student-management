@@ -11,7 +11,6 @@ import { AppLoggerService } from './common/logger/app-logger.service';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
-
   let keyPath = '/secrets/key.pem';
   let certPath = '/secrets/cert.pem';
 
@@ -129,13 +128,22 @@ async function bootstrap() {
 }
 bootstrap().catch((error) => {
   const logger = new AppLoggerService();
-  const errorMsg = error instanceof Error ? `${error.message}\n${error.stack}` : String(error);
-  logger.error('CRITICAL: Application failed to bootstrap', errorMsg, 'Bootstrap');
-  
+  const errorMsg =
+    error instanceof Error ? `${error.message}\n${error.stack}` : String(error);
+  logger.error(
+    'CRITICAL: Application failed to bootstrap',
+    errorMsg,
+    'Bootstrap',
+  );
+
   // Write container termination diagnostic log
   try {
-    const termLogPath = process.env.TERMINATION_LOG_PATH || '/dev/termination-log';
-    fs.writeFileSync(termLogPath, `CRITICAL: Application failed to bootstrap. Reason: ${errorMsg}\n`);
+    const termLogPath =
+      process.env.TERMINATION_LOG_PATH || '/dev/termination-log';
+    fs.writeFileSync(
+      termLogPath,
+      `CRITICAL: Application failed to bootstrap. Reason: ${errorMsg}\n`,
+    );
   } catch (writeErr) {
     // Gracefully ignore write errors if running in non-containerized/local development
   }

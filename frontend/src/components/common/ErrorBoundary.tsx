@@ -16,6 +16,15 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('[ErrorBoundary]', { error: error.message, stack: error.stack, componentStack: info.componentStack });
     Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
+    try {
+      Sentry.metrics.count('frontend.errors.boundary', 1, {
+        attributes: {
+          error: error.name || 'Error',
+        },
+      });
+    } catch (metricErr) {
+      // Ignore Sentry metrics errors
+    }
   }
 
   render() {

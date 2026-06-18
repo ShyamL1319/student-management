@@ -16,6 +16,7 @@ import * as QRCode from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { TenantContext } from '../tenant/tenant.context';
+import * as Sentry from '@sentry/nestjs';
 
 @Injectable()
 export class AuthService {
@@ -150,11 +151,21 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) {
+      try {
+        Sentry.metrics.count('auth.login.attempts', 1, {
+          attributes: { status: 'failed', mfaRequired: 'false', reason: 'invalid_credentials' },
+        });
+      } catch (metricErr) {}
       throw new UnauthorizedException('Invalid credentials');
     }
 
     // Check if MFA is enabled
     if (user.mfaEnabled) {
+      try {
+        Sentry.metrics.count('auth.login.attempts', 1, {
+          attributes: { status: 'pending', mfaRequired: 'true' },
+        });
+      } catch (metricErr) {}
       const mfaPayload = {
         sub: user._id.toString(),
         isMfaPending: true,
@@ -169,6 +180,11 @@ export class AuthService {
       };
     }
 
+    try {
+      Sentry.metrics.count('auth.login.attempts', 1, {
+        attributes: { status: 'success', mfaRequired: 'false' },
+      });
+    } catch (metricErr) {}
     return this.generateUserTokens(user);
   }
 
@@ -360,6 +376,11 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_SECRET') || 'supersecret',
       });
     } catch (err) {
+      try {
+        Sentry.metrics.count('auth.login.attempts', 1, {
+          attributes: { status: 'failed', mfaRequired: 'true', reason: 'expired_mfa_token' },
+        });
+      } catch (metricErr) {}
       throw new UnauthorizedException('Invalid or expired MFA token');
     }
 
@@ -406,9 +427,19 @@ export class AuthService {
     }
 
     if (!isValid) {
+      try {
+        Sentry.metrics.count('auth.login.attempts', 1, {
+          attributes: { status: 'failed', mfaRequired: 'true', reason: 'invalid_mfa_code' },
+        });
+      } catch (metricErr) {}
       throw new UnauthorizedException('Invalid MFA verification code');
     }
 
+    try {
+      Sentry.metrics.count('auth.login.attempts', 1, {
+        attributes: { status: 'success', mfaRequired: 'true' },
+      });
+    } catch (metricErr) {}
     return this.generateUserTokens(user);
   }
 

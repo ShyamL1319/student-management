@@ -1,5 +1,12 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  Logger,
+} from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
+import * as Sentry from '@sentry/nestjs';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -34,6 +41,31 @@ export class LoggingInterceptor implements NestInterceptor {
             },
             'HTTP',
           );
+
+          // Track Sentry Metrics on successful request
+          try {
+            const routePath = req.route?.path || originalUrl;
+            const tenant = req.headers['x-tenant-id'] || 'default';
+            Sentry.metrics.count('http.requests.total', 1, {
+              attributes: {
+                method,
+                path: routePath,
+                status: String(res.statusCode),
+                tenant: String(tenant),
+              },
+            });
+            Sentry.metrics.distribution('http.request.duration', durationMs, {
+              unit: 'millisecond',
+              attributes: {
+                method,
+                path: routePath,
+                status: String(res.statusCode),
+                tenant: String(tenant),
+              },
+            });
+          } catch (metricErr) {
+            // Ignore metrics tracking errors
+          }
         },
         error: (err: any) => {
           const durationMs = Date.now() - startTime;
@@ -48,6 +80,34 @@ export class LoggingInterceptor implements NestInterceptor {
             err instanceof Error ? err.stack : undefined,
             'HTTP',
           );
+
+          // Track Sentry Metrics on failed request
+          try {
+            const routePath = req.route?.path || originalUrl;
+            const tenant = req.headers['x-tenant-id'] || 'default';
+            const status = err.status || err.statusCode || 500;
+            Sentry.metrics.count('http.requests.total', 1, {
+              attributes: {
+                method,
+                path: routePath,
+                status: String(status),
+                error: err.name || 'Error',
+                tenant: String(tenant),
+              },
+            });
+            Sentry.metrics.distribution('http.request.duration', durationMs, {
+              unit: 'millisecond',
+              attributes: {
+                method,
+                path: routePath,
+                status: String(status),
+                error: err.name || 'Error',
+                tenant: String(tenant),
+              },
+            });
+          } catch (metricErr) {
+            // Ignore metrics tracking errors
+          }
         },
       }),
     );
