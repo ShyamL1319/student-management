@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateSchoolDto } from './dto/create-school.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
 import { School, SchoolDocument } from './schemas/school.schema';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { TenantContext } from '../tenant/tenant.context';
 
 @Injectable()
 export class SchoolsService {
@@ -13,7 +14,12 @@ export class SchoolsService {
   ) {}
 
   async create(createSchoolDto: CreateSchoolDto): Promise<School> {
-    return this.schoolModel.create(createSchoolDto);
+    const tenantId = TenantContext.getTenantId();
+    const data = { ...createSchoolDto } as any;
+    if (tenantId) {
+      data.tenantId = new Types.ObjectId(tenantId);
+    }
+    return this.schoolModel.create(data);
   }
 
   async findAll(query: PaginationQueryDto) {

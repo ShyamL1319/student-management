@@ -41,6 +41,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
 
+import { SentryModule } from '@sentry/nestjs/setup';
 import { TenantModule } from './tenant/tenant.module';
 import { TenantGuard } from './tenant/tenant.guard';
 import { TenantMiddleware } from './tenant/tenant.middleware';
@@ -52,6 +53,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

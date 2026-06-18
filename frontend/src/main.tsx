@@ -1,21 +1,14 @@
+import './instrument'; // MUST be first
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Sentry from '@sentry/react';
+import { reactErrorHandler } from '@sentry/react';
 import { ThemeModeProvider } from './contexts/ThemeContext.tsx';
 import App from './App.tsx';
 import './index.css';
 
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration(),
-  ],
-  tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
-  replaysSessionSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
-  replaysOnErrorSampleRate: 1.0,
-});
+
 
 // Initialize and sync correlation ID for session tracing
 let correlationId = localStorage.getItem('sessionCorrelationId');
@@ -41,7 +34,11 @@ const queryClient = new QueryClient({
   },
 });
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')!, {
+  onUncaughtError: reactErrorHandler(),
+  onCaughtError: reactErrorHandler(),
+  onRecoverableError: reactErrorHandler(),
+}).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ThemeModeProvider>

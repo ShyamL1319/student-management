@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import {
   Box,
   Button,
@@ -613,6 +614,21 @@ export const LoginPage: React.FC = () => {
               <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
                 Your session is encrypted using industry standard protocols.
               </Typography>
+            </Box>
+
+            {/* Sentry Test Trigger */}
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => {
+                  Sentry.captureMessage('Manual Sentry Test Message from frontend!', 'info');
+                  alert('Sentry test message captured! Check your dashboard.');
+                }}
+                sx={{ textTransform: 'none', fontSize: '0.75rem', opacity: 0.7 }}
+              >
+                Send Sentry Test Message
+              </Button>
             </Box>
           </Box>
         </Paper>
