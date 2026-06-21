@@ -101,17 +101,30 @@ export const Sidebar: FC<SidebarProps> = ({ drawerWidth, mobileOpen, onDrawerTog
             my: 0.25,
             py: 1,
             px: 2,
+            position: 'relative',
             '&.Mui-selected': {
-              backgroundColor: (theme) => theme.palette.action.selected,
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
               color: 'primary.main',
               fontWeight: 600,
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                left: -8,
+                top: '15%',
+                height: '70%',
+                width: 4,
+                backgroundColor: '#3b82f6',
+                borderRadius: '0 4px 4px 0',
+                filter: 'drop-shadow(0 0 8px rgba(59,130,246,0.6))',
+              },
               '& .MuiListItemIcon-root': {
                 color: 'primary.main',
+                filter: 'drop-shadow(0 0 8px rgba(59,130,246,0.5))',
               },
             },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 40, color: active ? 'primary.main' : 'text.secondary' }}>
+          <ListItemIcon sx={{ minWidth: 40, color: active ? 'primary.main' : 'text.secondary', transition: 'color 0.2s' }}>
             {icon}
           </ListItemIcon>
           <ListItemText

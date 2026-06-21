@@ -141,7 +141,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
       <Card
         sx={{
           mb: 4,
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0d4a3a 100%)',
+          background: 'linear-gradient(135deg, #1e3a8a 0%, #831843 100%)',
           color: 'white',
           borderRadius: 4,
           boxShadow: '0 20px 60px rgba(99,102,241,0.25)',

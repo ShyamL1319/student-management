@@ -532,7 +532,9 @@ async function seedMassiveData(db, schoolId, roleIds, defaultPasswordHash, admin
       });
     }
   }
-  await db.collection('attendances').insertMany(attendances);
+  if (attendances.length > 0) {
+    await db.collection('attendances').insertMany(attendances);
+  }
 
   // --- 12. Fees ---
   console.log('Seeding Fees...');

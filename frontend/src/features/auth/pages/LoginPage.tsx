@@ -153,7 +153,7 @@ export const LoginPage: React.FC = () => {
               letterSpacing: '0.2px',
             }}
           >
-            PS Educational Institute
+            EduSphere
           </Typography>
         </Box>
 
@@ -348,7 +348,7 @@ export const LoginPage: React.FC = () => {
               color="text.secondary"
               sx={{ textAlign: 'center', fontFamily: "'Inter', sans-serif" }}
             >
-              Enter credentials to access the PS Educational Institute portal.
+              Enter credentials to access the EduSphere portal.
             </Typography>
           </Box>
 

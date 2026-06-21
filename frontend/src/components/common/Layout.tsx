@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from 'react';
 import { useState } from 'react';
 import { Box, Toolbar } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,12 +11,16 @@ const drawerWidth = 240;
 export const Layout: FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  if (!isAuthenticated) {
+  const publicPaths = ['/', '/login', '/forgot-password', '/reset-password'];
+  const isPublicPath = publicPaths.includes(location.pathname);
+
+  if (!isAuthenticated || isPublicPath) {
     return (
       <Box
         sx={{

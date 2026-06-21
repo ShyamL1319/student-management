@@ -41,7 +41,7 @@ export const DashboardPage: FC = () => {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   // Interactive mock state for Staff Checklists
   const [todoList, setTodoList] = useState([
     { id: 1, text: 'File student admissions catalog', checked: true },
@@ -206,10 +206,7 @@ export const DashboardPage: FC = () => {
       <Card
         sx={{
           mb: 4,
-          background: (theme) =>
-            theme.palette.mode === 'light'
-              ? 'linear-gradient(135deg, #312e81 0%, #4f46e5 100%)'
-              : 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+          background: 'linear-gradient(135deg, #1e3a8a 0%, #831843 100%)',
           color: 'white',
           borderRadius: '16px',
           boxShadow: 'none',
@@ -243,7 +240,7 @@ export const DashboardPage: FC = () => {
                 Welcome back, {firstName}!
               </Typography>
               <Typography variant="body1" sx={{ opacity: 0.85, fontFamily: "'Inter', sans-serif" }}>
-                Here is the current operational status for PS Educational Institute.
+                Here is the current operational status for EduSphere.
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
@@ -277,10 +274,7 @@ export const DashboardPage: FC = () => {
                 transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
                   transform: 'translateY(-2px)',
-                  boxShadow: (theme) =>
-                    theme.palette.mode === 'light'
-                      ? '0 10px 15px -3px rgba(0,0,0,0.05)'
-                      : 'none',
+                  boxShadow: '0 0 15px rgba(59, 130, 246, 0.3)',
                 },
               }}
             >
@@ -305,8 +299,7 @@ export const DashboardPage: FC = () => {
                       width: 44,
                       height: 44,
                       borderRadius: '50%',
-                      backgroundColor: (theme) =>
-                        theme.palette.mode === 'light' ? 'rgba(79, 70, 229, 0.05)' : 'rgba(255,255,255,0.05)',
+                      backgroundColor: 'rgba(255,255,255,0.05)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -367,9 +360,9 @@ export const DashboardPage: FC = () => {
                   Your Account Status
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary', fontFamily: "'Inter', sans-serif" }}>
-                  Welcome to PS Educational Institute! Your account has been successfully registered and linked via your OAuth provider.
+                  Welcome to EduSphere! Your account has been successfully registered and linked via your OAuth provider.
                 </Typography>
-                
+
                 <Grid container spacing={3}>
                   <Grid size={{ xs: 12, md: 4 }}>
                     <Card variant="outlined" sx={{ p: 2, borderRadius: '12px', height: '100%' }}>
@@ -387,7 +380,7 @@ export const DashboardPage: FC = () => {
                         🏫 School Details
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        <strong>Name:</strong> PS Educational Institute<br />
+                        <strong>Name:</strong> EduSphere<br />
                         <strong>Address:</strong> Sikar, Rajasthan, India<br />
                         <strong>Email:</strong> admin@school.com
                       </Typography>

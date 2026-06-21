@@ -208,7 +208,7 @@ export const ForgotPasswordPage: React.FC = () => {
         >
           <ShieldOutlined fontSize="small" sx={{ color: 'text.secondary' }} />
           <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-            PS Educational Institute Admin Services
+            EduSphere Admin Services
           </Typography>
         </Box>
       </Paper>

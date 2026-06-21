@@ -32,6 +32,7 @@ import {
 import { Mark, MarkDocument } from '../marks/schemas/mark.schema';
 import { ActivitiesService } from '../activities/activities.service';
 import { ActivityType } from '../activities/schemas/activity-log.schema';
+import { UsersService } from '../users/users.service';
 
 // Helper mock S3 client for presigned URL generation since S3 client package is not installed
 class LocalPresignedUrlGenerator {
@@ -62,6 +63,7 @@ export class AssignmentsService {
     private readonly notificationService: NotificationService,
     private readonly auditLogsService: AuditLogsService,
     private readonly activitiesService: ActivitiesService,
+    private readonly usersService: UsersService,
   ) {}
 
   async create(
@@ -127,9 +129,29 @@ export class AssignmentsService {
     }
     if (query.isPublished !== undefined) {
       filter.isPublished = query.isPublished === 'true';
+    } else if (role === RoleEnum.PARENT || role === RoleEnum.STUDENT) {
+      filter.isPublished = true;
     }
+
     if (query.search) {
       filter.title = { $regex: query.search, $options: 'i' };
+    }
+
+    if (role === RoleEnum.PARENT) {
+      const parentUser = await this.usersService.findById(userId) as any;
+      if (parentUser && parentUser.children && parentUser.children.length > 0) {
+        const childrenUsers = await Promise.all(
+          parentUser.children.map((id: any) => this.usersService.findById(id.toString()))
+        );
+        const classIds = childrenUsers.map((c: any) => c?.class).filter(Boolean);
+        if (classIds.length > 0) {
+          filter.class = { $in: classIds };
+        } else {
+          return { data: [], total: 0 };
+        }
+      } else {
+        return { data: [], total: 0 };
+      }
     }
 
     const [rawAssignments, total] = await Promise.all([
@@ -187,9 +209,9 @@ export class AssignmentsService {
       throw new NotFoundException('Assignment not found');
     }
 
-    if (!item.isPublished && role === RoleEnum.STUDENT) {
+    if (!item.isPublished && (role === RoleEnum.STUDENT || role === RoleEnum.PARENT)) {
       throw new ForbiddenException(
-        'Draft assignments are not accessible to students',
+        'Draft assignments are not accessible to students or parents',
       );
     }
 

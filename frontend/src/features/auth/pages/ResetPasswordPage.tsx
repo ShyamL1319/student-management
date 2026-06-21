@@ -291,7 +291,7 @@ export const ResetPasswordPage: React.FC = () => {
         >
           <ShieldOutlined fontSize="small" sx={{ color: 'text.secondary' }} />
           <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-            PS Educational Institute security systems
+            EduSphere security systems
           </Typography>
         </Box>
       </Paper>

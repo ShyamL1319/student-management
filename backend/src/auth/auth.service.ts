@@ -197,6 +197,8 @@ export class AuthService {
       email: user.email,
       sub: user._id,
       role: user.role,
+      roleType: user.roleType || user.role?.name,
+      classId: user.class ? user.class.toString() : undefined,
       schoolId: user.schoolId?.toString(),
     };
     const accessToken = this.jwtService.sign(payload, {
