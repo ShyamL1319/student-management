@@ -25,6 +25,17 @@ export interface DashboardWidgets {
 export interface DashboardResponse {
   widgets: DashboardWidgets;
   charts?: Record<string, any>;
+  // Added optional fields for full dashboard data
+  student?: any;
+  scheduleToday?: any[];
+  assignments?: any[];
+  exams?: any[];
+  attendanceBreakdown?: any[];
+  fees?: any;
+  communications?: any[];
+  announcements?: any[];
+  achievements?: any[];
+  rank?: any;
   recentActivity?: any[];
   [key: string]: any;
 }

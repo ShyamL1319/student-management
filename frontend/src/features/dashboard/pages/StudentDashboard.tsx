@@ -864,6 +864,47 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
           </Card>
         </Grid>
       </Grid>
+
+      {/* ═══ 10. RECENT ACTIVITY ═══ */}
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12 }}>
+          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+            <CardContent>
+              <SectionTitle icon={<NotificationsIcon />} title="Recent Activity" subtitle="Your latest updates and interactions" />
+              {data.recentActivity && data.recentActivity.length > 0 ? (
+                <List disablePadding>
+                  {data.recentActivity.map((activity: any, i: number) => (
+                    <ListItem key={i} sx={{ px: 0, py: 1.5, alignItems: 'flex-start' }} divider={i !== data.recentActivity!.length - 1}>
+                      <ListItemIcon sx={{ minWidth: 40, mt: 0.5 }}>
+                        <Typography sx={{ fontSize: 20 }}>{activity.icon || '📌'}</Typography>
+                      </ListItemIcon>
+                      <ListItemText
+                        disableTypography
+                        primary={
+                          <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
+                            {activity.description}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            {activity.time}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Box sx={{ py: 6, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No recent activity detected.
+                  </Typography>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Box>
   );
 };

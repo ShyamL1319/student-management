@@ -11,6 +11,7 @@ import { AcademicYearsModule } from '../academic-years/academic-years.module';
 import { SubjectsModule } from '../subjects/subjects.module';
 import { FeesModule } from 'src/fees/fees.module';
 import { CommonModule } from 'src/common/common.module';
+import { ActivitiesModule } from '../activities/activities.module';
 
 @Module({
   controllers: [DashboardController],
@@ -25,8 +26,10 @@ import { CommonModule } from 'src/common/common.module';
     AcademicYearsModule,
     SubjectsModule,
     CommonModule,
+    ActivitiesModule,
   ],
   providers: [DashboardService],
   exports: [DashboardService],
 })
 export class DashboardModule {}
+

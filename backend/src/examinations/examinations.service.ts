@@ -4,10 +4,15 @@ import { Model } from 'mongoose';
 import { Exam, ExamDocument } from './schemas/exam.schema';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
+import { ActivitiesService } from '../activities/activities.service';
+import { ActivityType } from '../activities/schemas/activity-log.schema';
 
 @Injectable()
 export class ExaminationsService {
-  constructor(@InjectModel(Exam.name) private examModel: Model<ExamDocument>) {}
+  constructor(
+    @InjectModel(Exam.name) private examModel: Model<ExamDocument>,
+    private readonly activitiesService: ActivitiesService,
+  ) {}
 
   async create(dto: CreateExamDto) {
     const created = await this.examModel.create(dto as any);
@@ -52,6 +57,13 @@ export class ExaminationsService {
     if (!exam) throw new NotFoundException('Exam not found');
     exam.isPublished = true;
     await exam.save();
+
+    await this.activitiesService.logActivity({
+      type: ActivityType.EXAM_SCHEDULE,
+      description: `New exam published: ${exam.name}`,
+      icon: '📅',
+    });
+
     return exam;
   }
 

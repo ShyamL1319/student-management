@@ -14,12 +14,15 @@ import {
   UpdateFeeCollectionDto,
   FeeCollectionQueryDto,
 } from './dto/fee-collection.dto';
+import { ActivitiesService } from '../activities/activities.service';
+import { ActivityType } from '../activities/schemas/activity-log.schema';
 
 @Injectable()
 export class FeeCollectionService {
   constructor(
     @InjectModel(FeeCollection.name)
     private feeCollectionModel: Model<FeeCollectionDocument>,
+    private readonly activitiesService: ActivitiesService,
   ) {}
 
   async create(dto: CreateFeeCollectionDto) {
@@ -109,6 +112,13 @@ export class FeeCollectionService {
         },
         { new: true },
       );
+
+    await this.activitiesService.logActivity({
+      type: ActivityType.FEE_PAYMENT,
+      description: `Fee payment of ${amountPaid} received`,
+      icon: '💰',
+      student: feeCollection.studentId.toString(),
+    });
 
     return updatedFeeCollection;
   }

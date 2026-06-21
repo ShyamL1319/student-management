@@ -10,6 +10,7 @@ import {
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import { MarksModule } from '../marks/marks.module';
+import { ActivitiesModule } from '../activities/activities.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { MarksModule } from '../marks/marks.module';
     NotificationsModule,
     AuditLogsModule,
     MarksModule,
+    ActivitiesModule,
   ],
   controllers: [AssignmentsController],
   providers: [AssignmentsService],

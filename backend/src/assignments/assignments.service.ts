@@ -30,6 +30,8 @@ import {
   AuditStatus,
 } from '../audit-logs/schemas/audit-log.schema';
 import { Mark, MarkDocument } from '../marks/schemas/mark.schema';
+import { ActivitiesService } from '../activities/activities.service';
+import { ActivityType } from '../activities/schemas/activity-log.schema';
 
 // Helper mock S3 client for presigned URL generation since S3 client package is not installed
 class LocalPresignedUrlGenerator {
@@ -59,6 +61,7 @@ export class AssignmentsService {
     @InjectModel(Mark.name) private markModel: Model<MarkDocument>,
     private readonly notificationService: NotificationService,
     private readonly auditLogsService: AuditLogsService,
+    private readonly activitiesService: ActivitiesService,
   ) {}
 
   async create(
@@ -366,6 +369,14 @@ export class AssignmentsService {
       templateData: { assignmentId: assignment._id.toString() },
       relatedEntityId: submission._id.toString(),
       relatedEntityType: 'AssignmentSubmission',
+    });
+
+    await this.activitiesService.logActivity({
+      type: ActivityType.ASSIGNMENT_SUBMISSION,
+      description: `Submitted assignment "${assignment.title}"`,
+      icon: '🗂️',
+      student: studentId,
+      school: schoolId,
     });
 
     return submission;

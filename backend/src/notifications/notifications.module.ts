@@ -27,6 +27,7 @@ import { NotificationController } from './notification.controller';
 import { NotificationPreferenceController } from './notification-preference.controller';
 import { NotificationTemplateController } from './notification-template.controller';
 import { NotificationEventController } from './notification-event.controller';
+import { ActivitiesModule } from '../activities/activities.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { NotificationEventController } from './notification-event.controller';
       },
       { name: NotificationEvent.name, schema: NotificationEventSchema },
     ]),
+    ActivitiesModule,
   ],
   controllers: [
     NotificationController,

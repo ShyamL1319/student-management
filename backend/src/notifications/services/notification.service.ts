@@ -16,6 +16,8 @@ import { NotificationFilterDto } from '../dto/notification-filter.dto';
 import { EmailService } from './email.service';
 import { SmsService } from './sms.service';
 import { InAppService } from './in-app.service';
+import { ActivitiesService } from '../../activities/activities.service';
+import { ActivityType } from '../../activities/schemas/activity-log.schema';
 
 @Injectable()
 export class NotificationService {
@@ -33,6 +35,7 @@ export class NotificationService {
     private emailService: EmailService,
     private smsService: SmsService,
     private inAppService: InAppService,
+    private activitiesService: ActivitiesService,
   ) {}
 
   /**
@@ -70,6 +73,15 @@ export class NotificationService {
 
       // Send notification via appropriate channel
       await this.sendNotification(notification);
+
+      if (notification.eventType === NotificationEventType.ANNOUNCEMENT) {
+        await this.activitiesService.logActivity({
+          type: ActivityType.ANNOUNCEMENT,
+          description: `New announcement: "${notification.subject}"`,
+          icon: '📢',
+          student: notification.recipientId?.toString(),
+        });
+      }
 
       return notification;
     } catch (error) {
