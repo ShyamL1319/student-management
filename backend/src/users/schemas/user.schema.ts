@@ -51,6 +51,15 @@ export class User {
   schoolId?: Types.ObjectId;
 
   @Prop({ default: true })
+
+  @Prop({ default: false })
+  isEmailVerified!: boolean;
+
+  @Prop()
+  emailVerificationToken?: string;
+
+  @Prop()
+  emailVerificationExpires?: Date;
   isActive!: boolean;
 
   @Prop({ default: null })
