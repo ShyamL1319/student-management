@@ -32,6 +32,7 @@ import { AdmissionsModule } from './admissions/admissions.module';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { PaymentsModule } from './payments/payments.module';
 import { SettingsModule } from './settings/settings.module';
+import { ActivitiesModule } from './activities/activities.module';
 
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -121,6 +122,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     AdmissionsModule,
     AssignmentsModule,
     SettingsModule,
+    ActivitiesModule,
   ],
   controllers: [AppController],
   providers: [

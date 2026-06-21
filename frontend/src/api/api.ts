@@ -36,12 +36,78 @@ api.interceptors.request.use((config) => {
     config.headers['X-Request-ID'] = generateUUID();
   }
 
+  // Attach start time to measure request duration
+  (config as any).metadata = { startTime: Date.now() };
+
   return config;
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Track Sentry Metrics for successful API response
+    const startTime = (response.config as any).metadata?.startTime;
+    if (startTime) {
+      const durationMs = Date.now() - startTime;
+      const url = response.config.url || 'unknown';
+      const method = response.config.method || 'get';
+      const status = response.status;
+
+      try {
+        Sentry.metrics.count('frontend.api.requests', 1, {
+          attributes: {
+            url,
+            method,
+            status: String(status),
+            state: 'success',
+          },
+        });
+        Sentry.metrics.distribution('frontend.api.duration', durationMs, {
+          unit: 'millisecond',
+          attributes: {
+            url,
+            method,
+            status: String(status),
+            state: 'success',
+          },
+        });
+      } catch (metricErr) {
+        // Ignore Sentry metrics errors
+      }
+    }
+    return response;
+  },
   (error) => {
+    // Track Sentry Metrics for failed API response
+    const startTime = (error.config as any)?.metadata?.startTime;
+    if (startTime) {
+      const durationMs = Date.now() - startTime;
+      const url = error.config?.url || 'unknown';
+      const method = error.config?.method || 'get';
+      const status = error.response?.status || 'network_error';
+
+      try {
+        Sentry.metrics.count('frontend.api.requests', 1, {
+          attributes: {
+            url,
+            method,
+            status: String(status),
+            state: 'error',
+          },
+        });
+        Sentry.metrics.distribution('frontend.api.duration', durationMs, {
+          unit: 'millisecond',
+          attributes: {
+            url,
+            method,
+            status: String(status),
+            state: 'error',
+          },
+        });
+      } catch (metricErr) {
+        // Ignore Sentry metrics errors
+      }
+    }
+
     const requestId = error.response?.headers?.['x-request-id'] || error.response?.headers?.['X-Request-ID'];
 
     console.error('[API Error]', {

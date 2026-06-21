@@ -53,6 +53,7 @@ export class AssignmentsController {
     RoleEnum.SUPER_ADMIN,
     RoleEnum.TEACHER,
     RoleEnum.STUDENT,
+    RoleEnum.PARENT,
   )
   @ApiOperation({
     summary: 'List assignments with optional pagination filters',
@@ -60,19 +61,22 @@ export class AssignmentsController {
   async findAll(@CurrentUser() user: any, @Query() query: any) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
     const filterQuery = { ...query };
+    const roleType = user.roleType || user.role?.name;
 
-    if (user.roleType === RoleEnum.STUDENT) {
-      filterQuery.classId = user.class?.toString();
+    if (roleType === RoleEnum.STUDENT) {
+      filterQuery.classId = user.class?.toString() || filterQuery.classId;
       filterQuery.isPublished = true;
-    } else if (user.roleType === RoleEnum.TEACHER) {
+    } else if (roleType === RoleEnum.TEACHER) {
       filterQuery.teacherId = user._id.toString();
+    } else if (roleType === RoleEnum.PARENT) {
+      filterQuery.isPublished = true;
     }
 
     return this.assignmentsService.findAll(
       schoolId,
       filterQuery,
       user._id.toString(),
-      user.roleType,
+      roleType,
     );
   }
 
@@ -82,15 +86,17 @@ export class AssignmentsController {
     RoleEnum.SUPER_ADMIN,
     RoleEnum.TEACHER,
     RoleEnum.STUDENT,
+    RoleEnum.PARENT,
   )
   @ApiOperation({ summary: 'Get details of a specific assignment' })
   async findOne(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
+    const roleType = user.roleType || user.role?.name;
     return this.assignmentsService.findOne(
       id,
       schoolId,
       user._id.toString(),
-      user.roleType,
+      roleType,
     );
   }
 
@@ -103,11 +109,12 @@ export class AssignmentsController {
     @Body() dto: UpdateAssignmentDto,
   ) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
+    const roleType = user.roleType || user.role?.name;
     return this.assignmentsService.update(
       id,
       schoolId,
       user._id.toString(),
-      user.roleType,
+      roleType,
       dto,
     );
   }
@@ -120,11 +127,12 @@ export class AssignmentsController {
   })
   async remove(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
+    const roleType = user.roleType || user.role?.name;
     return this.assignmentsService.remove(
       id,
       schoolId,
       user._id.toString(),
-      user.roleType,
+      roleType,
     );
   }
 
@@ -133,11 +141,12 @@ export class AssignmentsController {
   @ApiOperation({ summary: 'Publish a draft assignment' })
   async publish(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
+    const roleType = user.roleType || user.role?.name;
     return this.assignmentsService.publish(
       id,
       schoolId,
       user._id.toString(),
-      user.roleType,
+      roleType,
     );
   }
 
@@ -182,11 +191,12 @@ export class AssignmentsController {
   @ApiOperation({ summary: 'View submissions list for an assignment' })
   async getSubmissions(@CurrentUser() user: any, @Param('id') id: string) {
     const schoolId = user.schoolId?.toString() || user.school?.toString();
+    const roleType = user.roleType || user.role?.name;
     return this.assignmentsService.getSubmissions(
       schoolId,
       id,
       user._id.toString(),
-      user.roleType,
+      roleType,
     );
   }
 

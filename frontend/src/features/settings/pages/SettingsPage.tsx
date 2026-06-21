@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, Typography, Paper, TextField, Button, Grid, FormControlLabel, Switch, CircularProgress, Alert, Snackbar } from '@mui/material';
 import { settingsApi } from '../api/settings.api';
 import api from '../../../api/api';
+import * as Sentry from '@sentry/react';
 
 export const SettingsPage: FC = () => {
   const queryClient = useQueryClient();
@@ -29,6 +30,53 @@ export const SettingsPage: FC = () => {
       await api.get('/health/trigger-error');
     } catch (err) {
       setToastMessage('Backend error triggered (check logs/Sentry dashboard!)');
+      setToastOpen(true);
+    }
+  };
+
+  const handleTriggerFrontendMetricCount = () => {
+    try {
+      Sentry.metrics.count('frontend.test_metric.count', 1, {
+        attributes: {
+          source: 'settings_page',
+          action: 'test_click',
+        },
+      });
+      setToastMessage('Frontend test count metric triggered! (frontend.test_metric.count)');
+      setToastOpen(true);
+    } catch (err) {
+      console.error(err);
+      setToastMessage('Failed to trigger frontend count metric. Check console.');
+      setToastOpen(true);
+    }
+  };
+
+  const handleTriggerFrontendMetricDistribution = () => {
+    try {
+      const duration = Math.floor(Math.random() * 300) + 20;
+      Sentry.metrics.distribution('frontend.test_metric.duration', duration, {
+        unit: 'millisecond',
+        attributes: {
+          source: 'settings_page',
+          action: 'test_click',
+        },
+      });
+      setToastMessage(`Frontend test distribution metric triggered! Value: ${duration}ms (frontend.test_metric.duration)`);
+      setToastOpen(true);
+    } catch (err) {
+      console.error(err);
+      setToastMessage('Failed to trigger frontend distribution metric. Check console.');
+      setToastOpen(true);
+    }
+  };
+
+  const handleTriggerBackendMetric = async () => {
+    try {
+      const response = await api.get('/health/trigger-metric');
+      setToastMessage(`Backend Sentry metrics triggered! Value: ${response.data.metrics.simulatedValue}`);
+      setToastOpen(true);
+    } catch (err) {
+      setToastMessage('Failed to trigger backend metrics. Check if backend is running.');
       setToastOpen(true);
     }
   };
@@ -178,7 +226,7 @@ export const SettingsPage: FC = () => {
 
       <Paper sx={{ p: 3, mb: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }} elevation={0}>
         <Typography variant="h6" gutterBottom sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 600, mb: 1 }}>
-          Observability & Error Diagnostics (Sentry)
+          Observability & Diagnostics (Sentry)
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Use these buttons to simulate application crashes and verify Sentry's dashboard logging. Make sure your DSN variables are configured in the environment.
@@ -204,6 +252,39 @@ export const SettingsPage: FC = () => {
               sx={{ textTransform: 'none', fontWeight: 700, py: 1.25, borderRadius: 2 }}
             >
               Trigger Backend Test Error
+            </Button>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="info"
+              onClick={handleTriggerFrontendMetricCount}
+              sx={{ textTransform: 'none', fontWeight: 700, py: 1.25, borderRadius: 2 }}
+            >
+              Trigger Frontend Metric (Count)
+            </Button>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="info"
+              onClick={handleTriggerFrontendMetricDistribution}
+              sx={{ textTransform: 'none', fontWeight: 700, py: 1.25, borderRadius: 2 }}
+            >
+              Trigger Frontend Metric (Dist)
+            </Button>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="secondary"
+              onClick={handleTriggerBackendMetric}
+              sx={{ textTransform: 'none', fontWeight: 700, py: 1.25, borderRadius: 2 }}
+            >
+              Trigger Backend Test Metric
             </Button>
           </Grid>
         </Grid>

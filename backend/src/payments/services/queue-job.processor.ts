@@ -112,7 +112,9 @@ export class QueueJobProcessor implements OnModuleInit, OnModuleDestroy {
 
         job.status = 'COMPLETED';
         await job.save();
-        this.logger.log(`Job ID: ${job._id.toString()} completed successfully.`);
+        this.logger.log(
+          `Job ID: ${job._id.toString()} completed successfully.`,
+        );
       } catch (error) {
         this.logger.error(
           `Job ID: ${job._id.toString()} failed. Error: ${error.message}`,

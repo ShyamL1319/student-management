@@ -114,26 +114,26 @@ export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#6366f1', // Indigo 500
-      light: '#818cf8',
-      dark: '#4f46e5',
+      main: '#3b82f6', // Blue 500
+      light: '#60a5fa',
+      dark: '#2563eb',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#14b8a6', // Teal 500
-      light: '#2dd4bf',
-      dark: '#0d9488',
+      main: '#ec4899', // Pink 500
+      light: '#f472b6',
+      dark: '#db2777',
       contrastText: '#ffffff',
     },
     background: {
-      default: '#020617', // Slate 950
-      paper: '#0f172a', // Slate 900
+      default: '#0F1115', // Mockup background
+      paper: '#1A1C23', // Mockup card background
     },
     text: {
       primary: '#f8fafc', // Slate 50
       secondary: '#94a3b8', // Slate 400
     },
-    divider: '#1e293b', // Slate 800
+    divider: 'rgba(255,255,255,0.05)', // Muted border
   },
   typography: baseTypography,
   shape: {
@@ -159,7 +159,7 @@ export const darkTheme = createTheme({
         root: {
           borderRadius: 12,
           boxShadow: 'none',
-          border: '1px solid #1e293b',
+          border: '1px solid rgba(255,255,255,0.05)',
           backgroundImage: 'none',
         },
       },
@@ -176,8 +176,8 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           boxShadow: 'none',
-          borderBottom: '1px solid #1e293b',
-          backgroundColor: '#0f172a',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          backgroundColor: '#0F1115',
           color: '#f8fafc',
         },
       },
@@ -192,11 +192,11 @@ export const darkTheme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         root: {
-          borderColor: '#1e293b',
+          borderColor: 'rgba(255,255,255,0.05)',
         },
         head: {
           fontWeight: 600,
-          backgroundColor: '#0f172a',
+          backgroundColor: '#0F1115',
         },
       },
     },

@@ -59,100 +59,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-// ── Mock Data ─────────────────────────────────────────
-const MOCK_STUDENT = {
-  name: 'Priya Sharma',
-  id: 'STU-2024-089',
-  class: 'XII-A',
-  section: 'Science',
-  rollNo: '089',
-  academicYear: '2024-2025',
-  gpa: 3.85,
-  attendancePct: 92,
-  completedAssignments: 18,
-  pendingAssignments: 4,
-  upcomingExams: 3,
-  subjectsEnrolled: 6,
-  notifications: 7,
-};
+// Quick Action buttons configuration
 
-const MOCK_SCHEDULE = [
-  { id: 1, subject: 'Physics', teacher: 'Dr. A. Kumar', time: '08:00 – 09:00', room: 'Room 301', status: 'completed', color: '#6366f1' },
-  { id: 2, subject: 'Mathematics', teacher: 'Prof. R. Gupta', time: '09:15 – 10:15', room: 'Room 204', status: 'current', color: '#0d9488' },
-  { id: 3, subject: 'Chemistry', teacher: 'Dr. S. Mehta', time: '10:30 – 11:30', room: 'Lab 2', status: 'upcoming', color: '#f59e0b' },
-  { id: 4, subject: 'English', teacher: 'Ms. P. Verma', time: '12:00 – 13:00', room: 'Room 108', status: 'upcoming', color: '#ec4899' },
-  { id: 5, subject: 'Biology', teacher: 'Dr. M. Singh', time: '14:00 – 15:00', room: 'Lab 1', status: 'upcoming', color: '#22c55e' },
-];
-
-const MOCK_ASSIGNMENTS = [
-  { id: 1, title: 'Wave Optics Lab Report', subject: 'Physics', due: 'Tomorrow', status: 'pending', priority: 'high' },
-  { id: 2, title: 'Integration Exercises – Set C', subject: 'Mathematics', due: 'In 2 days', status: 'pending', priority: 'medium' },
-  { id: 3, title: 'Organic Chemistry Review', subject: 'Chemistry', due: 'In 3 days', status: 'pending', priority: 'low' },
-  { id: 4, title: 'Essay – Climate Change', subject: 'English', due: 'Jun 12', status: 'submitted', priority: 'low' },
-  { id: 5, title: 'Cell Division Notes', subject: 'Biology', due: 'Jun 10', status: 'graded', priority: 'low', grade: 'A' },
-];
-
-const MOCK_EXAMS = [
-  { id: 1, subject: 'Physics', date: 'Jun 20', time: '10:00 AM', venue: 'Hall A', countdown: 14 },
-  { id: 2, subject: 'Mathematics', date: 'Jun 22', time: '09:00 AM', venue: 'Hall B', countdown: 16 },
-  { id: 3, subject: 'Chemistry', date: 'Jun 25', time: '10:00 AM', venue: 'Lab Block', countdown: 19 },
-];
-
-const MOCK_ATTENDANCE = [
-  { subject: 'Physics', attended: 44, total: 48, pct: 92 },
-  { subject: 'Mathematics', attended: 46, total: 50, pct: 92 },
-  { subject: 'Chemistry', attended: 40, total: 46, pct: 87 },
-  { subject: 'English', attended: 48, total: 50, pct: 96 },
-  { subject: 'Biology', attended: 38, total: 44, pct: 86 },
-  { subject: 'Computer Sc.', attended: 42, total: 44, pct: 95 },
-];
-
-const MOCK_SUBJECTS = [
-  { name: 'Physics', score: 88, color: '#6366f1' },
-  { name: 'Mathematics', score: 95, color: '#0d9488' },
-  { name: 'Chemistry', score: 76, color: '#f59e0b' },
-  { name: 'English', score: 82, color: '#ec4899' },
-  { name: 'Biology', score: 90, color: '#22c55e' },
-  { name: 'Computer Sc.', score: 97, color: '#3b82f6' },
-];
-
-const MOCK_GROWTH = [
-  { month: 'Jan', gpa: 3.4 }, { month: 'Feb', gpa: 3.5 }, { month: 'Mar', gpa: 3.6 },
-  { month: 'Apr', gpa: 3.7 }, { month: 'May', gpa: 3.8 }, { month: 'Jun', gpa: 3.85 },
-];
-
-const MOCK_RESOURCES = [
-  { id: 1, title: 'Wave Optics – Chapter Notes', type: 'PDF', subject: 'Physics', size: '2.4 MB' },
-  { id: 2, title: 'Calculus Lecture Recording', type: 'Video', subject: 'Mathematics', size: '480 MB' },
-  { id: 3, title: 'Periodic Table Reference', type: 'PDF', subject: 'Chemistry', size: '1.1 MB' },
-  { id: 4, title: 'Grammar Workbook', type: 'E-Book', subject: 'English', size: '8.3 MB' },
-];
-
-const MOCK_ANNOUNCEMENTS = [
-  { id: 1, title: 'Term Examination Schedule Released', type: 'exam', time: '2 hours ago', urgent: true },
-  { id: 2, title: 'Annual Sports Day – June 28th', type: 'event', time: '1 day ago', urgent: false },
-  { id: 3, title: 'Library Books Due – June 15th', type: 'notice', time: '2 days ago', urgent: false },
-  { id: 4, title: 'Parent-Teacher Meeting – June 18th', type: 'notice', time: '3 days ago', urgent: false },
-];
-
-const MOCK_FEES = {
-  paid: 45000,
-  outstanding: 12500,
-  dueDate: 'Jun 30, 2025',
-  history: [
-    { desc: 'Term 1 Tuition', date: 'Jan 5', amount: 22500, status: 'paid' },
-    { desc: 'Lab Fees', date: 'Jan 5', amount: 5000, status: 'paid' },
-    { desc: 'Activity Fee', date: 'Mar 1', amount: 7500, status: 'paid' },
-    { desc: 'Term 2 Tuition', date: 'Jun 30', amount: 12500, status: 'pending' },
-  ],
-};
-
-const MOCK_ACHIEVEMENTS = [
-  { id: 1, title: 'Perfect Attendance', subtitle: 'March 2025', icon: '🏅' },
-  { id: 2, title: 'Top Scorer – Math', subtitle: 'Mid-term 2025', icon: '🥇' },
-  { id: 3, title: 'Science Olympiad', subtitle: 'District Level', icon: '🔬' },
-  { id: 4, title: 'Essay Winner', subtitle: 'School Level', icon: '✍️' },
-];
 
 const QUICK_ACTIONS = [
   { label: 'Join Class', icon: <VideoIcon />, color: '#0d9488', path: '/timetables' },
@@ -208,19 +116,19 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
   const [assignmentTab, setAssignmentTab] = useState(0);
 
   const student = {
-    name: firstName || MOCK_STUDENT.name,
-    id: MOCK_STUDENT.id,
-    class: MOCK_STUDENT.class,
-    section: MOCK_STUDENT.section,
-    rollNo: MOCK_STUDENT.rollNo,
-    academicYear: MOCK_STUDENT.academicYear,
-    gpa: data.widgets?.gpa ?? MOCK_STUDENT.gpa,
-    attendancePct: data.widgets?.attendancePercentage ?? MOCK_STUDENT.attendancePct,
-    completedAssignments: data.widgets?.completedAssignments ?? MOCK_STUDENT.completedAssignments,
-    pendingAssignments: data.widgets?.pendingAssignments ?? MOCK_STUDENT.pendingAssignments,
-    upcomingExams: data.widgets?.upcomingExams ?? MOCK_STUDENT.upcomingExams,
-    subjectsEnrolled: data.widgets?.subjectsEnrolled ?? MOCK_STUDENT.subjectsEnrolled,
-    notifications: data.widgets?.notifications ?? MOCK_STUDENT.notifications,
+    name: data.student?.name || firstName || 'N/A',
+    id: data.student?.id || 'N/A',
+    class: data.student?.class || 'N/A',
+    section: data.student?.section || 'N/A',
+    rollNo: data.student?.rollNo || 'N/A',
+    academicYear: data.student?.academicYear || 'N/A',
+    gpa: data.student?.gpa ?? data.widgets?.gpa ?? 0.0,
+    attendancePct: data.student?.attendancePct ?? data.widgets?.attendancePercentage ?? 0,
+    completedAssignments: data.student?.completedAssignments ?? data.widgets?.completedAssignments ?? 0,
+    pendingAssignments: data.student?.pendingAssignments ?? data.widgets?.pendingAssignments ?? 0,
+    upcomingExams: data.student?.upcomingExams ?? data.widgets?.upcomingExams ?? 0,
+    subjectsEnrolled: data.student?.subjectsEnrolled ?? data.widgets?.subjectsEnrolled ?? 0,
+    notifications: data.student?.notifications ?? data.widgets?.notifications ?? 0,
   };
 
   const now = new Date();
@@ -233,7 +141,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
       <Card
         sx={{
           mb: 4,
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0d4a3a 100%)',
+          background: 'linear-gradient(135deg, #1e3a8a 0%, #831843 100%)',
           color: 'white',
           borderRadius: 4,
           boxShadow: '0 20px 60px rgba(99,102,241,0.25)',
@@ -330,7 +238,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
           { label: 'Upcoming Exams', value: `${student.upcomingExams}`, sub: 'This month', icon: <EventIcon />, color: '#ef4444', bg: '#fef2f2', border: '#fca5a5' },
           { label: 'Completed', value: `${student.completedAssignments}`, sub: 'Assignments done', icon: <AddTaskIcon />, color: '#0d9488', bg: '#f0fdfa', border: '#99f6e4' },
           { label: 'Subjects', value: `${student.subjectsEnrolled}`, sub: 'Enrolled this term', icon: <SchoolIcon />, color: '#3b82f6', bg: '#eff6ff', border: '#93c5fd' },
-          { label: "Today's Classes", value: `${(data.scheduleToday || MOCK_SCHEDULE).length}`, sub: 'Scheduled today', icon: <CalendarIcon />, color: '#8b5cf6', bg: '#faf5ff', border: '#d8b4fe' },
+          { label: "Today's Classes", value: `${(data.scheduleToday || []).length}`, sub: 'Scheduled today', icon: <CalendarIcon />, color: '#8b5cf6', bg: '#faf5ff', border: '#d8b4fe' },
           { label: 'Notifications', value: `${student.notifications}`, sub: 'Unread alerts', icon: <NotificationsIcon />, color: '#ec4899', bg: '#fdf2f8', border: '#f9a8d4' },
         ].map((s) => (
           <Grid size={{ xs: 6, sm: 4, md: 3 }} key={s.label}>
@@ -375,42 +283,48 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                 }
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {(data.scheduleToday || MOCK_SCHEDULE).map((cls: any) => (
-                  <Box
-                    key={cls.id}
-                    sx={{
-                      display: 'flex', alignItems: 'center', gap: 2, p: 2,
-                      borderRadius: 2.5,
-                      border: `1.5px solid ${cls.status === 'current' ? cls.color : 'transparent'}`,
-                      bgcolor: cls.status === 'current' ? `${cls.color}10` : cls.status === 'completed' ? 'action.hover' : 'background.paper',
-                      position: 'relative', overflow: 'hidden',
-                      opacity: cls.status === 'completed' ? 0.65 : 1,
-                      transition: 'box-shadow 0.15s',
-                      '&:hover': { boxShadow: `0 4px 16px ${cls.color}20` },
-                    }}
-                  >
-                    <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, bgcolor: cls.color, borderRadius: '4px 0 0 4px' }} />
-                    <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: `${cls.color}18`, color: cls.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, ml: 0.5 }}>
-                      <SchoolIcon fontSize="small" />
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{cls.subject}</Typography>
-                        {cls.status === 'current' && <Chip label="LIVE" size="small" sx={{ bgcolor: cls.color, color: 'white', fontWeight: 800, height: 18, fontSize: '0.6rem' }} />}
+                {!data.scheduleToday || data.scheduleToday.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                    No classes scheduled for today.
+                  </Typography>
+                ) : (
+                  data.scheduleToday.map((cls: any) => (
+                    <Box
+                      key={cls.id}
+                      sx={{
+                        display: 'flex', alignItems: 'center', gap: 2, p: 2,
+                        borderRadius: 2.5,
+                        border: `1.5px solid ${cls.status === 'current' ? cls.color : 'transparent'}`,
+                        bgcolor: cls.status === 'current' ? `${cls.color}10` : cls.status === 'completed' ? 'action.hover' : 'background.paper',
+                        position: 'relative', overflow: 'hidden',
+                        opacity: cls.status === 'completed' ? 0.65 : 1,
+                        transition: 'box-shadow 0.15s',
+                        '&:hover': { boxShadow: `0 4px 16px ${cls.color}20` },
+                      }}
+                    >
+                      <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, bgcolor: cls.color, borderRadius: '4px 0 0 4px' }} />
+                      <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: `${cls.color}18`, color: cls.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, ml: 0.5 }}>
+                        <SchoolIcon fontSize="small" />
                       </Box>
-                      <Typography variant="caption" color="text.secondary">{cls.teacher} · {cls.room}</Typography>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{cls.subject}</Typography>
+                          {cls.status === 'current' && <Chip label="LIVE" size="small" sx={{ bgcolor: cls.color, color: 'white', fontWeight: 800, height: 18, fontSize: '0.6rem' }} />}
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">{cls.teacher} · {cls.room}</Typography>
+                      </Box>
+                      <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block' }} color="text.secondary" >{cls.time}</Typography>
+                        <StatusChip status={cls.status} />
+                      </Box>
+                      {cls.status === 'current' && (
+                        <Button size="small" variant="contained" sx={{ flexShrink: 0, textTransform: 'none', fontWeight: 700, bgcolor: cls.color, '&:hover': { bgcolor: cls.color }, borderRadius: 2 }} startIcon={<VideoIcon fontSize="small" />}>
+                          Join
+                        </Button>
+                      )}
                     </Box>
-                    <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 600, display: 'block' }} color="text.secondary" >{cls.time}</Typography>
-                      <StatusChip status={cls.status} />
-                    </Box>
-                    {cls.status === 'current' && (
-                      <Button size="small" variant="contained" sx={{ flexShrink: 0, textTransform: 'none', fontWeight: 700, bgcolor: cls.color, '&:hover': { bgcolor: cls.color }, borderRadius: 2 }} startIcon={<VideoIcon fontSize="small" />}>
-                        Join
-                      </Button>
-                    )}
-                  </Box>
-                ))}
+                  ))
+                )}
               </Box>
             </CardContent>
           </Card>
@@ -431,35 +345,47 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
               </Box>
               <Box sx={{ height: 100, mb: 2 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.charts?.gpaGrowth || MOCK_GROWTH} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="gpaGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="month" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                    <YAxis domain={[3.2, 4.0]} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                    <RechartsTooltip contentStyle={{ borderRadius: 8, fontSize: '0.8rem', border: '1px solid #e2e8f0' }} />
-                    <Area type="monotone" dataKey="gpa" stroke="#6366f1" strokeWidth={2.5} fill="url(#gpaGrad)" />
-                  </AreaChart>
+                  {!data.charts?.gpaGrowth || data.charts.gpaGrowth.length === 0 ? (
+                    <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+                      <Typography variant="caption" color="text.secondary">No GPA history available.</Typography>
+                    </Box>
+                  ) : (
+                    <AreaChart data={data.charts.gpaGrowth} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="gpaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="month" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                      <YAxis domain={[1.0, 4.0]} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                      <RechartsTooltip contentStyle={{ borderRadius: 8, fontSize: '0.8rem', border: '1px solid #e2e8f0' }} />
+                      <Area type="monotone" dataKey="gpa" stroke="#6366f1" strokeWidth={2.5} fill="url(#gpaGrad)" />
+                    </AreaChart>
+                  )}
                 </ResponsiveContainer>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {(data.charts?.subjectsScores || MOCK_SUBJECTS).map((s: any) => (
-                  <Box key={s.name}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.25 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 600 }}>{s.name}</Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: s.color || '#6366f1' }}>{s.score}%</Typography>
+                {!data.charts?.subjectsScores || data.charts.subjectsScores.length === 0 ? (
+                  <Typography variant="caption" color="text.secondary" align="center" sx={{ display: 'block', py: 2 }}>
+                    No subject scores available.
+                  </Typography>
+                ) : (
+                  data.charts.subjectsScores.map((s: any) => (
+                    <Box key={s.name}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.25 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600 }}>{s.name}</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: s.color || '#6366f1' }}>{s.score}%</Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={s.score}
+                        sx={{ height: 5, borderRadius: 3, bgcolor: `${s.color || '#6366f1'}20`, '& .MuiLinearProgress-bar': { bgcolor: s.color || '#6366f1', borderRadius: 3 } }}
+                      />
                     </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={s.score}
-                      sx={{ height: 5, borderRadius: 3, bgcolor: `${s.color || '#6366f1'}20`, '& .MuiLinearProgress-bar': { bgcolor: s.color || '#6366f1', borderRadius: 3 } }}
-                    />
-                  </Box>
-                ))}
+                  ))
+                )}
               </Box>
             </CardContent>
           </Card>
@@ -486,47 +412,57 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                 onChange={(_, v) => setAssignmentTab(v)}
                 sx={{ mb: 2, '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, minHeight: 36, fontSize: '0.8rem' } }}
               >
-                <Tab label={`Pending (${(data.assignments || MOCK_ASSIGNMENTS).filter((a: any) => a.status === 'pending').length})`} />
-                <Tab label="Submitted" />
-                <Tab label="Graded" />
+                <Tab label={`Pending (${(data.assignments || []).filter((a: any) => a.status === 'pending').length})`} />
+                <Tab label={`Submitted (${(data.assignments || []).filter((a: any) => a.status === 'submitted').length})`} />
+                <Tab label={`Graded (${(data.assignments || []).filter((a: any) => a.status === 'graded').length})`} />
               </Tabs>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {(data.assignments || MOCK_ASSIGNMENTS)
-                  .filter((a: any) => {
-                    if (assignmentTab === 0) return a.status === 'pending';
-                    if (assignmentTab === 1) return a.status === 'submitted';
-                    return a.status === 'graded';
-                  })
-                  .map((a: any) => {
-                    const priorityColor = a.priority === 'high' ? '#ef4444' : a.priority === 'medium' ? '#f59e0b' : '#22c55e';
-                    return (
-                      <Box
-                        key={a.id}
-                        sx={{
-                          p: 2, borderRadius: 2.5, border: '1px solid', borderColor: 'divider',
-                          display: 'flex', alignItems: 'center', gap: 2,
-                          transition: 'box-shadow 0.15s', '&:hover': { boxShadow: 2 },
-                        }}
-                      >
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: priorityColor, flexShrink: 0 }} />
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{a.title}</Typography>
-                          <Typography variant="caption" color="text.secondary">{a.subject} · Due: {a.due}</Typography>
+                {!(data.assignments) || data.assignments.filter((a: any) => {
+                  if (assignmentTab === 0) return a.status === 'pending';
+                  if (assignmentTab === 1) return a.status === 'submitted';
+                  return a.status === 'graded';
+                }).length === 0 ? (
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                    No assignments found in this category.
+                  </Typography>
+                ) : (
+                  data.assignments
+                    .filter((a: any) => {
+                      if (assignmentTab === 0) return a.status === 'pending';
+                      if (assignmentTab === 1) return a.status === 'submitted';
+                      return a.status === 'graded';
+                    })
+                    .map((a: any) => {
+                      const priorityColor = a.priority === 'high' ? '#ef4444' : a.priority === 'medium' ? '#f59e0b' : '#22c55e';
+                      return (
+                        <Box
+                          key={a.id}
+                          sx={{
+                            p: 2, borderRadius: 2.5, border: '1px solid', borderColor: 'divider',
+                            display: 'flex', alignItems: 'center', gap: 2,
+                            transition: 'box-shadow 0.15s', '&:hover': { boxShadow: 2 },
+                          }}
+                        >
+                          <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: priorityColor, flexShrink: 0 }} />
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{a.title}</Typography>
+                            <Typography variant="caption" color="text.secondary">{a.subject} · Due: {a.due}</Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                            {'grade' in a && a.grade && <Chip label={`Grade: ${a.grade}`} size="small" color="success" />}
+                            <StatusChip status={a.status} />
+                            {a.status === 'pending' && (
+                              <Tooltip title="Submit">
+                                <IconButton size="small" color="primary" onClick={() => navigate('/marks')}>
+                                  <ArrowIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </Box>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                          {'grade' in a && a.grade && <Chip label={`Grade: ${a.grade}`} size="small" color="success" />}
-                          <StatusChip status={a.status} />
-                          {a.status === 'pending' && (
-                            <Tooltip title="Submit">
-                              <IconButton size="small" color="primary" onClick={() => navigate('/marks')}>
-                                <ArrowIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </Box>
-                      </Box>
-                    );
-                  })}
+                      );
+                    })
+                )}
               </Box>
             </CardContent>
           </Card>
@@ -546,31 +482,37 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                 }
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {(data.exams || MOCK_EXAMS).map((exam: any) => (
-                  <Box
-                    key={exam.id}
-                    sx={{ p: 2, borderRadius: 2.5, background: 'linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%)', border: '1px solid #fca5a5' }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{exam.subject}</Typography>
-                        <Typography variant="caption" color="text.secondary">{exam.date} · {exam.time} · {exam.venue}</Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#ef4444' }}>
-                          <TimerIcon sx={{ fontSize: 14 }} />
-                          <Typography variant="caption" sx={{ fontWeight: 800 }} color="#ef4444">{exam.countdown}d</Typography>
+                {!data.exams || data.exams.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                    No upcoming exams scheduled.
+                  </Typography>
+                ) : (
+                  data.exams.map((exam: any) => (
+                    <Box
+                      key={exam.id}
+                      sx={{ p: 2, borderRadius: 2.5, background: 'linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%)', border: '1px solid #fca5a5' }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }}>{exam.subject}</Typography>
+                          <Typography variant="caption" color="text.secondary">{exam.date} · {exam.time} · {exam.venue}</Typography>
                         </Box>
-                        <Typography variant="caption" color="text.secondary">remaining</Typography>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#ef4444' }}>
+                            <TimerIcon sx={{ fontSize: 14 }} />
+                            <Typography variant="caption" sx={{ fontWeight: 800 }} color="#ef4444">{exam.countdown}d</Typography>
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">remaining</Typography>
+                        </Box>
                       </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.max(0, 100 - (exam.countdown / 30) * 100)}
+                        sx={{ mt: 1.5, height: 4, borderRadius: 2, bgcolor: '#fecaca', '& .MuiLinearProgress-bar': { bgcolor: '#ef4444' } }}
+                      />
                     </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={Math.max(0, 100 - (exam.countdown / 30) * 100)}
-                      sx={{ mt: 1.5, height: 4, borderRadius: 2, bgcolor: '#fecaca', '& .MuiLinearProgress-bar': { bgcolor: '#ef4444' } }}
-                    />
-                  </Box>
-                ))}
+                  ))
+                )}
                 <Button variant="outlined" color="error" fullWidth sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }} onClick={() => navigate('/examinations')}>
                   Full Exam Schedule →
                 </Button>
@@ -595,28 +537,36 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             }
           />
           <Grid container spacing={2}>
-            {(data.attendanceBreakdown || MOCK_ATTENDANCE).map((att: any) => {
-              const warn = att.pct < 75;
-              const caution = att.pct < 85 && att.pct >= 75;
-              const barColor = warn ? '#ef4444' : caution ? '#f59e0b' : '#22c55e';
-              return (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={att.subject}>
-                  <Box sx={{ p: 2, borderRadius: 2.5, border: `1.5px solid ${warn ? '#fca5a5' : caution ? '#fcd34d' : '#86efac'}`, bgcolor: warn ? '#fef2f2' : caution ? '#fffbeb' : '#f0fdf4' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700 }}>{att.subject}</Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        {warn && <WarningIcon sx={{ fontSize: 14, color: '#ef4444' }} />}
-                        <Typography variant="body2" sx={{ fontWeight: 800, color: barColor }}>{att.pct}%</Typography>
+            {!data.attendanceBreakdown || data.attendanceBreakdown.length === 0 ? (
+              <Grid size={{ xs: 12 }}>
+                <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                  No subject attendance breakdown records found.
+                </Typography>
+              </Grid>
+            ) : (
+              data.attendanceBreakdown.map((att: any) => {
+                const warn = att.pct < 75;
+                const caution = att.pct < 85 && att.pct >= 75;
+                const barColor = warn ? '#ef4444' : caution ? '#f59e0b' : '#22c55e';
+                return (
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={att.subject}>
+                    <Box sx={{ p: 2, borderRadius: 2.5, border: `1.5px solid ${warn ? '#fca5a5' : caution ? '#fcd34d' : '#86efac'}`, bgcolor: warn ? '#fef2f2' : caution ? '#fffbeb' : '#f0fdf4' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{att.subject}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          {warn && <WarningIcon sx={{ fontSize: 14, color: '#ef4444' }} />}
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: barColor }}>{att.pct}%</Typography>
+                        </Box>
                       </Box>
+                      <LinearProgress variant="determinate" value={att.pct} sx={{ height: 6, borderRadius: 3, bgcolor: `${barColor}25`, '& .MuiLinearProgress-bar': { bgcolor: barColor } }} />
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                        {att.attended}/{att.total} classes attended
+                      </Typography>
                     </Box>
-                    <LinearProgress variant="determinate" value={att.pct} sx={{ height: 6, borderRadius: 3, bgcolor: `${barColor}25`, '& .MuiLinearProgress-bar': { bgcolor: barColor } }} />
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                      {att.attended}/{att.total} classes attended
-                    </Typography>
-                  </Box>
-                </Grid>
-              );
-            })}
+                  </Grid>
+                );
+              })
+            )}
           </Grid>
         </CardContent>
       </Card>
@@ -628,7 +578,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             <CardContent>
               <SectionTitle icon={<AccountBalanceIcon />} title="Fees & Payments" subtitle="Track dues and payment history" />
               {(() => {
-                const feesObj = data.fees || MOCK_FEES;
+                const feesObj = data.fees || { paid: 0, outstanding: 0, dueDate: 'N/A', history: [] };
                 return (
                   <>
                     {feesObj.outstanding > 0 && (
@@ -638,34 +588,40 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                     )}
                     <Box sx={{ display: 'flex', gap: 1.5, mb: 2.5 }}>
                       <Box sx={{ flex: 1, p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #86efac', borderRadius: 2.5, textAlign: 'center' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 800 }} color="#22c55e">₹{feesObj.paid.toLocaleString()}</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 800 }} color="#22c55e">₹{(feesObj.paid || 0).toLocaleString()}</Typography>
                         <Typography variant="caption" color="text.secondary">Paid</Typography>
                       </Box>
                       <Box sx={{ flex: 1, p: 1.5, bgcolor: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 2.5, textAlign: 'center' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 800 }} color="#ef4444">₹{feesObj.outstanding.toLocaleString()}</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 800 }} color="#ef4444">₹{(feesObj.outstanding || 0).toLocaleString()}</Typography>
                         <Typography variant="caption" color="text.secondary">Outstanding</Typography>
                       </Box>
                     </Box>
-                    <List disablePadding dense>
-                      {(feesObj.history || []).map((h: any, i: number) => (
-                        <React.Fragment key={i}>
-                          <ListItem sx={{ px: 0, py: 1 }}>
-                            <ListItemIcon sx={{ minWidth: 28 }}>
-                              <DotIcon sx={{ fontSize: 8, color: h.status === 'paid' ? '#22c55e' : '#f59e0b' }} />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{h.desc}</Typography>}
-                              secondary={h.date}
-                            />
-                            <Box sx={{ textAlign: 'right' }}>
-                              <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{h.amount.toLocaleString()}</Typography>
-                              <Chip label={h.status} size="small" color={h.status === 'paid' ? 'success' : 'warning'} sx={{ height: 16, fontSize: '0.6rem' }} />
-                            </Box>
-                          </ListItem>
-                          {feesObj.history && i < feesObj.history.length - 1 && <Divider />}
-                        </React.Fragment>
-                      ))}
-                    </List>
+                    {!feesObj.history || feesObj.history.length === 0 ? (
+                      <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                        No fee invoices or records found.
+                      </Typography>
+                    ) : (
+                      <List disablePadding dense>
+                        {feesObj.history.map((h: any, i: number) => (
+                          <React.Fragment key={i}>
+                            <ListItem sx={{ px: 0, py: 1 }}>
+                              <ListItemIcon sx={{ minWidth: 28 }}>
+                                <DotIcon sx={{ fontSize: 8, color: h.status === 'paid' ? '#22c55e' : '#f59e0b' }} />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{h.desc}</Typography>}
+                                secondary={h.date}
+                              />
+                              <Box sx={{ textAlign: 'right' }}>
+                                <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{(h.amount || 0).toLocaleString()}</Typography>
+                                <Chip label={h.status} size="small" color={h.status === 'paid' ? 'success' : 'warning'} sx={{ height: 16, fontSize: '0.6rem' }} />
+                              </Box>
+                            </ListItem>
+                            {i < feesObj.history.length - 1 && <Divider />}
+                          </React.Fragment>
+                        ))}
+                      </List>
+                    )}
                   </>
                 );
               })()}
@@ -687,35 +643,43 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                 action={<Button size="small" endIcon={<ArrowIcon />} sx={{ textTransform: 'none', fontWeight: 600 }}>View All</Button>}
               />
               <Grid container spacing={2}>
-                {(data.resources || MOCK_RESOURCES).map((r: any) => {
-                  const isVideo = r.type === 'Video';
-                  return (
-                    <Grid size={{ xs: 12, sm: 6 }} key={r.id}>
-                      <Box
-                        sx={{
-                          p: 2, borderRadius: 2.5, border: '1px solid', borderColor: 'divider',
-                          display: 'flex', gap: 1.5, alignItems: 'flex-start',
-                          transition: 'box-shadow 0.15s, transform 0.15s',
-                          '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' },
-                        }}
-                      >
-                        <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: isVideo ? '#fef2f2' : '#f0f0ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: isVideo ? '#ef4444' : '#6366f1' }}>
-                          {isVideo ? <PlayIcon /> : <MenuBookIcon />}
-                        </Box>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{r.title}</Typography>
-                          <Typography variant="caption" color="text.secondary">{r.subject} · {r.type} · {r.size}</Typography>
-                          <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                            <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', py: 0.25, borderRadius: 1.5 }} startIcon={<DownloadIcon sx={{ fontSize: 12 }} />}>Download</Button>
-                            {isVideo && (
-                              <Button size="small" variant="outlined" color="error" sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', py: 0.25, borderRadius: 1.5 }} startIcon={<PlayIcon sx={{ fontSize: 12 }} />}>Play</Button>
-                            )}
+                {!data.resources || data.resources.length === 0 ? (
+                  <Grid size={{ xs: 12 }}>
+                    <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                      No learning resources available.
+                    </Typography>
+                  </Grid>
+                ) : (
+                  data.resources.map((r: any) => {
+                    const isVideo = r.type === 'Video';
+                    return (
+                      <Grid size={{ xs: 12, sm: 6 }} key={r.id}>
+                        <Box
+                          sx={{
+                            p: 2, borderRadius: 2.5, border: '1px solid', borderColor: 'divider',
+                            display: 'flex', gap: 1.5, alignItems: 'flex-start',
+                            transition: 'box-shadow 0.15s, transform 0.15s',
+                            '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' },
+                          }}
+                        >
+                          <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: isVideo ? '#fef2f2' : '#f0f0ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: isVideo ? '#ef4444' : '#6366f1' }}>
+                            {isVideo ? <PlayIcon /> : <MenuBookIcon />}
+                          </Box>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{r.title}</Typography>
+                            <Typography variant="caption" color="text.secondary">{r.subject} · {r.type} · {r.size}</Typography>
+                            <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                              <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', py: 0.25, borderRadius: 1.5 }} startIcon={<DownloadIcon sx={{ fontSize: 12 }} />}>Download</Button>
+                              {isVideo && (
+                                <Button size="small" variant="outlined" color="error" sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', py: 0.25, borderRadius: 1.5 }} startIcon={<PlayIcon sx={{ fontSize: 12 }} />}>Play</Button>
+                              )}
+                            </Box>
                           </Box>
                         </Box>
-                      </Box>
-                    </Grid>
-                  );
-                })}
+                      </Grid>
+                    );
+                  })
+                )}
               </Grid>
             </CardContent>
           </Card>
@@ -729,28 +693,34 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             <CardContent>
               <SectionTitle icon={<NotificationsIcon />} title="Announcements & Notices" subtitle="School-wide alerts and department notices" />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {(data.announcements || MOCK_ANNOUNCEMENTS).map((a: any) => {
-                  const typeColor = a.type === 'exam' ? '#ef4444' : a.type === 'event' ? '#8b5cf6' : '#0d9488';
-                  const typeBg = a.type === 'exam' ? '#fef2f2' : a.type === 'event' ? '#faf5ff' : '#f0fdfa';
-                  return (
-                    <Box
-                      key={a.id}
-                      sx={{ p: 2, borderRadius: 2.5, border: `1px solid ${a.urgent ? '#fca5a5' : 'divider'}`, bgcolor: a.urgent ? '#fff5f5' : 'background.paper', display: 'flex', alignItems: 'center', gap: 2 }}
-                    >
-                      <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: typeBg, color: typeColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {a.type === 'exam' ? <EventIcon fontSize="small" /> : a.type === 'event' ? <StarIcon fontSize="small" /> : <NotificationsIcon fontSize="small" />}
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }}>{a.title}</Typography>
-                          {a.urgent && <Chip label="URGENT" size="small" color="error" sx={{ height: 16, fontSize: '0.6rem' }} />}
+                {!data.announcements || data.announcements.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                    No announcements or notices.
+                  </Typography>
+                ) : (
+                  data.announcements.map((a: any) => {
+                    const typeColor = a.type === 'exam' ? '#ef4444' : a.type === 'event' ? '#8b5cf6' : '#0d9488';
+                    const typeBg = a.type === 'exam' ? '#fef2f2' : a.type === 'event' ? '#faf5ff' : '#f0fdfa';
+                    return (
+                      <Box
+                        key={a.id}
+                        sx={{ p: 2, borderRadius: 2.5, border: `1.5px solid ${a.urgent ? '#fca5a5' : 'divider'}`, bgcolor: a.urgent ? '#fff5f5' : 'background.paper', display: 'flex', alignItems: 'center', gap: 2 }}
+                      >
+                        <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: typeBg, color: typeColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {a.type === 'exam' ? <EventIcon fontSize="small" /> : a.type === 'event' ? <StarIcon fontSize="small" /> : <NotificationsIcon fontSize="small" />}
                         </Box>
-                        <Typography variant="caption" color="text.secondary">{a.time}</Typography>
+                        <Box sx={{ flex: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700 }}>{a.title}</Typography>
+                            {a.urgent && <Chip label="URGENT" size="small" color="error" sx={{ height: 16, fontSize: '0.6rem' }} />}
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">{a.time}</Typography>
+                        </Box>
+                        <Chip label={a.type.toUpperCase()} size="small" sx={{ bgcolor: typeBg, color: typeColor, fontWeight: 700, fontSize: '0.6rem', border: `1px solid ${typeColor}40` }} />
                       </Box>
-                      <Chip label={a.type.toUpperCase()} size="small" sx={{ bgcolor: typeBg, color: typeColor, fontWeight: 700, fontSize: '0.6rem', border: `1px solid ${typeColor}40` }} />
-                    </Box>
-                  );
-                })}
+                    );
+                  })
+                )}
               </Box>
             </CardContent>
           </Card>
@@ -761,26 +731,40 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             <CardContent>
               <SectionTitle icon={<TrophyIcon />} title="Achievements & Rewards" subtitle="Badges, certifications and awards" />
               <Grid container spacing={2} sx={{ mb: 2 }}>
-                {(data.achievements || MOCK_ACHIEVEMENTS).map((ach: any) => (
-                  <Grid size={{ xs: 6 }} key={ach.id}>
-                    <Box sx={{ p: 2, borderRadius: 2.5, textAlign: 'center', border: '1px solid', borderColor: 'divider', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' } }}>
-                      <Typography sx={{ fontSize: 32 }}>{ach.icon}</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 700, mt: 0.5 }}>{ach.title}</Typography>
-                      <Typography variant="caption" color="text.secondary">{ach.subtitle}</Typography>
-                    </Box>
+                {!data.achievements || data.achievements.length === 0 ? (
+                  <Grid size={{ xs: 12 }}>
+                    <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
+                      No achievements unlocked yet.
+                    </Typography>
                   </Grid>
-                ))}
+                ) : (
+                  data.achievements.map((ach: any) => (
+                    <Grid size={{ xs: 6 }} key={ach.id}>
+                      <Box sx={{ p: 2, borderRadius: 2.5, textAlign: 'center', border: '1px solid', borderColor: 'divider', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' } }}>
+                        <Typography sx={{ fontSize: 32 }}>{ach.icon || '🏅'}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700, mt: 0.5 }}>{ach.title}</Typography>
+                        <Typography variant="caption" color="text.secondary">{ach.subtitle}</Typography>
+                      </Box>
+                    </Grid>
+                  ))
+                )}
               </Grid>
-              <Box sx={{ p: 2, borderRadius: 2.5, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', color: 'white', display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <GradeIcon />
+              {data.rank && data.rank.position > 0 ? (
+                <Box sx={{ p: 2, borderRadius: 2.5, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', color: 'white', display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <GradeIcon />
+                  </Box>
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>Class Rank: #{data.rank.position}</Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.7 }}>{data.rank.label} · {student.class} · {student.academicYear}</Typography>
+                  </Box>
+                  <TrophyIcon sx={{ ml: 'auto', color: '#fbbf24' }} />
                 </Box>
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Class Rank: #3</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.7 }}>Top 10% of class · XII-A · 2024-25</Typography>
+              ) : (
+                <Box sx={{ p: 2.5, borderRadius: 2.5, border: '1px dashed', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary' }}>
+                  <Typography variant="body2">Class rank will update after term evaluations.</Typography>
                 </Box>
-                <TrophyIcon sx={{ ml: 'auto', color: '#fbbf24' }} />
-              </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -843,37 +827,80 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             <CardContent>
               <SectionTitle icon={<ChatIcon />} title="Communication" subtitle="Message teachers and classmates" />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {[
-                  { name: 'Dr. A. Kumar', role: 'Physics Teacher', msg: 'Submit your lab report by tomorrow.', time: '10 min', unread: 2, color: '#6366f1' },
-                  { name: 'Prof. R. Gupta', role: 'Math Teacher', msg: 'Great work on the test!', time: '2 hrs', unread: 0, color: '#0d9488' },
-                  { name: 'Class Group XII-A', role: 'Group Chat', msg: 'Study session tonight at 8 PM?', time: 'Yesterday', unread: 5, color: '#f59e0b' },
-                ].map((m) => (
-                  <Box
-                    key={m.name}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
-                    onClick={() => navigate('/notifications')}
-                  >
-                    <Avatar sx={{ width: 38, height: 38, bgcolor: `${m.color}20`, color: m.color, fontWeight: 700, fontSize: '0.85rem' }}>
-                      {m.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
-                    </Avatar>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{m.name}</Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>{m.time}</Typography>
+                {!data.communications || data.communications.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                    No recent messages.
+                  </Typography>
+                ) : (
+                  data.communications.map((m: any) => (
+                    <Box
+                      key={m.name}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+                      onClick={() => navigate('/notifications')}
+                    >
+                      <Avatar sx={{ width: 38, height: 38, bgcolor: `${m.color || '#6366f1'}20`, color: m.color || '#6366f1', fontWeight: 700, fontSize: '0.85rem' }}>
+                        {m.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                      </Avatar>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>{m.name}</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>{m.time}</Typography>
+                        </Box>
+                        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>{m.msg}</Typography>
                       </Box>
-                      <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>{m.msg}</Typography>
+                      {m.unread > 0 && (
+                        <Box sx={{ width: 18, height: 18, borderRadius: '50%', bgcolor: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.6rem' }}>{m.unread}</Typography>
+                        </Box>
+                      )}
                     </Box>
-                    {m.unread > 0 && (
-                      <Box sx={{ width: 18, height: 18, borderRadius: '50%', bgcolor: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.6rem' }}>{m.unread}</Typography>
-                      </Box>
-                    )}
-                  </Box>
-                ))}
+                  ))
+                )}
                 <Button variant="outlined" fullWidth sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2, mt: 0.5 }} startIcon={<ChatIcon />} onClick={() => navigate('/notifications')}>
                   Open Messages
                 </Button>
               </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* ═══ 10. RECENT ACTIVITY ═══ */}
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12 }}>
+          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+            <CardContent>
+              <SectionTitle icon={<NotificationsIcon />} title="Recent Activity" subtitle="Your latest updates and interactions" />
+              {data.recentActivity && data.recentActivity.length > 0 ? (
+                <List disablePadding>
+                  {data.recentActivity.map((activity: any, i: number) => (
+                    <ListItem key={i} sx={{ px: 0, py: 1.5, alignItems: 'flex-start' }} divider={i !== data.recentActivity!.length - 1}>
+                      <ListItemIcon sx={{ minWidth: 40, mt: 0.5 }}>
+                        <Typography sx={{ fontSize: 20 }}>{activity.icon || '📌'}</Typography>
+                      </ListItemIcon>
+                      <ListItemText
+                        disableTypography
+                        primary={
+                          <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
+                            {activity.description}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            {activity.time}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Box sx={{ py: 6, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No recent activity detected.
+                  </Typography>
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>

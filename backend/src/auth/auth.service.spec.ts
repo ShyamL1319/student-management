@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import * as otplib from 'otplib';
+import { EmailService } from '../notifications/services/email.service';
 
 jest.mock('bcrypt');
 
@@ -50,6 +51,10 @@ describe('AuthService', () => {
     create: jest.fn(),
   };
 
+  const mockEmailService = {
+    sendEmail: jest.fn().mockResolvedValue(undefined),
+  };
+
   const mockJwtService = {
     sign: jest.fn(),
     verify: jest.fn(),
@@ -78,6 +83,7 @@ describe('AuthService', () => {
         { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: EmailService, useValue: mockEmailService },
       ],
     }).compile();
 

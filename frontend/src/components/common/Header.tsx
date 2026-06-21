@@ -27,6 +27,7 @@ import {
   Person as PersonIcon,
   Settings as SettingsIcon,
   ExitToApp as LogoutIcon,
+  Public as PublicIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useThemeMode } from '../../contexts/ThemeContext';
@@ -122,25 +123,19 @@ export const Header: FC<HeaderProps> = ({ onDrawerToggle }) => {
             </IconButton>
           )}
           
-          <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
-            <Box
-              sx={{
-                height: 32,
-                px: 1.25,
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #4f46e5 0%, #0d9488 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '0.9rem',
-                fontFamily: "'Outfit', sans-serif",
-                mr: 1.5,
-                letterSpacing: '0.5px',
-              }}
-            >
-              PSEI
+          <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: 1 }} onClick={() => navigate('/')}>
+            <Box sx={{ position: 'relative', width: 28, height: 28, ml: 1 }}>
+               <PublicIcon sx={{ 
+                 fontSize: 28, 
+                 position: 'absolute',
+                 fill: 'url(#header-logo-gradient)' 
+               }} />
+               <svg width="0" height="0">
+                 <linearGradient id="header-logo-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                   <stop stopColor="#3b82f6" offset="0%" />
+                   <stop stopColor="#ec4899" offset="100%" />
+                 </linearGradient>
+               </svg>
             </Box>
             <Typography
               variant="h6"
@@ -151,12 +146,12 @@ export const Header: FC<HeaderProps> = ({ onDrawerToggle }) => {
                 fontWeight: 700,
                 letterSpacing: '-0.5px',
                 display: { xs: 'none', sm: 'block' },
-                background: 'linear-gradient(135deg, #4f46e5 0%, #312e81 100%)',
+                background: 'linear-gradient(90deg, #60a5fa 0%, #f472b6 100%)',
                 WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: mode === 'light' ? 'transparent' : 'inherit',
+                WebkitTextFillColor: 'transparent',
               }}
             >
-              PS Educational Institute
+              EduSphere
             </Typography>
           </Box>
         </Box>
@@ -237,13 +232,6 @@ export const Header: FC<HeaderProps> = ({ onDrawerToggle }) => {
                 </Menu>
               </Box>
 
-              {/* Theme Toggle */}
-              <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
-                <IconButton onClick={toggleThemeMode} color="inherit" size="medium">
-                  {mode === 'light' ? <DarkModeIcon fontSize="small" /> : <LightModeIcon fontSize="small" />}
-                </IconButton>
-              </Tooltip>
-
               {/* Notifications */}
               <IconButton
                 size="medium"
@@ -252,7 +240,7 @@ export const Header: FC<HeaderProps> = ({ onDrawerToggle }) => {
                 onClick={handleNotifOpen}
               >
                 <Badge color="error" variant="dot">
-                  <NotificationsIcon fontSize="small" />
+                  <NotificationsIcon fontSize="small" sx={{ filter: mode === 'dark' ? 'drop-shadow(0 0 4px rgba(255,255,255,0.4))' : 'none' }} />
                 </Badge>
               </IconButton>
               <Menu

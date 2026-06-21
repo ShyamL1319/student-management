@@ -9,12 +9,13 @@ import {
   HttpStatus,
   Get,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiCreatedResponse, ApiBadRequestResponse } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RegisterDto } from './dto/register.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -133,6 +134,16 @@ export class AuthController {
     return this.authService.disableMfa(user._id.toString());
   }
 
+    @Public()
+  @Throttle({ sensitive: { limit: 5, ttl: 60000 } })
+  @Post('register')
+  @ApiOperation({ summary: 'Register new user' })
+  @ApiCreatedResponse({ description: 'User registered, verification email sent' })
+  @ApiBadRequestResponse({ description: 'Invalid payload or email already exists' })
+  async register(@Body() registerDto: RegisterDto) {
+    await this.authService.register(registerDto);
+    return { message: 'Registration successful, verification email sent' };
+  }
   @Public()
   @Get('google')
   @UseGuards(GoogleAuthGuard)

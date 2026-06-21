@@ -26,6 +26,7 @@ import {
 } from '../academic-years/schemas/academic-year.schema';
 import { DayOfWeek } from '../common/enums/day-of-week.enum';
 import { StudentDashboardResponseDto } from './dto/student-dashboard.dto';
+import { ActivitiesService } from '../activities/activities.service';
 
 const SUBJECT_COLORS = [
   '#6366f1',
@@ -64,6 +65,7 @@ export class DashboardService {
     @InjectModel(Subject.name) private subjectModel: Model<SubjectDocument>,
     @InjectModel(AcademicYear.name)
     private academicYearModel: Model<AcademicYearDocument>,
+    private activitiesService: ActivitiesService,
   ) {}
 
   async getStudentDashboardData(user: {
@@ -95,6 +97,7 @@ export class DashboardService {
       invoices,
       notifications,
       subjects,
+      recentActivity,
     ] = await Promise.all([
       this.attendanceModel
         .find({
@@ -118,6 +121,7 @@ export class DashboardService {
         .limit(20)
         .lean(),
       this.subjectModel.find({ isActive: true }).lean(),
+      this.activitiesService.getRecentActivities(studentId, 10),
     ]);
 
     const subjectMap = new Map(subjects.map((s) => [s._id.toString(), s.name]));
@@ -191,6 +195,7 @@ export class DashboardService {
       achievements,
       rank,
       communications,
+      recentActivity,
     };
   }
 

@@ -15,12 +15,15 @@ import {
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { AttendanceReportQueryDto } from './dto/attendance-report-query.dto';
+import { ActivitiesService } from '../activities/activities.service';
+import { ActivityType } from '../activities/schemas/activity-log.schema';
 
 @Injectable()
 export class AttendancesService {
   constructor(
     @InjectModel(Attendance.name)
     private attendanceModel: Model<AttendanceDocument>,
+    private readonly activitiesService: ActivitiesService,
   ) {}
 
   private normalizeDate(dateString: string | Date): Date {
@@ -74,12 +77,24 @@ export class AttendancesService {
       createAttendanceDto.attendeeId,
     );
 
-    return this.attendanceModel.create({
+    const record = await this.attendanceModel.create({
       ...createAttendanceDto,
       attendeeId,
       date: attendanceDate,
       ...attendeeRefs,
     });
+
+    if (createAttendanceDto.attendeeType === AttendanceType.STUDENT) {
+      await this.activitiesService.logActivity({
+        type: ActivityType.ATTENDANCE,
+        description: `Attendance marked ${createAttendanceDto.status} for ${attendanceDate.toISOString().split('T')[0]}`,
+        icon: '✅',
+        student: createAttendanceDto.attendeeId,
+        school: createAttendanceDto.school,
+      });
+    }
+
+    return record;
   }
 
   async findAll(

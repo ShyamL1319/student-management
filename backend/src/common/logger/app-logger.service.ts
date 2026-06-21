@@ -2,6 +2,7 @@ import { Injectable, LoggerService } from '@nestjs/common';
 import * as winston from 'winston';
 import { trace, context } from '@opentelemetry/api';
 import { TenantContext } from '../../tenant/tenant.context';
+import * as Sentry from '@sentry/nestjs';
 
 const colors = {
   fatal: '\x1b[41m\x1b[37m', // bold white text on red background
@@ -84,7 +85,9 @@ const redact = (obj: any): any => {
   const result: any = {};
   for (const key of Object.keys(obj)) {
     const lowerKey = key.toLowerCase();
-    const isSensitive = SENSITIVE_KEYS.some((sensitiveWord) => lowerKey.includes(sensitiveWord));
+    const isSensitive = SENSITIVE_KEYS.some((sensitiveWord) =>
+      lowerKey.includes(sensitiveWord),
+    );
 
     if (isSensitive && typeof obj[key] === 'string' && obj[key]) {
       result[key] = '[REDACTED]';
@@ -108,42 +111,50 @@ export class AppLoggerService implements LoggerService {
   constructor() {
     const isProduction = process.env.NODE_ENV === 'production';
 
-    const devFormat = winston.format.printf(({ timestamp, level, message, context: logContext, ...meta }) => {
-      const lowerLevel = level.toLowerCase();
-      const color = colors[lowerLevel as keyof typeof colors] || '';
-      const reset = colors.reset;
-      const formattedLevel = `${color}${level.toUpperCase().padEnd(5)}${reset}`;
+    const devFormat = winston.format.printf(
+      ({ timestamp, level, message, context: logContext, ...meta }) => {
+        const lowerLevel = level.toLowerCase();
+        const color = colors[lowerLevel as keyof typeof colors] || '';
+        const reset = colors.reset;
+        const formattedLevel = `${color}${level.toUpperCase().padEnd(5)}${reset}`;
 
-      // Clean metadata
-      const cleanMeta = { ...meta };
-      delete cleanMeta.service;
-      delete cleanMeta.environment;
-      delete cleanMeta.version;
+        // Clean metadata
+        const cleanMeta = { ...meta };
+        delete cleanMeta.service;
+        delete cleanMeta.environment;
+        delete cleanMeta.version;
 
-      let msgStr = message;
-      if (typeof message === 'object' && message !== null) {
-        const { message: innerMsg, ...restMsg } = message as Record<string, any>;
-        msgStr = innerMsg || JSON.stringify(message);
-        Object.assign(cleanMeta, restMsg);
-      }
+        let msgStr = message;
+        if (typeof message === 'object' && message !== null) {
+          const { message: innerMsg, ...restMsg } = message as Record<
+            string,
+            any
+          >;
+          msgStr = innerMsg || JSON.stringify(message);
+          Object.assign(cleanMeta, restMsg);
+        }
 
-      let stackString = '';
-      if (cleanMeta.stackTrace) {
-        stackString = `\n${cleanMeta.stackTrace}`;
-        delete cleanMeta.stackTrace;
-      }
+        let stackString = '';
+        if (cleanMeta.stackTrace) {
+          stackString = `\n${cleanMeta.stackTrace}`;
+          delete cleanMeta.stackTrace;
+        }
 
-      // Format contextual trace identifiers if present
-      let contextString = '';
-      if (cleanMeta.traceId) {
-        contextString = ` [traceId=${(cleanMeta.traceId as string).slice(0, 8)}]`;
-        delete cleanMeta.traceId;
-        delete cleanMeta.spanId;
-      }
+        // Format contextual trace identifiers if present
+        let contextString = '';
+        if (cleanMeta.traceId) {
+          contextString = ` [traceId=${(cleanMeta.traceId as string).slice(0, 8)}]`;
+          delete cleanMeta.traceId;
+          delete cleanMeta.spanId;
+        }
 
-      const metaString = Object.keys(cleanMeta).length > 0 ? ` ${JSON.stringify(cleanMeta)}` : '';
-      return `${timestamp} [${formattedLevel}] [${logContext || 'App'}]${contextString} ${msgStr}${metaString}${stackString}`;
-    });
+        const metaString =
+          Object.keys(cleanMeta).length > 0
+            ? ` ${JSON.stringify(cleanMeta)}`
+            : '';
+        return `${timestamp} [${formattedLevel}] [${logContext || 'App'}]${contextString} ${msgStr}${metaString}${stackString}`;
+      },
+    );
 
     this.logger = winston.createLogger({
       levels: customLevels,
@@ -157,17 +168,17 @@ export class AppLoggerService implements LoggerService {
         new winston.transports.Console({
           format: isProduction
             ? winston.format.combine(
-              winston.format.timestamp(),
-              injectContext(),
-              redactFormat(),
-              winston.format.json(),
-            )
+                winston.format.timestamp(),
+                injectContext(),
+                redactFormat(),
+                winston.format.json(),
+              )
             : winston.format.combine(
-              winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-              injectContext(),
-              redactFormat(),
-              devFormat,
-            ),
+                winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+                injectContext(),
+                redactFormat(),
+                devFormat,
+              ),
         }),
       ],
     });
@@ -176,31 +187,97 @@ export class AppLoggerService implements LoggerService {
   log(message: any, ...optionalParams: any[]) {
     const { context, meta } = this.parseParams(optionalParams);
     this.logger.info(message, { context, ...meta });
+    try {
+      if (Sentry.logger && typeof Sentry.logger.info === 'function') {
+        const logMsg =
+          typeof message === 'object'
+            ? JSON.stringify(message)
+            : String(message);
+        Sentry.logger.info(logMsg, { context, ...meta } as any);
+      }
+    } catch {
+      // Ignore Sentry logging errors
+    }
   }
 
   error(message: any, ...optionalParams: any[]) {
     const { context, meta, trace } = this.parseErrorParams(optionalParams);
     this.logger.error(message, { context, stackTrace: trace, ...meta });
+    try {
+      if (Sentry.logger && typeof Sentry.logger.error === 'function') {
+        const logMsg =
+          typeof message === 'object'
+            ? JSON.stringify(message)
+            : String(message);
+        Sentry.logger.error(logMsg, { context, stackTrace: trace, ...meta } as any);
+      }
+    } catch {
+      // Ignore Sentry logging errors
+    }
   }
 
   warn(message: any, ...optionalParams: any[]) {
     const { context, meta } = this.parseParams(optionalParams);
     this.logger.warn(message, { context, ...meta });
+    try {
+      if (Sentry.logger && typeof Sentry.logger.warn === 'function') {
+        const logMsg =
+          typeof message === 'object'
+            ? JSON.stringify(message)
+            : String(message);
+        Sentry.logger.warn(logMsg, { context, ...meta } as any);
+      }
+    } catch {
+      // Ignore Sentry logging errors
+    }
   }
 
   debug(message: any, ...optionalParams: any[]) {
     const { context, meta } = this.parseParams(optionalParams);
     this.logger.debug(message, { context, ...meta });
+    try {
+      if (Sentry.logger && typeof Sentry.logger.debug === 'function') {
+        const logMsg =
+          typeof message === 'object'
+            ? JSON.stringify(message)
+            : String(message);
+        Sentry.logger.debug(logMsg, { context, ...meta } as any);
+      }
+    } catch {
+      // Ignore Sentry logging errors
+    }
   }
 
   verbose(message: any, ...optionalParams: any[]) {
     const { context, meta } = this.parseParams(optionalParams);
     this.logger.verbose(message, { context, ...meta });
+    try {
+      if (Sentry.logger && typeof Sentry.logger.debug === 'function') {
+        const logMsg =
+          typeof message === 'object'
+            ? JSON.stringify(message)
+            : String(message);
+        Sentry.logger.debug(logMsg, { context, ...meta } as any);
+      }
+    } catch {
+      // Ignore Sentry logging errors
+    }
   }
 
   fatal(message: any, ...optionalParams: any[]) {
     const { context, meta } = this.parseParams(optionalParams);
     this.logger.log('fatal', message, { context, ...meta });
+    try {
+      if (Sentry.logger && typeof Sentry.logger.error === 'function') {
+        const logMsg =
+          typeof message === 'object'
+            ? JSON.stringify(message)
+            : String(message);
+        Sentry.logger.error(logMsg, { context, fatal: true, ...meta } as any);
+      }
+    } catch {
+      // Ignore Sentry logging errors
+    }
   }
 
   private parseParams(optionalParams: any[]) {

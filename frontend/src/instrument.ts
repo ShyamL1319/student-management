@@ -12,6 +12,13 @@ Sentry.init({
   environment: import.meta.env.MODE,
   release: import.meta.env.VITE_APP_VERSION,
 
+  // Data collection (SDK ≥ 10.57.0 — replaces deprecated sendDefaultPii)
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment/configure the options below:
+    // userInfo: false,
+    // httpBodies: [],
+  },
+
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.reactRouterV7BrowserTracingIntegration({
@@ -24,6 +31,9 @@ Sentry.init({
     Sentry.replayIntegration({
       maskAllText: true,
       blockAllMedia: true,
+    }),
+    Sentry.consoleLoggingIntegration({
+      levels: ['log', 'warn', 'error'],
     }),
   ],
 

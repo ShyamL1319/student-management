@@ -43,6 +43,7 @@ const AuditLogsPage = lazy(() => import('./features/audit-logs').then(m => ({ de
 const ParentDashboard = lazy(() => import('./features/dashboard/pages/ParentDashboard'));
 const LeavesPage = lazy(() => import('./features/leaves/pages/LeavesPage').then(m => ({ default: m.LeavesPage })));
 const AssignmentsPage = lazy(() => import('./features/assignments/pages/AssignmentsPage').then(m => ({ default: m.AssignmentsPage })));
+const LandingPage = lazy(() => import('./features/landing/pages/LandingPage'));
 
 const PageLoader = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
@@ -84,8 +85,9 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="/" element={<LandingPage />} />
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardPage />

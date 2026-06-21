@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
+import { ConflictException } from '@nestjs/common';
+import { EmailService } from '../notifications/services/email.service';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
@@ -15,7 +17,9 @@ import { generateSecret, generateURI, verify as verifyTotp } from 'otplib';
 import * as QRCode from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { TenantContext } from '../tenant/tenant.context';
+import * as Sentry from '@sentry/nestjs';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +27,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -150,11 +155,21 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) {
+      try {
+        Sentry.metrics.count('auth.login.attempts', 1, {
+          attributes: { status: 'failed', mfaRequired: 'false', reason: 'invalid_credentials' },
+        });
+      } catch (metricErr) {}
       throw new UnauthorizedException('Invalid credentials');
     }
 
     // Check if MFA is enabled
     if (user.mfaEnabled) {
+      try {
+        Sentry.metrics.count('auth.login.attempts', 1, {
+          attributes: { status: 'pending', mfaRequired: 'true' },
+        });
+      } catch (metricErr) {}
       const mfaPayload = {
         sub: user._id.toString(),
         isMfaPending: true,
@@ -169,6 +184,11 @@ export class AuthService {
       };
     }
 
+    try {
+      Sentry.metrics.count('auth.login.attempts', 1, {
+        attributes: { status: 'success', mfaRequired: 'false' },
+      });
+    } catch (metricErr) {}
     return this.generateUserTokens(user);
   }
 
@@ -177,6 +197,8 @@ export class AuthService {
       email: user.email,
       sub: user._id,
       role: user.role,
+      roleType: user.roleType || user.role?.name,
+      classId: user.class ? user.class.toString() : undefined,
       schoolId: user.schoolId?.toString(),
     };
     const accessToken = this.jwtService.sign(payload, {
@@ -204,6 +226,46 @@ export class AuthService {
 
   async logout(userId: string) {
     return this.usersService.update(userId, { refreshTokenHash: '' });
+  }
+
+  // --- Register endpoint logic ---
+  async register(dto: RegisterDto) {
+    const { email, password, firstName, lastName } = dto;
+    const existing = await this.usersService.findByEmail(email);
+    if (existing) {
+      throw new ConflictException('Email already registered');
+    }
+    const hashed = await bcrypt.hash(password, 10);
+    // Get USER role
+    const RoleModel = this.usersService.getUserModel().db.model('Role');
+    let userRole = await RoleModel.findOne({ name: 'USER' }).exec();
+    if (!userRole) {
+      userRole = await RoleModel.create({ name: 'USER', description: 'Standard user', permissions: [] });
+    }
+    const newUser = await this.usersService.create({
+      email,
+      passwordHash: hashed,
+      firstName,
+      lastName,
+      role: userRole._id,
+      roleType: 'USER',
+      isActive: true,
+    });
+    // Email verification token
+    const token = crypto.randomBytes(20).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    await this.usersService.update(newUser._id.toString(), {
+      isEmailVerified: false,
+      emailVerificationToken: token,
+      emailVerificationExpires: expires,
+    });
+    // Send verification email
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'https://psei.school.com:5173';
+    const verificationLink = `${frontendUrl}/verify-email?userId=${newUser._id}&token=${token}`;
+    const subject = 'Verify your email address';
+    const message = `Please verify your email by clicking the following link: ${verificationLink}`;
+    await this.emailService.sendEmail(email, subject, message);
+    return { message: 'Verification email sent' };
   }
 
   async refreshTokens(userId: string, refreshToken: string) {
@@ -360,6 +422,11 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_SECRET') || 'supersecret',
       });
     } catch (err) {
+      try {
+        Sentry.metrics.count('auth.login.attempts', 1, {
+          attributes: { status: 'failed', mfaRequired: 'true', reason: 'expired_mfa_token' },
+        });
+      } catch (metricErr) {}
       throw new UnauthorizedException('Invalid or expired MFA token');
     }
 
@@ -406,9 +473,19 @@ export class AuthService {
     }
 
     if (!isValid) {
+      try {
+        Sentry.metrics.count('auth.login.attempts', 1, {
+          attributes: { status: 'failed', mfaRequired: 'true', reason: 'invalid_mfa_code' },
+        });
+      } catch (metricErr) {}
       throw new UnauthorizedException('Invalid MFA verification code');
     }
 
+    try {
+      Sentry.metrics.count('auth.login.attempts', 1, {
+        attributes: { status: 'success', mfaRequired: 'true' },
+      });
+    } catch (metricErr) {}
     return this.generateUserTokens(user);
   }
 

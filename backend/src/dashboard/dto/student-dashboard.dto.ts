@@ -244,6 +244,17 @@ export class CommunicationItemDto {
   color!: string;
 }
 
+export class RecentActivityItemDto {
+  @ApiProperty()
+  description!: string;
+
+  @ApiProperty()
+  icon!: string;
+
+  @ApiProperty()
+  time!: string;
+}
+
 export class StudentDashboardResponseDto {
   @ApiProperty({ type: StudentProfileDto })
   student!: StudentProfileDto;
@@ -283,4 +294,7 @@ export class StudentDashboardResponseDto {
 
   @ApiProperty({ type: [CommunicationItemDto] })
   communications!: CommunicationItemDto[];
+
+  @ApiProperty({ type: [RecentActivityItemDto] })
+  recentActivity!: RecentActivityItemDto[];
 }

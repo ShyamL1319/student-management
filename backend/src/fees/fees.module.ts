@@ -20,6 +20,7 @@ import { ReceiptController } from './receipt.controller';
 import { InvoiceController } from './invoice.controller';
 import { FeesReportService } from './fees-report.service';
 import { FeesReportController } from './fees-report.controller';
+import { ActivitiesModule } from '../activities/activities.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FeesReportController } from './fees-report.controller';
       { name: Receipt.name, schema: ReceiptSchema },
       { name: Invoice.name, schema: InvoiceSchema },
     ]),
+    ActivitiesModule,
   ],
   providers: [
     FeeStructureService,

@@ -72,7 +72,7 @@ const MOCK_TEACHER = {
   name: 'Dr. Sarah Jenkins',
   id: 'TCH-2023-042',
   department: 'Science & Biology',
-  schoolName: 'PS Educational Institute',
+  schoolName: 'EduSphere',
   classesToday: 4,
   totalStudents: 128,
   pendingAttendance: 2,
@@ -158,10 +158,10 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
   const [activeTab, setActiveTab] = useState(0);
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
   const [selectedClassForAttendance, setSelectedClassForAttendance] = useState<string>('');
-  
+
   // Dynamic leave requests state and handlers
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
-  
+
   const fetchLeaves = async () => {
     try {
       const res = await api.get('/leave-requests');
@@ -333,7 +333,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
                 <Box sx={{ textAlign: 'left' }}>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>{firstName}</Typography>
                   <Typography variant="caption" sx={{ opacity: 0.7, display: 'block' }}>ID: TCH-{data.widgets?.myClasses || '0'}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.7, display: 'block' }}>PS Educational Institute</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.7, display: 'block' }}>EduSphere</Typography>
                 </Box>
               </Box>
             </Grid>
