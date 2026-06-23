@@ -15,7 +15,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         'google-client-secret-placeholder',
       callbackURL:
         configService.get<string>('GOOGLE_CALLBACK_URL') ||
-        'https://api.psei.school.com:3000/auth/google/callback',
+        'https://edusphere-api-dev.com:3000/auth/google/callback',
       scope: ['email', 'profile'],
     });
   }

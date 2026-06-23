@@ -91,7 +91,7 @@ async function bootstrap() {
         !origin ||
         origin.includes('localhost') ||
         origin.includes('127.0.0.1') ||
-        origin.match(/^https?:\/\/([a-z0-9-]+)\.school\.com(:\d+)?$/i)
+        origin.match(/^https?:\/\/edusphere(-api)?-dev\.com(:\d+)?$/i)
       ) {
         callback(null, true);
       } else {

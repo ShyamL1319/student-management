@@ -20,7 +20,7 @@ if (!sessionCorrelationId) {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://api.psei.school.com:3000',
+  baseURL: import.meta.env.VITE_API_URL || 'https://edusphere-api-dev.com:3000',
 });
 
 api.interceptors.request.use((config) => {
@@ -29,9 +29,8 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
-  // Inject headers for multi-tenancy and distributed tracing
+  // Inject headers for distributed tracing
   if (config.headers) {
-    config.headers['X-Tenant-ID'] = window.location.hostname;
     config.headers['X-Correlation-ID'] = sessionCorrelationId;
     config.headers['X-Request-ID'] = generateUUID();
   }

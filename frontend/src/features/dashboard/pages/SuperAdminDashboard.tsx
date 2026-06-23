@@ -108,11 +108,11 @@ const MOCK_INFRA_METRICS = [
   { time: '10:25', cpu: 38, memory: 60, network: 130 },
 ];
 
-const MOCK_TENANTS = [
-  { id: 'TNT-001', name: 'Hogwarts Magic Academy', domain: 'hogwarts.edtech.com', plan: 'Enterprise', users: 1240, storage: '184 GB', status: 'Active', health: 'Healthy' },
-  { id: 'TNT-002', name: 'Xavier Mutant School', domain: 'xmansion.org', plan: 'Premium', users: 380, storage: '45 GB', status: 'Active', health: 'Healthy' },
-  { id: 'TNT-003', name: 'Springfield Elementary', domain: 'springfield.edtech.com', plan: 'Standard', users: 850, storage: '92 GB', status: 'Trial', health: 'Warning' },
-  { id: 'TNT-004', name: 'Sunnydale High School', domain: 'sunnydale.edtech.com', plan: 'Standard', users: 140, storage: '12 GB', status: 'Suspended', health: 'Critical' },
+const MOCK_SCHOOLS = [
+  { id: 'SCH-001', name: 'Hogwarts Magic Academy', domain: 'hogwarts.edtech.com', plan: 'Enterprise', users: 1240, storage: '184 GB', status: 'Active', health: 'Healthy' },
+  { id: 'SCH-002', name: 'Xavier Mutant School', domain: 'xmansion.org', plan: 'Premium', users: 380, storage: '45 GB', status: 'Active', health: 'Healthy' },
+  { id: 'SCH-003', name: 'Springfield Elementary', domain: 'springfield.edtech.com', plan: 'Standard', users: 850, storage: '92 GB', status: 'Trial', health: 'Warning' },
+  { id: 'SCH-004', name: 'Sunnydale High School', domain: 'sunnydale.edtech.com', plan: 'Standard', users: 140, storage: '12 GB', status: 'Suspended', health: 'Critical' },
 ];
 
 const MOCK_SUBSCRIPTION_PLANS = [
@@ -128,9 +128,9 @@ const MOCK_SECURITY_THREATS = [
 ];
 
 const MOCK_AUDIT_LOGS = [
-  { id: 'AUD-901', user: 'SuperAdmin (shyamlal)', action: 'Suspended school tenant Sunnydale High', target: 'TNT-004', time: 'Today, 10:14 AM' },
+  { id: 'AUD-901', user: 'SuperAdmin (shyamlal)', action: 'Suspended school Sunnydale High', target: 'SCH-004', time: 'Today, 10:14 AM' },
   { id: 'AUD-902', user: 'Billing Bot', action: 'Stripe webhook payment invoice_paid successful', target: 'TNT-001', time: 'Today, 08:00 AM' },
-  { id: 'AUD-903', user: 'SuperAdmin (shyamlal)', action: 'Upgraded tenant Hogwarts to Enterprise custom', target: 'TNT-001', time: 'Yesterday, 04:30 PM' },
+  { id: 'AUD-903', user: 'SuperAdmin (shyamlal)', action: 'Upgraded Hogwarts to Enterprise custom', target: 'SCH-001', time: 'Yesterday, 04:30 PM' },
 ];
 
 // Helper layout component
@@ -157,7 +157,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
 
   // ── States for active view controls ─────────────────────────────────────
   const [activeTab, setActiveTab] = useState(0);
-  const [tenants, setTenants] = useState<any[]>([]);
+  const [schools, setSchools] = useState<any[]>([]);
   const [plans, setPlans] = useState(MOCK_SUBSCRIPTION_PLANS);
   const [securityEvents, setSecurityEvents] = useState<any[]>(data.securityThreats || MOCK_SECURITY_THREATS);
 
@@ -175,7 +175,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
           status: school.isActive ? 'Active' : 'Suspended',
           health: school.isActive ? 'Healthy' : 'Critical',
         }));
-        setTenants(mapped);
+        setSchools(mapped);
       }
     } catch (err) {
       console.error('Failed to load schools', err);
@@ -198,15 +198,15 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'info' | 'warning' | 'error'>('success');
 
   // Quick Action Dialog states
-  const [tenantDialogOpen, setTenantDialogOpen] = useState(false);
+  const [schoolDialogOpen, setSchoolDialogOpen] = useState(false);
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [announcementDialogOpen, setAnnouncementDialogOpen] = useState(false);
   const [backupDialogOpen, setBackupDialogOpen] = useState(false);
 
   // Forms states
-  const [newTenant, setNewTenant] = useState({ name: '', subdomain: '', plan: 'Standard', ownerEmail: '' });
+  const [newSchool, setNewSchool] = useState({ name: '', address: '', plan: 'Standard', ownerEmail: '' });
   const [newPlan, setNewPlan] = useState({ name: '', price: '', billing: 'Monthly', storage: '100 GB' });
-  const [announcement, setAnnouncement] = useState({ title: '', target: 'All Tenants', message: '', pushAlert: false });
+  const [announcement, setAnnouncement] = useState({ title: '', target: 'All Schools', message: '', pushAlert: false });
 
   // Infrastructure Actions simulation states
   const [isRestartingNode, setIsRestartingNode] = useState(false);
@@ -229,43 +229,43 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
     setSnackbarOpen(true);
   };
 
-  // ── Tenant Directory Operations ─────────────────────────────────────────
-  const handleToggleTenantStatus = async (id: string, currentStatus: string) => {
+  // ── School Directory Operations ─────────────────────────────────────────
+  const handleToggleSchoolStatus = async (id: string, currentStatus: string) => {
     const nextStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
     try {
       await schoolApi.updateSchool(id, { isActive: nextStatus === 'Active' });
-      showNotification(`Tenant status updated to ${nextStatus}.`, nextStatus === 'Active' ? 'success' : 'warning');
+      showNotification(`School status updated to ${nextStatus}.`, nextStatus === 'Active' ? 'success' : 'warning');
       fetchSchools();
     } catch (err) {
-      showNotification('Failed to update tenant status.', 'error');
+      showNotification('Failed to update school status.', 'error');
     }
   };
 
   const handleCloneConfig = (id: string) => {
-    showNotification(`Cloned system limits, localized calendars, and schema configurations from tenant ${id}.`, 'info');
+    showNotification(`Cloned system limits, localized calendars, and schema configurations from school ${id}.`, 'info');
   };
 
   // ── Submissions ────────────────────────────────────────────────────────
-  const handleCreateTenantSubmit = async (e: React.FormEvent) => {
+  const handleCreateSchoolSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTenant.name || !newTenant.subdomain) {
-      showNotification('Please fill in School Name and Subdomain.', 'warning');
+    if (!newSchool.name || !newSchool.address) {
+      showNotification('Please fill in School Name and Address.', 'warning');
       return;
     }
     try {
       await schoolApi.createSchool({
-        name: newTenant.name,
-        address: `${newTenant.subdomain} St`,
+        name: newSchool.name,
+        address: newSchool.address,
         phone: '123-456-7890',
-        email: newTenant.ownerEmail || `admin@${newTenant.subdomain}.com`,
+        email: newSchool.ownerEmail || `admin@${newSchool.name.toLowerCase().replace(/\s+/g, '')}.com`,
         isActive: true,
       });
-      setTenantDialogOpen(false);
-      showNotification(`Tenant "${newTenant.name}" initialized on domain ${newTenant.subdomain}.edtech.com. Database provisioning complete.`, 'success');
-      setNewTenant({ name: '', subdomain: '', plan: 'Standard', ownerEmail: '' });
+      setSchoolDialogOpen(false);
+      showNotification(`School "${newSchool.name}" created successfully.`, 'success');
+      setNewSchool({ name: '', address: '', plan: 'Standard', ownerEmail: '' });
       fetchSchools();
     } catch (err) {
-      showNotification('Failed to create tenant.', 'error');
+      showNotification('Failed to create school.', 'error');
     }
   };
 
@@ -300,12 +300,12 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
     }
     setAnnouncementDialogOpen(false);
     showNotification(`Announcement "${announcement.title}" broadcasted to ${announcement.target}. Push notification dispatched.`, 'success');
-    setAnnouncement({ title: '', target: 'All Tenants', message: '', pushAlert: false });
+    setAnnouncement({ title: '', target: 'All Schools', message: '', pushAlert: false });
   };
 
   const handleTriggerBackup = () => {
     setBackupDialogOpen(false);
-    showNotification('System backup snapshot initiated across all tenant nodes (AWS S3 RDS replicator)...', 'info');
+    showNotification('System backup snapshot initiated (AWS S3 RDS replicator)...', 'info');
     setTimeout(() => {
       setBackupStatus('Completed just now');
       showNotification('Backup snapshot completed. MD5 verified. Uptime unaffected.', 'success');
@@ -357,7 +357,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
           </Box>
           <Grid container spacing={2}>
             {[
-              { label: 'Create Tenant', icon: <AddIcon />, color: '#0d9488', action: () => setTenantDialogOpen(true) },
+              { label: 'Create School', icon: <AddIcon />, color: '#0d9488', action: () => setSchoolDialogOpen(true) },
               { label: 'Create Billing Plan', icon: <CreditCardIcon />, color: '#6366f1', action: () => setPlanDialogOpen(true) },
               { label: 'System Backup', icon: <DbIcon />, color: '#10b981', action: () => setBackupDialogOpen(true) },
               { label: 'Global Notice', icon: <SendIcon />, color: '#f59e0b', action: () => setAnnouncementDialogOpen(true) },
@@ -394,7 +394,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
         {[
           { title: 'SaaS MRR', value: data.widgets?.mrr ? `$${data.widgets.mrr.toLocaleString()}` : '$98,000', sub: '+12.4% vs last month', icon: <AccountBalanceIcon sx={{ color: '#10b981' }} /> },
           { title: 'Annualized Revenue (ARR)', value: data.widgets?.arr ? `$${(data.widgets.arr / 1000000).toFixed(2)}M` : '$1.17M', sub: 'Calculated projections', icon: <CreditCardIcon sx={{ color: '#6366f1' }} /> },
-          { title: 'Total Active Tenants', value: `${tenants.filter(t => t.status === 'Active').length} / ${tenants.length}`, sub: 'Active edtech school profiles', icon: <SchoolIcon sx={{ color: '#0d9488' }} /> },
+          { title: 'Total Active Schools', value: `${schools.filter(t => t.status === 'Active').length} / ${schools.length}`, sub: 'Active school profiles', icon: <SchoolIcon sx={{ color: '#0d9488' }} /> },
           { title: 'System Uptime Score', value: data.widgets?.uptimeScore ? `${data.widgets.uptimeScore}%` : '99.98%', sub: 'Target baseline: 99.95%', icon: <ServerIcon sx={{ color: '#3b82f6' }} /> },
         ].map((kpi, index) => (
           <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
@@ -502,7 +502,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
         </Grid>
       </Grid>
 
-      {/* ── 4. TENANTS, PLANS, INFRASTRUCTURE AND COMPLIANCE tabs ── */}
+      {/* ── 4. SCHOOLS, PLANS, INFRASTRUCTURE AND COMPLIANCE tabs ── */}
       <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, mb: 4 }}>
         <CardContent>
           <Tabs
@@ -510,20 +510,20 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
             onChange={(_, val) => setActiveTab(val)}
             sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, '& .MuiTab-root': { textTransform: 'none', fontWeight: 700 } }}
           >
-            <Tab label="Tenant Directory" icon={<SchoolIcon fontSize="small" />} iconPosition="start" />
+            <Tab label="School Directory" icon={<SchoolIcon fontSize="small" />} iconPosition="start" />
             <Tab label="Subscription Plans" icon={<CreditCardIcon fontSize="small" />} iconPosition="start" />
             <Tab label="Infrastructure Uptime" icon={<ServerIcon fontSize="small" />} iconPosition="start" />
             <Tab label="SOC Audit Logs" icon={<AuditIcon fontSize="small" />} iconPosition="start" />
             <Tab label="Integrations & Settings" icon={<PowerIcon fontSize="small" />} iconPosition="start" />
           </Tabs>
 
-          {/* TAB 0: Tenant Directory */}
+          {/* TAB 0: School Directory */}
           {activeTab === 0 && (
             <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, maxHeight: 400, overflowY: 'auto' }}>
               <Table stickyHeader>
                 <TableHead sx={{ bgcolor: 'action.hover' }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700 }}>Tenant School</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>School Name</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Target Domain</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Active Plan</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Active Users</TableCell>
@@ -533,19 +533,19 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {tenants.map((tenant) => (
-                    <TableRow key={tenant.id} hover>
-                      <TableCell sx={{ fontWeight: 600 }}>{tenant.name}</TableCell>
-                      <TableCell color="text.secondary">{tenant.domain}</TableCell>
+                  {schools.map((school) => (
+                    <TableRow key={school.id} hover>
+                      <TableCell sx={{ fontWeight: 600 }}>{school.name}</TableCell>
+                      <TableCell color="text.secondary">{school.domain}</TableCell>
                       <TableCell>
-                        <Chip label={tenant.plan} color={tenant.plan === 'Enterprise' ? 'secondary' : 'default'} size="small" sx={{ fontWeight: 700 }} />
+                        <Chip label={school.plan} color={school.plan === 'Enterprise' ? 'secondary' : 'default'} size="small" sx={{ fontWeight: 700 }} />
                       </TableCell>
-                      <TableCell>{tenant.users.toLocaleString()}</TableCell>
-                      <TableCell>{tenant.storage}</TableCell>
+                      <TableCell>{school.users.toLocaleString()}</TableCell>
+                      <TableCell>{school.storage}</TableCell>
                       <TableCell>
                         <Chip
-                          label={tenant.status}
-                          color={tenant.status === 'Active' ? 'success' : tenant.status === 'Trial' ? 'info' : 'error'}
+                          label={school.status}
+                          color={school.status === 'Active' ? 'success' : school.status === 'Trial' ? 'info' : 'error'}
                           size="small"
                           sx={{ fontWeight: 700 }}
                         />
@@ -555,16 +555,16 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
                           <Button
                             size="small"
                             variant="outlined"
-                            color={tenant.status === 'Active' ? 'error' : 'success'}
-                            onClick={() => handleToggleTenantStatus(tenant.id, tenant.status)}
+                            color={school.status === 'Active' ? 'error' : 'success'}
+                            onClick={() => handleToggleSchoolStatus(school.id, school.status)}
                             sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 1.5, py: 0.25 }}
                           >
-                            {tenant.status === 'Active' ? 'Suspend' : 'Activate'}
+                            {school.status === 'Active' ? 'Suspend' : 'Activate'}
                           </Button>
                           <Button
                             size="small"
                             variant="outlined"
-                            onClick={() => handleCloneConfig(tenant.id)}
+                            onClick={() => handleCloneConfig(school.id)}
                             sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 1.5, py: 0.25 }}
                           >
                             Clone Config
@@ -750,7 +750,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
           {activeTab === 4 && (
             <Grid container spacing={3}>
               {[
-                { key: 'stripe' as const, name: 'Stripe Gateway', desc: 'SaaS multi-tenant subscription recurring collection billing mapping', active: integrations.stripe },
+                { key: 'stripe' as const, name: 'Stripe Gateway', desc: 'Subscription recurring collection billing and payment processing', active: integrations.stripe },
                 { key: 'razorpay' as const, name: 'Razorpay Gateway', desc: 'Regional invoice fee payment integrations fallback channel', active: integrations.razorpay },
                 { key: 'twilio' as const, name: 'Twilio Gateway', desc: 'Automated SMS alerts and fallback authentication messaging router', active: integrations.twilio },
                 { key: 'zoom' as const, name: 'Zoom LMS API', desc: 'Online classes virtual meeting link provisioning backend engine', active: integrations.zoom },
@@ -789,10 +789,10 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
         </Alert>
       </Snackbar>
 
-      {/* ── DIALOG: CREATE TENANT ── */}
-      <Dialog open={tenantDialogOpen} onClose={() => setTenantDialogOpen(false)} fullWidth maxWidth="xs">
-        <form onSubmit={handleCreateTenantSubmit}>
-          <DialogTitle sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700 }}>Initialize School Tenant</DialogTitle>
+      {/* ── DIALOG: CREATE SCHOOL ── */}
+      <Dialog open={schoolDialogOpen} onClose={() => setSchoolDialogOpen(false)} fullWidth maxWidth="xs">
+        <form onSubmit={handleCreateSchoolSubmit}>
+          <DialogTitle sx={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700 }}>Create New School</DialogTitle>
           <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <TextField
               fullWidth
@@ -800,34 +800,34 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
               label="School Name"
               placeholder="e.g. Hogwarts Academy"
               required
-              value={newTenant.name}
-              onChange={(e) => setNewTenant({ ...newTenant, name: e.target.value })}
+              value={newSchool.name}
+              onChange={(e) => setNewSchool({ ...newSchool, name: e.target.value })}
             />
             <TextField
               fullWidth
               size="small"
-              label="Assigned Domain Subdomain Prefix"
-              placeholder="e.g. hogwarts"
+              label="School Address"
+              placeholder="e.g. 123 Main Street"
               required
-              value={newTenant.subdomain}
-              onChange={(e) => setNewTenant({ ...newTenant, subdomain: e.target.value })}
+              value={newSchool.address}
+              onChange={(e) => setNewSchool({ ...newSchool, address: e.target.value })}
             />
             <TextField
               fullWidth
               size="small"
-              label="School Admin Owner Email"
+              label="School Admin Email"
               type="email"
               placeholder="e.g. headmaster@school.com"
-              value={newTenant.ownerEmail}
-              onChange={(e) => setNewTenant({ ...newTenant, ownerEmail: e.target.value })}
+              value={newSchool.ownerEmail}
+              onChange={(e) => setNewSchool({ ...newSchool, ownerEmail: e.target.value })}
             />
             <FormControl fullWidth size="small">
-              <InputLabel id="tenant-plan-select-label">Subscription Tier Plan</InputLabel>
+              <InputLabel id="school-plan-select-label">Subscription Tier Plan</InputLabel>
               <Select
-                labelId="tenant-plan-select-label"
-                value={newTenant.plan}
+                labelId="school-plan-select-label"
+                value={newSchool.plan}
                 label="Subscription Tier Plan"
-                onChange={(e) => setNewTenant({ ...newTenant, plan: e.target.value })}
+                onChange={(e) => setNewSchool({ ...newSchool, plan: e.target.value })}
                 sx={{ borderRadius: 2 }}
               >
                 <MenuItem value="Standard">Standard ($199/mo)</MenuItem>
@@ -837,8 +837,8 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
             </FormControl>
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setTenantDialogOpen(false)} sx={{ textTransform: 'none' }}>Cancel</Button>
-            <Button type="submit" variant="contained" sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>Initialize Tenant</Button>
+            <Button onClick={() => setSchoolDialogOpen(false)} sx={{ textTransform: 'none' }}>Cancel</Button>
+            <Button type="submit" variant="contained" sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>Create School</Button>
           </DialogActions>
         </form>
       </Dialog>
@@ -911,15 +911,15 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
               onChange={(e) => setAnnouncement({ ...announcement, title: e.target.value })}
             />
             <FormControl fullWidth size="small">
-              <InputLabel id="announcement-target-select-label">Target Tenant Filter</InputLabel>
+              <InputLabel id="announcement-target-select-label">Target Audience</InputLabel>
               <Select
                 labelId="announcement-target-select-label"
                 value={announcement.target}
-                label="Target Tenant Filter"
+                label="Target Audience"
                 onChange={(e) => setAnnouncement({ ...announcement, target: e.target.value })}
                 sx={{ borderRadius: 2 }}
               >
-                <MenuItem value="All Tenants">All Tenants (Platform-wide)</MenuItem>
+                <MenuItem value="All Schools">All Schools (Platform-wide)</MenuItem>
                 <MenuItem value="Enterprise Plan">Enterprise Schools Only</MenuItem>
                 <MenuItem value="Standard Plan">Standard Tier Subscribers Only</MenuItem>
               </Select>
@@ -965,7 +965,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
             <Chip label={backupStatus} size="small" color="primary" sx={{ fontWeight: 700 }} />
           </Box>
           <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
-            🚨 Warning: This backup job runs asynchronously. High S3 network output could slightly degrade heavy report compilation jobs for Standard tier tenants.
+            🚨 Warning: This backup job runs asynchronously. High S3 network output could slightly degrade heavy report compilation jobs.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>

@@ -5,7 +5,7 @@ import { CreateSchoolDto } from './dto/create-school.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
 import { School, SchoolDocument } from './schemas/school.schema';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { TenantContext } from '../tenant/tenant.context';
+
 
 @Injectable()
 export class SchoolsService {
@@ -14,12 +14,8 @@ export class SchoolsService {
   ) {}
 
   async create(createSchoolDto: CreateSchoolDto): Promise<School> {
-    const tenantId = TenantContext.getTenantId();
-    const data = { ...createSchoolDto } as any;
-    if (tenantId) {
-      data.tenantId = new Types.ObjectId(tenantId);
-    }
-    return this.schoolModel.create(data);
+    // Direct creation without tenant scoping
+    return this.schoolModel.create(createSchoolDto);
   }
 
   async findAll(query: PaginationQueryDto) {

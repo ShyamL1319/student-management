@@ -3,7 +3,7 @@ import { Typography, Box, CircularProgress } from '@mui/material';
 import { lazy, Suspense } from 'react';
 import { Layout } from './components/common/Layout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { TenantProvider } from './contexts/TenantContext';
+import { SchoolProvider } from './contexts/TenantContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Eager imports for authentication
@@ -330,13 +330,13 @@ function AppRoutes() {
 function App() {
   return (
     <ErrorBoundary>
-      <TenantProvider>
+      <SchoolProvider>
         <AuthProvider>
           <Router>
             <AppRoutes />
           </Router>
         </AuthProvider>
-      </TenantProvider>
+      </SchoolProvider>
     </ErrorBoundary>
   );
 }

@@ -15,7 +15,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
         'facebook-client-secret-placeholder',
       callbackURL:
         configService.get<string>('FACEBOOK_CALLBACK_URL') ||
-        'https://api.psei.school.com:3000/auth/facebook/callback',
+        'https://edusphere-api-dev.com:3000/auth/facebook/callback',
       scope: ['email', 'public_profile'],
       profileFields: ['id', 'emails', 'name', 'photos'],
     });

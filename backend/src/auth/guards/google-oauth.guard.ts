@@ -9,4 +9,12 @@ export class GoogleAuthGuard extends AuthGuard('google') {
       prompt: 'consent',
     });
   }
+
+  getAuthenticateOptions(context: any) {
+    const request = context.switchToHttp().getRequest();
+    const role = request.query.role || 'STUDENT';
+    return {
+      state: JSON.stringify({ role }),
+    };
+  }
 }

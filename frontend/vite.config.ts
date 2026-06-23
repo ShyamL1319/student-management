@@ -32,7 +32,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: ['psei.school.com'],
+    allowedHosts: ['edusphere-dev.com'],
     ...(httpsOptions ? { https: httpsOptions } : {}),
   },
 })

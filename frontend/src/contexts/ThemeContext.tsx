@@ -1,34 +1,51 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { FC, ReactNode } from 'react';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { ThemeProvider, CssBaseline, useMediaQuery } from '@mui/material';
 import { lightTheme, darkTheme } from '../theme';
 
-type ThemeMode = 'light' | 'dark';
+// Theme mode can be 'light', 'dark', or 'system' to follow OS preference
+type ThemeMode = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
   mode: ThemeMode;
+  setMode: (mode: ThemeMode) => void;
   toggleThemeMode: () => void;
 }
 
+// Create context with proper generic typing
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeModeProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [mode] = useState<ThemeMode>('dark');
+  // Initialize mode from localStorage or fallback to 'system'
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    const saved = localStorage.getItem('themeMode') as ThemeMode | null;
+    return saved || 'system';
+  });
 
+  // Detect system dark mode preference
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  // Determine active MUI theme based on selected mode
+  const activeTheme = (() => {
+    if (mode === 'light') return lightTheme;
+    if (mode === 'dark') return darkTheme;
+    // system mode follows OS preference
+    return prefersDarkMode ? darkTheme : lightTheme;
+  })();
+
+  // Persist mode changes
   useEffect(() => {
-    localStorage.setItem('themeMode', 'dark');
-    window.document.documentElement.classList.add('dark');
-  }, []);
+    localStorage.setItem('themeMode', mode);
+  }, [mode]);
 
   const toggleThemeMode = () => {
-    // Disabled in favor of strict global dark neon theme
-    console.warn('Theme toggle disabled: EduSphere uses a strict dark neon aesthetic.');
+    // Cycle through light → dark → system → light
+    const nextMode: ThemeMode = mode === 'light' ? 'dark' : mode === 'dark' ? 'system' : 'light';
+    setMode(nextMode);
   };
 
-  const activeTheme = darkTheme;
-
   return (
-    <ThemeContext.Provider value={{ mode, toggleThemeMode }}>
+    <ThemeContext.Provider value={{ mode, setMode, toggleThemeMode }}>
       <ThemeProvider theme={activeTheme}>
         <CssBaseline />
         {children}

@@ -322,7 +322,7 @@ const LandingPage = () => {
                 <TextField
                   placeholder="Email address"
                   variant="standard"
-                  InputProps={{ disableUnderline: true }}
+                  slotProps={{ input: { disableUnderline: true } }}
                   sx={{ flex: 1, px: 2, '& input': { color: 'white', py: 1.5, fontSize: '0.9rem' } }}
                 />
                 <Button variant="contained" sx={{

@@ -43,11 +43,11 @@ import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
 
 import { SentryModule } from '@sentry/nestjs/setup';
-import { TenantModule } from './tenant/tenant.module';
-import { TenantGuard } from './tenant/tenant.guard';
-import { TenantMiddleware } from './tenant/tenant.middleware';
-import { TenantInterceptor } from './tenant/tenant.interceptor';
-import { tenantPlugin } from './common/database/tenant.plugin';
+
+
+
+
+
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -64,8 +64,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
         connectionFactory: (connection) => {
-          // Register dynamic query isolation plugin globally
-          connection.plugin(tenantPlugin);
+          // Tenant plugin removed for single‑school deployment
           return connection;
         },
       }),
@@ -88,7 +87,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
         limit: 3,
       },
     ]),
-    TenantModule,
+    
     CommonModule,
     UsersModule,
     RolesModule,
@@ -135,18 +134,12 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TenantInterceptor,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: TenantGuard,
-    },
+
+
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestIdMiddleware, TenantMiddleware).forRoutes('*');
+    consumer.apply(RequestIdMiddleware).forRoutes('*');
   }
 }

@@ -15,7 +15,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
         'github-client-secret-placeholder',
       callbackURL:
         configService.get<string>('GITHUB_CALLBACK_URL') ||
-        'https://api.psei.school.com:3000/auth/github/callback',
+        'https://edusphere-api-dev.com:3000/auth/github/callback',
       scope: ['user:email'],
     });
   }

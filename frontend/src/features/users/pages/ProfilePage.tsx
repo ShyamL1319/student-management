@@ -121,7 +121,7 @@ export const ProfilePage: React.FC = () => {
                 src={profile.avatar}
                 sx={{ width: 120, height: 120, mx: 'auto', mb: 2, fontSize: '3rem' }}
               >
-                {profile.firstName[0]}{profile.lastName[0]}
+                {`${profile.firstName?.[0] ?? ''}${profile.lastName?.[0] ?? ''}`}
               </Avatar>
               <IconButton
                 color="primary"

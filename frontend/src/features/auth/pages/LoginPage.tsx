@@ -14,6 +14,8 @@ import {
   CircularProgress,
   Alert,
   Fade,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import {
   Visibility,
@@ -47,6 +49,7 @@ export const LoginPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [animateQuote, setAnimateQuote] = useState(true);
+  const [oauthRole, setOauthRole] = useState<'STUDENT' | 'TEACHER' | 'PARENT'>('STUDENT');
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -54,8 +57,8 @@ export const LoginPage: React.FC = () => {
   const errorParam = searchParams.get('error');
 
   const handleOAuthLogin = (provider: string) => {
-    const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://api.psei.school.com:3000';
-    window.location.href = `${apiBaseUrl}/auth/${provider}`;
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://edusphere-api-dev.com:3000';
+    window.location.href = `${apiBaseUrl}/auth/${provider}?role=${oauthRole}`;
   };
 
   // Quote rotation carousel
@@ -501,6 +504,48 @@ export const LoginPage: React.FC = () => {
                 or sign in with
               </Typography>
               <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+            </Box>
+
+            {/* OAuth Role Selector */}
+            <Box sx={{ mb: 2.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>
+                Select role for social login / signup:
+              </Typography>
+              <ToggleButtonGroup
+                value={oauthRole}
+                exclusive
+                onChange={(e, newRole) => {
+                  if (newRole !== null) {
+                    setOauthRole(newRole);
+                  }
+                }}
+                size="small"
+                fullWidth
+                aria-label="OAuth Role Selection"
+                id="oauth-role-selector"
+                sx={{
+                  '& .MuiToggleButton-root': {
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                    borderColor: 'divider',
+                    color: 'text.secondary',
+                    fontFamily: "'Inter', sans-serif",
+                    '&.Mui-selected': {
+                      bgcolor: 'rgba(79, 70, 229, 0.08)',
+                      color: 'primary.main',
+                      borderColor: 'primary.main',
+                      '&:hover': {
+                        bgcolor: 'rgba(79, 70, 229, 0.12)',
+                      },
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="STUDENT" id="role-btn-student">Student</ToggleButton>
+                <ToggleButton value="TEACHER" id="role-btn-teacher">Teacher</ToggleButton>
+                <ToggleButton value="PARENT" id="role-btn-parent">Parent</ToggleButton>
+              </ToggleButtonGroup>
             </Box>
 
             {/* OAuth Provider Buttons */}

@@ -17,7 +17,7 @@ async function run() {
   
   const page = await context.newPage();
   
-  const BASE_URL = 'https://psei.school.com';
+  const BASE_URL = 'https://edusphere-dev.com';
 
   try {
     console.log('Capturing auth-login.png...');

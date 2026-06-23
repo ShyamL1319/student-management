@@ -39,7 +39,7 @@ Sentry.init({
 
   // Tracing
   tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
-  tracePropagationTargets: ['localhost', /^https:\/\/api\.psei\.school\.com/],
+  tracePropagationTargets: ['localhost', /^https:\/\/edusphere-api-dev\.com/],
 
   // Session Replay
   replaysSessionSampleRate: import.meta.env.PROD ? 0.1 : 1.0,

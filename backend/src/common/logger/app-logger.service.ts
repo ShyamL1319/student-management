@@ -1,7 +1,6 @@
 import { Injectable, LoggerService } from '@nestjs/common';
 import * as winston from 'winston';
-import { trace, context } from '@opentelemetry/api';
-import { TenantContext } from '../../tenant/tenant.context';
+
 import * as Sentry from '@sentry/nestjs';
 
 const colors = {
@@ -25,36 +24,7 @@ const customLevels = {
   verbose: 5,
 };
 
-const injectContext = winston.format((info) => {
-  // 1. Get Tenant & Request context from AsyncLocalStorage
-  try {
-    const store = TenantContext.get();
-    if (store) {
-      info.requestId = store.requestId;
-      info.correlationId = store.correlationId;
-      if (store.tenantId) info.tenantId = store.tenantId;
-      if (store.userId) info.userId = store.userId;
-    }
-  } catch (err) {
-    // Ignore to prevent logging failures
-  }
-
-  // 2. Get active OpenTelemetry span context
-  try {
-    const activeSpan = trace.getSpan(context.active());
-    if (activeSpan) {
-      const spanContext = activeSpan.spanContext();
-      if (spanContext && spanContext.traceId) {
-        info.traceId = spanContext.traceId;
-        info.spanId = spanContext.spanId;
-      }
-    }
-  } catch (err) {
-    // Ignore to prevent logging failures
-  }
-
-  return info;
-});
+const noOp = winston.format((info) => info);
 
 const SENSITIVE_KEYS = [
   'password',
@@ -169,13 +139,13 @@ export class AppLoggerService implements LoggerService {
           format: isProduction
             ? winston.format.combine(
                 winston.format.timestamp(),
-                injectContext(),
+                noOp(),
                 redactFormat(),
                 winston.format.json(),
               )
             : winston.format.combine(
                 winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-                injectContext(),
+                noOp(),
                 redactFormat(),
                 devFormat,
               ),

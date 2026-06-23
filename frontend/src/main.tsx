@@ -22,7 +22,6 @@ if (!correlationId) {
 }
 
 Sentry.setTag('correlationId', correlationId);
-Sentry.setTag('tenantId', window.location.hostname);
 
 const queryClient = new QueryClient({
   defaultOptions: {

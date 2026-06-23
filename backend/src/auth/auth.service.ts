@@ -43,15 +43,18 @@ export class AuthService {
     return null;
   }
 
-  async validateOAuthUser(profile: {
-    provider: string;
-    providerId: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    avatar: string;
-    metadata: any;
-  }): Promise<any> {
+  async validateOAuthUser(
+    profile: {
+      provider: string;
+      providerId: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      avatar: string;
+      metadata: any;
+    },
+    requestedRole: string = 'STUDENT',
+  ): Promise<any> {
     let user = await this.usersService.findByEmail(profile.email);
 
     if (user) {
@@ -95,9 +98,17 @@ export class AuthService {
         await user.save();
       }
     } else {
-      // User does not exist: create user record with USER role
+      // User does not exist: create user record with the selected role (if allowed)
+      const allowedRoles = ['STUDENT', 'TEACHER', 'PARENT'];
+      const targetRole = allowedRoles.includes(requestedRole.toUpperCase())
+        ? requestedRole.toUpperCase()
+        : 'STUDENT';
+
       const RoleModel = this.usersService.getUserModel().db.model('Role');
-      let userRole = await RoleModel.findOne({ name: 'USER' }).exec();
+      let userRole = await RoleModel.findOne({ name: targetRole }).exec();
+      if (!userRole) {
+        userRole = await RoleModel.findOne({ name: 'USER' }).exec();
+      }
       if (!userRole) {
         // If USER role is missing, dynamically create it!
         userRole = await RoleModel.create({
@@ -126,7 +137,7 @@ export class AuthService {
         lastName: profile.lastName,
         avatar: profile.avatar,
         role: userRole._id,
-        roleType: 'USER',
+        roleType: userRole.name,
         isActive: true,
         oauthProviders: [profile.provider],
         providerMetadata: {
@@ -260,7 +271,7 @@ export class AuthService {
       emailVerificationExpires: expires,
     });
     // Send verification email
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'https://psei.school.com:5173';
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'https://edusphere-dev.com:5173';
     const verificationLink = `${frontendUrl}/verify-email?userId=${newUser._id}&token=${token}`;
     const subject = 'Verify your email address';
     const message = `Please verify your email by clicking the following link: ${verificationLink}`;

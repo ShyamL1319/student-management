@@ -156,17 +156,19 @@ export class AuthController {
   @ApiOperation({ summary: 'Google OAuth callback' })
   async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     try {
-      const tokens = await this.authService.validateOAuthUser(req.user);
+      const stateObj = req.query.state ? JSON.parse(req.query.state) : {};
+      const requestedRole = stateObj.role || 'STUDENT';
+      const tokens = await this.authService.validateOAuthUser(req.user, requestedRole);
       const frontendUrl =
         this.configService.get<string>('FRONTEND_URL') ||
-        'https://psei.school.com:5173';
+        'https://edusphere-dev.com:5173';
       return res.redirect(
         `${frontendUrl}/oauth-callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
       );
     } catch (error: any) {
       const frontendUrl =
         this.configService.get<string>('FRONTEND_URL') ||
-        'https://psei.school.com:5173';
+        'https://edusphere-dev.com:5173';
       return res.redirect(
         `${frontendUrl}/login?error=${encodeURIComponent(error.message || 'Authentication failed')}`,
       );
@@ -188,14 +190,14 @@ export class AuthController {
       const tokens = await this.authService.validateOAuthUser(req.user);
       const frontendUrl =
         this.configService.get<string>('FRONTEND_URL') ||
-        'https://psei.school.com:5173';
+        'https://edusphere-dev.com:5173';
       return res.redirect(
         `${frontendUrl}/oauth-callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
       );
     } catch (error: any) {
       const frontendUrl =
         this.configService.get<string>('FRONTEND_URL') ||
-        'https://psei.school.com:5173';
+        'https://edusphere-dev.com:5173';
       return res.redirect(
         `${frontendUrl}/login?error=${encodeURIComponent(error.message || 'Authentication failed')}`,
       );
@@ -217,14 +219,14 @@ export class AuthController {
       const tokens = await this.authService.validateOAuthUser(req.user);
       const frontendUrl =
         this.configService.get<string>('FRONTEND_URL') ||
-        'https://psei.school.com:5173';
+        'https://edusphere-dev.com:5173';
       return res.redirect(
         `${frontendUrl}/oauth-callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
       );
     } catch (error: any) {
       const frontendUrl =
         this.configService.get<string>('FRONTEND_URL') ||
-        'https://psei.school.com:5173';
+        'https://edusphere-dev.com:5173';
       return res.redirect(
         `${frontendUrl}/login?error=${encodeURIComponent(error.message || 'Authentication failed')}`,
       );

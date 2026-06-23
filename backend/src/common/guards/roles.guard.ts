@@ -8,7 +8,8 @@ type RequestWithUserRole = Request & {
   user?: {
     role?: {
       name?: RoleEnum;
-    };
+    } | string;
+    roleType?: RoleEnum;
   };
 };
 
@@ -25,10 +26,14 @@ export class RolesGuard implements CanActivate {
       return true;
     }
     const req = context.switchToHttp().getRequest<RequestWithUserRole>();
-    const roleName = req.user?.role?.name;
+    // Resolve role name from either roleType (JWT string) or role.name (populated object)
+    const roleName =
+      req.user?.roleType ||
+      (typeof req.user?.role === 'object' ? req.user?.role?.name : undefined);
     if (!roleName) return false;
     // Grant full access to SUPER_ADMIN regardless of required roles
     if (roleName === RoleEnum.SUPER_ADMIN) return true;
     return requiredRoles.includes(roleName);
   }
 }
+
