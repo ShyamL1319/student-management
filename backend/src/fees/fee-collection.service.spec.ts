@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { FeeCollectionService } from './fee-collection.service';
 import { FeeCollection } from './schemas/fee-collection.schema';
+import { ActivitiesService } from '../activities/activities.service';
 
 describe('FeeCollectionService', () => {
   let service: FeeCollectionService;
@@ -22,6 +23,7 @@ describe('FeeCollectionService', () => {
           provide: getModelToken(FeeCollection.name),
           useValue: mockModel,
         },
+        { provide: ActivitiesService, useValue: { logActivity: jest.fn() } },
       ],
     }).compile();
 
@@ -74,7 +76,7 @@ describe('FeeCollectionService', () => {
       });
 
       const result = await service.recordPayment('id1', 5000, 'CASH');
-      expect(result.status).toBe('PAID');
+      expect(result?.status).toBe('PAID');
     });
   });
 

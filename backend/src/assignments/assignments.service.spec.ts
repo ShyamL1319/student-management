@@ -6,8 +6,10 @@ import { AssignmentSubmission } from './schemas/assignment-submission.schema';
 import { NotificationService } from '../notifications/services/notification.service';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { Mark } from '../marks/schemas/mark.schema';
+import { ActivitiesService } from '../activities/activities.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { UsersService } from '../users/users.service';
 
 describe('AssignmentsService', () => {
   let service: AssignmentsService;
@@ -53,8 +55,11 @@ describe('AssignmentsService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+
       providers: [
         AssignmentsService,
+        { provide: UsersService, useValue: { findById: jest.fn().mockResolvedValue(null) } },
+        { provide: ActivitiesService, useValue: { logActivity: jest.fn() } },
         {
           provide: getModelToken(Assignment.name),
           useValue: assignmentModelMock,

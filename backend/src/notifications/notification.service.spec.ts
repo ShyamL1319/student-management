@@ -10,6 +10,7 @@ import {
 import { EmailService } from './services/email.service';
 import { SmsService } from './services/sms.service';
 import { InAppService } from './services/in-app.service';
+import { ActivitiesService } from '../activities/activities.service';
 
 describe('NotificationService', () => {
   let service: NotificationService;
@@ -65,6 +66,10 @@ describe('NotificationService', () => {
         {
           provide: SmsService,
           useValue: { sendSMS: jest.fn(), sendBulkSMS: jest.fn() },
+        },
+        {
+          provide: ActivitiesService,
+          useValue: { logActivity: jest.fn() },
         },
         {
           provide: InAppService,

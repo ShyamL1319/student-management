@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExaminationsService } from './examinations.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Exam } from './schemas/exam.schema';
+import { ActivitiesService } from '../activities/activities.service';
 
 describe('ExaminationsService', () => {
   let service: ExaminationsService;
@@ -19,6 +20,7 @@ describe('ExaminationsService', () => {
       providers: [
         ExaminationsService,
         { provide: getModelToken(Exam.name), useValue: examModel },
+        { provide: ActivitiesService, useValue: { logActivity: jest.fn() } },
       ],
     }).compile();
 

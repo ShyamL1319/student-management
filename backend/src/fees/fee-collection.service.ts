@@ -23,7 +23,7 @@ export class FeeCollectionService {
     @InjectModel(FeeCollection.name)
     private feeCollectionModel: Model<FeeCollectionDocument>,
     private readonly activitiesService: ActivitiesService,
-  ) {}
+  ) { }
 
   async create(dto: CreateFeeCollectionDto) {
     const feeCollection = new this.feeCollectionModel({
@@ -117,7 +117,7 @@ export class FeeCollectionService {
       type: ActivityType.FEE_PAYMENT,
       description: `Fee payment of ${amountPaid} received`,
       icon: '💰',
-      student: feeCollection.studentId.toString(),
+      student: feeCollection?.studentId?.toString(),
     });
 
     return updatedFeeCollection;

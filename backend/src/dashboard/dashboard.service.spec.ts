@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardService } from './dashboard.service';
+import { ActivitiesService } from '../activities/activities.service';
 import { getModelToken } from '@nestjs/mongoose';
+// Removed ActivitiesModule import to avoid DatabaseConnection dependency
 
 describe('DashboardService', () => {
   let service: DashboardService;
@@ -19,6 +21,8 @@ describe('DashboardService', () => {
         { provide: getModelToken('Notification'), useValue: mockModel },
         { provide: getModelToken('Subject'), useValue: mockModel },
         { provide: getModelToken('AcademicYear'), useValue: mockModel },
+        { provide: getModelToken('ActivityLog'), useValue: mockModel },
+        { provide: ActivitiesService, useValue: { logActivity: jest.fn() } },
       ],
     }).compile();
 

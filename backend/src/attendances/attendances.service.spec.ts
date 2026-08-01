@@ -10,6 +10,7 @@ import {
   AttendanceStatus,
 } from './schemas/attendance.schema';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ActivitiesService } from '../activities/activities.service';
 
 describe('AttendancesService', () => {
   let service: AttendancesService;
@@ -31,8 +32,9 @@ describe('AttendancesService', () => {
         AttendancesService,
         {
           provide: getModelToken(Attendance.name),
-          useValue: mockModel,
+          useValue: mockModel
         },
+        { provide: ActivitiesService, useValue: { logActivity: jest.fn() } },
       ],
     }).compile();
 
