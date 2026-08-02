@@ -35,7 +35,7 @@ export const StaffPage: FC = () => {
   const [search, setSearch] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<unknown>(null);
   const [formValues, setFormValues] = useState({ department: '', name: '', email: '', phone: '', isActive: true });
 
   const { data: departmentsData } = useQuery({ queryKey: ['departmentsOptions'], queryFn: () => departmentApi.getDepartments({ limit: 100 }) });

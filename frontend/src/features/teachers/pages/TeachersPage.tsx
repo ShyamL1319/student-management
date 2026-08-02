@@ -34,7 +34,7 @@ export const TeachersPage: FC = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<unknown>(null);
   const [formValues, setFormValues] = useState({ name: '', email: '', phone: '', subjects: '', profile: '', isActive: true });
 
   const debouncedSearch = useDebounce(search, 300);

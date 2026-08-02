@@ -36,7 +36,7 @@ export const DepartmentsPage: FC = () => {
   const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [selectedSchool, setSelectedSchool] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<unknown>(null);
   const [formValues, setFormValues] = useState({ school: '', name: '', code: '', description: '', isActive: true });
 
   const { data: schoolsData } = useQuery({

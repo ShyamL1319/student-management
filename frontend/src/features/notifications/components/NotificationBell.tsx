@@ -10,20 +10,24 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificati
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
-
   const fetchUnreadCount = async () => {
     try {
       const data = await notificationAPI.getUnreadCount();
       setUnreadCount(data.unreadCount);
-    } catch (err) {
-      console.error('Failed to fetch unread count');
+    } catch (error) {
+      console.error('Failed to fetch unread count', error);
     }
   };
+
+  useEffect(() => {
+    // defer first fetch to avoid synchronous setState in effect
+    const t = setTimeout(() => void fetchUnreadCount(), 0);
+    const interval = setInterval(fetchUnreadCount, 30000); // Refresh every 30 seconds
+    return () => {
+      clearTimeout(t);
+      clearInterval(interval);
+    };
+  }, []);
 
   const handleBellClick = () => {
     setIsOpen(!isOpen);

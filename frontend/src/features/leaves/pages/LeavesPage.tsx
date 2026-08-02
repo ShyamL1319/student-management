@@ -64,15 +64,15 @@ export const LeavesPage: FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [requests, setRequests] = useState<any[]>([]);
-  const [balances, setBalances] = useState<any[]>([]);
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [requests, setRequests] = useState<unknown[]>([]);
+  const [balances, setBalances] = useState<unknown[]>([]);
+  const [analytics, setAnalytics] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Dialog States
   const [applyOpen, setApplyOpen] = useState(false);
   const [actionOpen, setActionOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<unknown | null>(null);
   const [actionType, setActionType] = useState<'APPROVED' | 'REJECTED'>('APPROVED');
   const [remarks, setRemarks] = useState('');
 
@@ -86,7 +86,7 @@ export const LeavesPage: FC = () => {
   });
 
   // Resolve role
-  const userTyped = user as any;
+  const userTyped = user as unknown;
   const roleName = userTyped?.role
     ? typeof userTyped.role === 'string'
       ? userTyped.role
@@ -137,7 +137,8 @@ export const LeavesPage: FC = () => {
   };
 
   useEffect(() => {
-    loadData();
+    const t = setTimeout(() => void loadData(), 0);
+    return () => clearTimeout(t);
   }, [roleName]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -177,8 +178,9 @@ export const LeavesPage: FC = () => {
         medicalAttachmentUrl: '',
       });
       loadData();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to submit leave request');
+    } catch (err: unknown) {
+      const msg = (err as any)?.response?.data?.message ?? (err instanceof Error ? err.message : String(err));
+      alert(msg || 'Failed to submit leave request');
     }
   };
 
@@ -199,8 +201,9 @@ export const LeavesPage: FC = () => {
       setActionOpen(false);
       setSelectedRequest(null);
       loadData();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to update leave request status');
+    } catch (err: unknown) {
+      const msg = (err as any)?.response?.data?.message ?? (err instanceof Error ? err.message : String(err));
+      alert(msg || 'Failed to update leave request status');
     }
   };
 
@@ -209,8 +212,9 @@ export const LeavesPage: FC = () => {
     try {
       await leavesApi.cancelLeaveRequest(id);
       loadData();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to cancel leave request');
+    } catch (err: unknown) {
+      const msg = (err as any)?.response?.data?.message ?? (err instanceof Error ? err.message : String(err));
+      alert(msg || 'Failed to cancel leave request');
     }
   };
 

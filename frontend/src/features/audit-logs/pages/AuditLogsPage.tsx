@@ -40,7 +40,7 @@ const AuditLogsPage: React.FC = () => {
       );
       const data = await getAuditLogs(cleanFilters);
       setLogs(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to fetch audit logs');
     } finally {
       setLoading(false);

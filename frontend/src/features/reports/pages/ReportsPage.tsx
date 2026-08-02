@@ -28,7 +28,7 @@ export const ReportsPage: FC = () => {
     setError(null);
     try {
       await reportsApi.exportReport(type, format);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Export failed:', err);
       setError(`Failed to export ${type} report. Please try again.`);
     } finally {

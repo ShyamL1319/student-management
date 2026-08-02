@@ -18,7 +18,7 @@ import { fetchPendingFees, fetchOutstandingAmount } from '../feesApi';
 
 export default function PendingFeesPage() {
   const [pendingFees, setPendingFees] = useState<any[]>([]);
-  const [outstanding, setOutstanding] = useState<any>(null);
+  const [outstanding, setOutstanding] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [studentId, setStudentId] = useState('');
 

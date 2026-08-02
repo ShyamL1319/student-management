@@ -45,7 +45,7 @@ const ConflictDetector: React.FC = () => {
     try {
       const response = await timetableAPI.checkConflict(formData);
       setResult(response);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to check conflicts');
     } finally {
       setLoading(false);

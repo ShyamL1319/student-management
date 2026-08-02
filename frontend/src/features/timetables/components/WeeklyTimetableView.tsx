@@ -22,8 +22,10 @@ interface WeeklyTimetableProps {
   classId?: string;
 }
 
+type Timetable = Record<string, Array<Record<string, unknown>>> | null;
+
 const WeeklyTimetableView: React.FC<WeeklyTimetableProps> = ({ classId }) => {
-  const [timetable, setTimetable] = useState<any>(null);
+  const [timetable, setTimetable] = useState<Timetable>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedClassId, setSelectedClassId] = useState(classId || '');
@@ -31,27 +33,29 @@ const WeeklyTimetableView: React.FC<WeeklyTimetableProps> = ({ classId }) => {
 
   const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
-  useEffect(() => {
-    if (selectedClassId) {
-      fetchWeeklyTimetable();
-    }
-  }, [selectedClassId, academicYearId]);
-
   const fetchWeeklyTimetable = async () => {
     setLoading(true);
     setError(null);
     try {
-      const params: any = {};
+      const params: Record<string, string> = {};
       if (academicYearId) params.academicYear = academicYearId;
 
       const response = await timetableAPI.getWeeklyTimetable(selectedClassId, params);
-      setTimetable(response);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch timetable');
+      setTimetable(response as Timetable);
+    } catch (err: unknown) {
+      const msg = (err as any)?.response?.data?.message ?? (err instanceof Error ? err.message : String(err));
+      setError(msg || 'Failed to fetch timetable');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (selectedClassId) {
+      // defer to avoid synchronous setState in effect
+      setTimeout(() => void fetchWeeklyTimetable(), 0);
+    }
+  }, [selectedClassId, academicYearId]);
 
   if (!selectedClassId) {
     return (

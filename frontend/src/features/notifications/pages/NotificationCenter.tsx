@@ -8,7 +8,7 @@ export const NotificationCenter: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<unknown>(null);
   const [filter, setFilter] = useState<string>('all');
 
   const fetchNotifications = async () => {
@@ -17,7 +17,7 @@ export const NotificationCenter: React.FC = () => {
       const data = await notificationAPI.getAll({ limit: 50 });
       setNotifications(data);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to fetch notifications');
     } finally {
       setLoading(false);

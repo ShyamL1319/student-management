@@ -47,7 +47,7 @@ const TimetableList: React.FC = () => {
       const response = await timetableAPI.getAll({ page, limit });
       setTimetables(response.data);
       setTotal(response.total);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to fetch timetables');
     } finally {
       setLoading(false);
@@ -94,7 +94,7 @@ const TimetableList: React.FC = () => {
       }
       fetchTimetables();
       handleCloseDialog();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to save timetable');
     }
   };
@@ -104,7 +104,7 @@ const TimetableList: React.FC = () => {
       try {
         await timetableAPI.delete(id);
         fetchTimetables();
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.response?.data?.message || 'Failed to delete timetable');
       }
     }

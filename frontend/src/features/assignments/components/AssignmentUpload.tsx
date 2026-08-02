@@ -56,7 +56,7 @@ export const AssignmentUpload: FC<UploadProps> = ({ assignmentId, onSuccess }) =
       // 4. Return resolved details
       const fileUrl = `${url}${fields.key}`;
       onSuccess(fileUrl, file.name, file.size);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'File upload failed. Please try again.');
     } finally {
       setUploading(false);

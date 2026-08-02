@@ -27,7 +27,7 @@ export const ExamsPage: FC = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<unknown>(null);
   const [form, setForm] = useState({ name: '', type: '', description: '' });
 
   const examsQuery = useQuery({

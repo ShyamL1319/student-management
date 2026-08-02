@@ -82,7 +82,7 @@ export const timetableAPI = {
   },
 
   // Get weekly timetable for class
-  getWeeklyTimetable: async (classId: string, params: any = {}): Promise<any> => {
+  getWeeklyTimetable: async (classId: string, params: any = {}): Promise<unknown> => {
     const response = await api.get(`/timetables/class/${classId}/weekly`, { params });
     return response.data;
   },

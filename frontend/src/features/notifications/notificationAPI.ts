@@ -135,7 +135,7 @@ export const notificationAPI = {
     return response.data;
   },
 
-  getStatistics: async (): Promise<any> => {
+  getStatistics: async (): Promise<unknown> => {
     const response = await api.get('/notifications/statistics');
     return response.data;
   },
@@ -223,7 +223,7 @@ export const notificationAPI = {
     return response.data;
   },
 
-  getEventStatistics: async (): Promise<any> => {
+  getEventStatistics: async (): Promise<unknown> => {
     const response = await api.get('/notification-events/statistics');
     return response.data;
   },

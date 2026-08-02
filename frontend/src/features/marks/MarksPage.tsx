@@ -3,7 +3,7 @@ import { createMark, fetchStudentResult } from './marksApi';
 
 export default function MarksPage() {
   const [studentId, setStudentId] = useState('');
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<unknown>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

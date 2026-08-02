@@ -76,7 +76,7 @@ export const AssignmentsPage: FC = () => {
   const [classes, setClasses] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<any | null>(null);
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Dialog open/close states
@@ -193,7 +193,7 @@ export const AssignmentsPage: FC = () => {
       setCreateOpen(false);
       resetForm();
       loadAssignments();
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.response?.data?.message || 'Failed to create assignment');
     }
   };
@@ -229,7 +229,7 @@ export const AssignmentsPage: FC = () => {
       resetForm();
       setSelectedAssignment(null);
       loadAssignments();
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.response?.data?.message || 'Failed to update assignment');
     }
   };
@@ -239,7 +239,7 @@ export const AssignmentsPage: FC = () => {
     try {
       await assignmentsApi.deleteAssignment(id);
       loadAssignments();
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.response?.data?.message || 'Failed to delete assignment');
     }
   };
@@ -248,7 +248,7 @@ export const AssignmentsPage: FC = () => {
     try {
       await assignmentsApi.publishAssignment(id);
       loadAssignments();
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.response?.data?.message || 'Failed to publish assignment');
     }
   };
@@ -261,7 +261,7 @@ export const AssignmentsPage: FC = () => {
       setSelectedAssignment(null);
       loadAssignments();
       alert('Homework submitted successfully!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.response?.data?.message || 'Failed to register submission details');
     }
   };
@@ -305,7 +305,7 @@ export const AssignmentsPage: FC = () => {
       setSubmissions(subs || []);
       const analyticsRes = await assignmentsApi.getAssignmentAnalytics(selectedAssignment._id);
       setAnalytics(analyticsRes);
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.response?.data?.message || 'Failed to grade submission');
     }
   };
@@ -346,7 +346,7 @@ export const AssignmentsPage: FC = () => {
       setSubmissions(subs || []);
       const analyticsRes = await assignmentsApi.getAssignmentAnalytics(selectedAssignment._id);
       setAnalytics(analyticsRes);
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.response?.data?.message || 'Failed to submit bulk grades');
     }
   };

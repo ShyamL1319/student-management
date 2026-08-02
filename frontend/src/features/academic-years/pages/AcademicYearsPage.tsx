@@ -34,7 +34,7 @@ export const AcademicYearsPage: FC = () => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<unknown>(null);
   const [formValues, setFormValues] = useState({
     name: '',
     startDate: '',

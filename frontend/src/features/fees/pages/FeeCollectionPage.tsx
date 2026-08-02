@@ -30,7 +30,7 @@ export default function FeeCollectionPage() {
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [paymentDialog, setPaymentDialog] = useState(false);
-  const [selectedFee, setSelectedFee] = useState<any>(null);
+  const [selectedFee, setSelectedFee] = useState<unknown>(null);
   const [paymentData, setPaymentData] = useState({
     amountPaid: 0,
     paymentMethod: 'CASH',

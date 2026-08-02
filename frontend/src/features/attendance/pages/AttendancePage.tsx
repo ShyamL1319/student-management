@@ -49,7 +49,7 @@ export const AttendancePage: FC = () => {
   const [reportDate, setReportDate] = useState(today);
   const [reportMonth, setReportMonth] = useState(currentMonth);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<unknown>(null);
   const [formValues, setFormValues] = useState({
     attendeeType: 'STUDENT',
     attendeeId: '',

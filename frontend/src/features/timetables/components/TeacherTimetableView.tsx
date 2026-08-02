@@ -43,7 +43,7 @@ const TeacherTimetableView: React.FC<TeacherTimetableViewProps> = ({ teacherId: 
 
       const response = await timetableAPI.getTeacherTimetable(teacherId, params);
       setTimetables(response);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to fetch timetable');
     } finally {
       setLoading(false);

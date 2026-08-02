@@ -25,7 +25,7 @@ export default function InvoiceGenerationPage() {
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [paymentDialog, setPaymentDialog] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<unknown>(null);
   const [filterType, setFilterType] = useState('all');
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [formData, setFormData] = useState({

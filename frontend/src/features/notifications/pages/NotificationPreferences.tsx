@@ -9,22 +9,25 @@ export const NotificationPreferences: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchPreferences();
-  }, []);
-
   const fetchPreferences = async () => {
     setLoading(true);
     try {
       const data = await notificationAPI.getPreferences();
       setPreferences(data);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch preferences');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg || 'Failed to fetch preferences');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // defer to avoid synchronous setState in effect
+    const t = setTimeout(() => void fetchPreferences(), 0);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleUpdate = async (updates: Partial<NotificationPreference>) => {
     try {
@@ -32,8 +35,9 @@ export const NotificationPreferences: React.FC = () => {
       setPreferences(updated);
       setSuccess('Preferences updated successfully');
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err: any) {
-      setError(err.message || 'Failed to update preferences');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg || 'Failed to update preferences');
     }
   };
 

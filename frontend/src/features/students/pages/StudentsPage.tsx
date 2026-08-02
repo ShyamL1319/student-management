@@ -38,7 +38,7 @@ export const StudentsPage: FC = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<unknown>(null);
   const [formValues, setFormValues] = useState({ admissionNumber: '', rollNumber: '', firstName: '', lastName: '', dob: '', gender: '', bloodGroup: '', address: '', email: '', phone: '', parent: '', class: '', section: '', isActive: true });
 
   const { data: classesData } = useQuery({ queryKey: ['classesOptions'], queryFn: () => classesApi.getClasses({ limit: 200 }), staleTime: 5 * 60 * 1000 });

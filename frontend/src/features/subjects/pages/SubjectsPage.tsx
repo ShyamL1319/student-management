@@ -39,7 +39,7 @@ export const SubjectsPage: FC = () => {
   const [search, setSearch] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<unknown>(null);
   const [formValues, setFormValues] = useState({ name: '', code: '', course: '', teachers: [] as string[], isActive: true });
 
   const { data: coursesData } = useQuery({ queryKey: ['coursesOptions'], queryFn: () => coursesApi.getCourses({ limit: 100 }) });
