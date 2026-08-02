@@ -6,6 +6,11 @@ import { authApi } from '../features/auth/api/auth.api';
 import * as Sentry from '@sentry/react';
 
 interface User {
+  _id?: string;
+  id?: string;
+  role?: string | { name?: string };
+  email?: string;
+  firstName?: string;
   [key: string]: unknown;
 }
 
@@ -31,7 +36,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (user) {
       Sentry.setUser({
         id: String(user._id || user.id || ''),
-        role: String(user.role || ''),
+        role: typeof user.role === 'string' ? user.role : user.role?.name || '',
         email: String(user.email || ''),
       });
     } else {
@@ -41,18 +46,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
-    if (!token) return;
+    if (!token) {
+      setIsAuthenticated(false);
+      setUser(null);
+      return;
+    }
 
     let mounted = true;
     authApi
       .getProfile()
-      .then((u) => {
+      .then((profile) => {
         if (!mounted) return;
-        setUser(u);
+        setUser(profile);
+        setIsAuthenticated(true);
       })
       .catch(() => {
         if (!mounted) return;
         setIsAuthenticated(false);
+        setUser(null);
         localStorage.removeItem('accessToken');
       });
 
@@ -61,10 +72,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  const login = (data: any) => {
+  const login = (data: AuthData) => {
     localStorage.setItem('accessToken', data.accessToken);
-    setIsAuthenticated(true);
     setUser(data.user);
+    setIsAuthenticated(true);
   };
 
   const logout = () => {

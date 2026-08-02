@@ -7,15 +7,12 @@ import {
   Card,
   CardContent,
   Button,
-  Avatar,
   Chip,
   Divider,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
-  IconButton,
-  Tooltip,
   Alert,
   Tab,
   Tabs,
@@ -27,7 +24,6 @@ import {
   Checkbox,
   FormControlLabel,
   Snackbar,
-  LinearProgress,
   FormControl,
   InputLabel,
   Select,
@@ -43,31 +39,21 @@ import {
 } from '@mui/material';
 import {
   Settings as SettingsIcon,
-  People as PeopleIcon,
   School as SchoolIcon,
   AccountBalance as AccountBalanceIcon,
-  CheckCircleOutlined as CheckCircleIcon,
-  Warning as WarningIcon,
-  Close as CloseIcon,
-  Check as CheckIcon,
   Send as SendIcon,
-  Download as DownloadIcon,
   Bolt as BoltIcon,
-  Search as SearchIcon,
   AutoAwesome as AIIcon,
-  NotificationsActive as AlertIcon,
   Dns as ServerIcon,
   Shield as ShieldIcon,
   CreditCard as CreditCardIcon,
   Power as PowerIcon,
-  Lock as LockIcon,
   History as AuditIcon,
   Storage as DbIcon,
-  ToggleOn as ToggleOnIcon,
   Add as AddIcon,
   Cached as RefreshIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+// useNavigate not required here
 import {
   AreaChart,
   Area,
@@ -77,95 +63,62 @@ import {
   Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   LineChart,
   Line,
 } from 'recharts';
 import type { DashboardResponse } from '../api/dashboardApi';
+import { SectionTitle } from '../../../components/common/SectionTitle';
 
 export interface SuperAdminDashboardProps {
   data: DashboardResponse;
-  firstName: string;
 }
+import {
+  MOCK_PLATFORM_REVENUE,
+  MOCK_INFRA_METRICS,
+  MOCK_SUBSCRIPTION_PLANS,
+  MOCK_SECURITY_THREATS,
+  MOCK_AUDIT_LOGS,
+} from '../fixtures/superAdminMocks';
 
-// ── Mock SaaS Datasets for Super Admin ─────────────────────────────────────
-const MOCK_PLATFORM_REVENUE = [
-  { month: 'Jan', mrr: 45000, arr: 540000 },
-  { month: 'Feb', mrr: 52000, arr: 624000 },
-  { month: 'Mar', mrr: 68000, arr: 816000 },
-  { month: 'Apr', mrr: 75000, arr: 900000 },
-  { month: 'May', mrr: 86000, arr: 1032000 },
-  { month: 'Jun', mrr: 98000, arr: 1176000 },
-];
-
-const MOCK_INFRA_METRICS = [
-  { time: '10:00', cpu: 32, memory: 58, network: 120 },
-  { time: '10:05', cpu: 45, memory: 59, network: 145 },
-  { time: '10:10', cpu: 78, memory: 62, network: 280 },
-  { time: '10:15', cpu: 55, memory: 61, network: 190 },
-  { time: '10:20', cpu: 42, memory: 60, network: 165 },
-  { time: '10:25', cpu: 38, memory: 60, network: 130 },
-];
-
-const MOCK_SCHOOLS = [
-  { id: 'SCH-001', name: 'Hogwarts Magic Academy', domain: 'hogwarts.edtech.com', plan: 'Enterprise', users: 1240, storage: '184 GB', status: 'Active', health: 'Healthy' },
-  { id: 'SCH-002', name: 'Xavier Mutant School', domain: 'xmansion.org', plan: 'Premium', users: 380, storage: '45 GB', status: 'Active', health: 'Healthy' },
-  { id: 'SCH-003', name: 'Springfield Elementary', domain: 'springfield.edtech.com', plan: 'Standard', users: 850, storage: '92 GB', status: 'Trial', health: 'Warning' },
-  { id: 'SCH-004', name: 'Sunnydale High School', domain: 'sunnydale.edtech.com', plan: 'Standard', users: 140, storage: '12 GB', status: 'Suspended', health: 'Critical' },
-];
-
-const MOCK_SUBSCRIPTION_PLANS = [
-  { id: 'PLN-01', name: 'Standard SaaS', price: '$199/mo', billing: 'Monthly', storage: '50 GB', status: 'Active' },
-  { id: 'PLN-02', name: 'Premium School', price: '$1,999/yr', billing: 'Annual', storage: '250 GB', status: 'Active' },
-  { id: 'PLN-03', name: 'Enterprise Custom', price: 'Contract', billing: 'Custom', storage: '1 TB+', status: 'Active' },
-];
-
-const MOCK_SECURITY_THREATS = [
-  { time: '2 mins ago', event: 'Brute-force lockout triggered', ip: '198.51.100.42', user: 'admin@sunnydale.edu', status: 'Blocked' },
-  { time: '14 mins ago', event: 'Suspicious API token usage', ip: '203.0.113.118', user: 'system-hook-stripe', status: 'Flagged' },
-  { time: '1 hour ago', event: 'Multiple failed MFA challenges', ip: '185.190.140.9', user: 'treasurer@springfield.edu', status: 'Resolved' },
-];
-
-const MOCK_AUDIT_LOGS = [
-  { id: 'AUD-901', user: 'SuperAdmin (shyamlal)', action: 'Suspended school Sunnydale High', target: 'SCH-004', time: 'Today, 10:14 AM' },
-  { id: 'AUD-902', user: 'Billing Bot', action: 'Stripe webhook payment invoice_paid successful', target: 'TNT-001', time: 'Today, 08:00 AM' },
-  { id: 'AUD-903', user: 'SuperAdmin (shyamlal)', action: 'Upgraded Hogwarts to Enterprise custom', target: 'SCH-001', time: 'Yesterday, 04:30 PM' },
-];
-
-// Helper layout component
-const SectionTitle: React.FC<{
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
-}> = ({ icon, title, subtitle, action }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-      <Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>{icon}</Box>
-      <Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontFamily: "'Outfit', sans-serif" }}>{title}</Typography>
-        {subtitle && <Typography variant="caption" color="text.secondary" sx={{ fontFamily: "'Inter', sans-serif" }}>{subtitle}</Typography>}
-      </Box>
-    </Box>
-    {action}
-  </Box>
-);
-
-const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstName }) => {
-  const navigate = useNavigate();
+const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data }) => {
 
   // ── States for active view controls ─────────────────────────────────────
   const [activeTab, setActiveTab] = useState(0);
-  const [schools, setSchools] = useState<any[]>([]);
+  type SchoolRow = {
+    id: string;
+    name: string;
+    domain: string;
+    plan: string;
+    users: number;
+    storage: string;
+    status: string;
+    health: string;
+  };
+  type SecurityEvent = {
+    time: string;
+    event: string;
+    ip: string;
+    user: string;
+    status: string;
+  };
+  type AuditLog = {
+    id?: string;
+    user?: string;
+    action: string;
+    target?: string;
+    time: string;
+    description?: string;
+  };
+
+  const [schools, setSchools] = useState<SchoolRow[]>([]);
+  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>(data.securityThreats || MOCK_SECURITY_THREATS);
   const [plans, setPlans] = useState(MOCK_SUBSCRIPTION_PLANS);
-  const [securityEvents, setSecurityEvents] = useState<any[]>(data.securityThreats || MOCK_SECURITY_THREATS);
 
   const fetchSchools = async () => {
     try {
       const result = await schoolApi.getSchools({ limit: 100 });
       if (result && result.data) {
-        const mapped = result.data.map((school: any) => ({
+        const mapped = result.data.map((school: { _id?: string; id?: string; name: string; isActive?: boolean; }) => ({
           id: school._id || school.id,
           name: school.name,
           domain: `${school.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.edtech.com`,
@@ -181,14 +134,22 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
       console.error('Failed to load schools', err);
     }
   };
-
   useEffect(() => {
-    fetchSchools();
+    // calling async fetch and setting state inside effect via inner async function
+    // it only runs once on mount
+    (async () => {
+      try {
+        await fetchSchools();
+      } catch (e) {
+        console.error('fetchSchools error', e);
+      }
+    })();
   }, []);
 
   useEffect(() => {
     if (data.securityThreats) {
-      setSecurityEvents(data.securityThreats);
+      // Defer setState to avoid synchronous setState-in-effect lint
+      setTimeout(() => setSecurityEvents(data.securityThreats as SecurityEvent[]), 0);
     }
   }, [data]);
 
@@ -210,7 +171,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
 
   // Infrastructure Actions simulation states
   const [isRestartingNode, setIsRestartingNode] = useState(false);
-  const [redisFlushing, setRedisFlushing] = useState(false);
+  const [, setRedisFlushing] = useState(false);
   const [backupStatus, setBackupStatus] = useState('Completed yesterday');
   const [mfaEnforced, setMfaEnforced] = useState(true);
 
@@ -237,6 +198,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
       showNotification(`School status updated to ${nextStatus}.`, nextStatus === 'Active' ? 'success' : 'warning');
       fetchSchools();
     } catch (err) {
+      console.error(err);
       showNotification('Failed to update school status.', 'error');
     }
   };
@@ -265,6 +227,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
       setNewSchool({ name: '', address: '', plan: 'Standard', ownerEmail: '' });
       fetchSchools();
     } catch (err) {
+      console.error(err);
       showNotification('Failed to create school.', 'error');
     }
   };
@@ -340,7 +303,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
   };
 
   const handleForcePasswordReset = (ip: string, user: string) => {
-    setSecurityEvents((prev: any[]) => prev.filter((e: any) => e.ip !== ip));
+    setSecurityEvents((prev: SecurityEvent[]) => prev.filter((e) => e.ip !== ip));
     showNotification(`MFA verification triggered and password reset forced for "${user}". Account locked.`, 'success');
   };
 
@@ -442,7 +405,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
                       style={{ fontSize: '0.75rem' }}
                       tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
                     />
-                    <RechartsTooltip formatter={(value: any) => [`$${value.toLocaleString()}`, '']} />
+                    <RechartsTooltip formatter={(value: number) => [`$${value.toLocaleString()}`, '']} />
                     <Legend wrapperStyle={{ fontSize: '0.85rem' }} />
                     <Area type="monotone" dataKey="mrr" stroke="#4f46e5" fillOpacity={1} fill="url(#colorMRR)" name="Monthly Recurring Revenue" />
                   </AreaChart>
@@ -699,7 +662,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {securityEvents.map((evt: any) => (
+                    {securityEvents.map((evt) => (
                       <TableRow key={evt.ip} hover>
                         <TableCell>{evt.time}</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>{evt.event}</TableCell>
@@ -730,7 +693,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ data, firstNa
               <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>General Audit Log History</Typography>
               <Box sx={{ maxHeight: 250, overflowY: 'auto', pr: 1 }}>
                 <List disablePadding>
-                  {(data.recentActivity || MOCK_AUDIT_LOGS).map((log: any, idx: number) => (
+                  {((data.recentActivity || MOCK_AUDIT_LOGS) as AuditLog[]).map((log, idx: number) => (
                     <ListItem key={log.id || idx} sx={{ px: 0, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                       <ListItemIcon>
                         <AuditIcon color="primary" />

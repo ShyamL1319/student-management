@@ -87,8 +87,8 @@ export const DashboardPage: FC = () => {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userTyped = user as any;
+  type LocalUser = { role?: string | { name?: string }; firstName?: string };
+  const userTyped = user as unknown as LocalUser;
   const roleName = typeof userTyped?.role === 'string' ? userTyped.role : userTyped?.role?.name || '';
   const role = roleName.toUpperCase();
   const { widgets } = data;

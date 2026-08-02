@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import api from '../../../api/api';
 import type { DashboardResponse } from '../api/dashboardApi';
 import {
@@ -16,9 +16,7 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon,
   IconButton,
-  Tooltip,
   Alert,
   Tab,
   Tabs,
@@ -31,7 +29,7 @@ import {
   FormControlLabel,
 } from '@mui/material';
 import {
-  School as SchoolIcon,
+  
   Event as EventIcon,
   Assignment as AssignmentIcon,
   CheckCircle as CheckCircleIcon,
@@ -45,14 +43,12 @@ import {
   AutoAwesome as AIIcon,
   TaskAlt as GradeIcon,
   SupervisorAccount as SupervisorIcon,
-  People as PeopleIcon,
-  Mail as MailIcon,
+  
   Check as CheckIcon,
   Close as CloseIcon,
-  Warning as WarningIcon,
+  
   Search as SearchIcon,
   Download as DownloadIcon,
-  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -63,90 +59,8 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
-  AreaChart,
-  Area,
 } from 'recharts';
-
-// ── Mock Data matching Design Specification ───────────────────────────
-const MOCK_TEACHER = {
-  name: 'Dr. Sarah Jenkins',
-  id: 'TCH-2023-042',
-  department: 'Science & Biology',
-  schoolName: 'EduSphere',
-  classesToday: 4,
-  totalStudents: 128,
-  pendingAttendance: 2,
-  assignmentsPendingReview: 14,
-  upcomingExams: 3,
-  unreadMessages: 5,
-  pendingRequests: 4,
-  upcomingMeetings: 2,
-};
-
-const MOCK_TODAY_CLASSES = [
-  { id: 1, subject: 'Advanced Biology', gradeClass: 'Grade 9-A', time: '08:30 AM – 09:20 AM', location: 'Lab 2', status: 'completed', link: '#' },
-  { id: 2, subject: 'Genetics', gradeClass: 'Grade 10-C', time: '09:30 AM – 10:20 AM', location: 'Room 304', status: 'current', link: 'https://zoom.us/j/123456789' },
-  { id: 3, subject: 'Introductory Science', gradeClass: 'Grade 7-B', time: '11:00 AM – 11:50 AM', location: 'Room 102', status: 'upcoming', link: '#' },
-  { id: 4, subject: 'AP Biology Sem 2', gradeClass: 'Grade 11-A', time: '01:30 PM – 02:20 PM', location: 'Lab 2', status: 'upcoming', link: 'https://zoom.us/j/987654321' },
-];
-
-const MOCK_ASSIGNMENTS = [
-  { id: 1, title: 'Cell Division Lab Report', subject: 'AP Biology', class: 'Grade 11-A', submitted: 28, total: 32, status: 'evaluating', daysLeft: 1 },
-  { id: 2, title: 'Mendelian Genetics Problem Set', subject: 'Genetics', class: 'Grade 10-C', submitted: 18, total: 30, status: 'active', daysLeft: 4 },
-  { id: 3, title: 'Photosynthesis Quiz Draft', subject: 'Intro Science', class: 'Grade 7-B', submitted: 0, total: 25, status: 'draft', daysLeft: null },
-  { id: 4, title: 'Ecosystems Diagram Submission', subject: 'Advanced Biology', class: 'Grade 9-A', submitted: 32, total: 32, status: 'completed', daysLeft: null },
-];
-
-const MOCK_LEAVE_REQUESTS = [
-  { id: 1, studentName: 'Ryan Cook', class: 'Grade 9-A', reason: 'Medical appointment', date: 'Today', status: 'pending' },
-  { id: 2, studentName: 'Emma Watson', class: 'Grade 10-C', reason: 'Family emergency', date: 'Tomorrow', status: 'pending' },
-  { id: 3, studentName: 'Jessie Miller', class: 'Grade 11-A', reason: 'Sore throat & flu', date: 'Jun 8', status: 'pending' },
-];
-
-const MOCK_RESOURCES = [
-  { id: 1, title: 'Mitosis vs Meiosis Slide Deck', type: 'PPT', class: 'Grade 9-A', size: '12.4 MB' },
-  { id: 2, title: 'Genetics Pedigree Chart Guide', type: 'PDF', class: 'Grade 10-C', size: '2.1 MB' },
-  { id: 3, title: 'Lab Safety Video Lecture', type: 'Video', class: 'Grade 7-B', size: '240 MB' },
-];
-
-const MOCK_COMMUNICATIONS = [
-  { name: 'Mrs. Cook (Parent)', role: 'Parent of Ryan Cook', msg: 'Hello Dr. Jenkins, Ryan will miss class today due to an orthodontist appointment.', time: '10 min ago', unread: true },
-  { name: 'Principal Miller', role: 'Administration', msg: 'Please review and submit the monthly syllabus coverage worksheet by Friday.', time: '1 hour ago', unread: true },
-  { name: 'Academic Cell', role: 'Coordinator', msg: 'The room allocation for AP Biology final exams has been updated to Main Hall A.', time: '1 day ago', unread: false },
-];
-
-const STUDENT_PERFORMANCE_ALERTS = [
-  { name: 'Alex Mercer', class: 'Grade 9-A', attendance: 68, grade: 58, status: 'high-risk' },
-  { name: 'Jane Doe', class: 'Grade 11-A', attendance: 72, grade: 64, status: 'medium-risk' },
-  { name: 'Marcus Brody', class: 'Grade 10-C', attendance: 95, grade: 98, status: 'top-performer' },
-];
-
-const SUB_TIMETABLE = [
-  { day: 'Mon', periods: ['9-A Bio', '11-A AP Bio', '7-B Science', 'Lab Prep'] },
-  { day: 'Tue', periods: ['10-C Gen', '9-A Bio', 'Staff Sync', '11-A AP Bio'] },
-  { day: 'Wed', periods: ['9-A Bio', '7-B Science', 'Lab Prep', 'Mentoring'] },
-  { day: 'Thu', periods: ['10-C Gen', '9-A Bio', 'AP Bio Lab', 'Substitute Duty'] },
-  { day: 'Fri', periods: ['11-A AP Bio', '7-B Science', 'Department Meet', 'Mentoring'] },
-];
-
-// Helper components
-const SectionTitle: React.FC<{
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
-}> = ({ icon, title, subtitle, action }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-      <Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>{icon}</Box>
-      <Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontFamily: "'Outfit', sans-serif" }}>{title}</Typography>
-        {subtitle && <Typography variant="caption" color="text.secondary" sx={{ fontFamily: "'Inter', sans-serif" }}>{subtitle}</Typography>}
-      </Box>
-    </Box>
-    {action}
-  </Box>
-);
+import { SectionTitle } from '../../../components/common/SectionTitle';
 
 export interface TeacherDashboardProps {
   data: DashboardResponse;
@@ -159,38 +73,27 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
   const [selectedClassForAttendance, setSelectedClassForAttendance] = useState<string>('');
 
-  // Dynamic leave requests state and handlers
-  const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
-
-  const fetchLeaves = async () => {
-    try {
-      const res = await api.get('/leave-requests');
-      if (res && res.data) {
-        const pendingLeaves = res.data.data
-          .filter((l: any) => l.status === 'PENDING')
-          .map((l: any) => ({
-            id: l._id || l.id,
-            studentName: l.requesterId ? `${l.requesterId.firstName} ${l.requesterId.lastName}` : 'Unknown Student',
-            class: l.requesterId?.class?.name || 'Class',
-            reason: l.reason,
-            date: `${new Date(l.startDate).toLocaleDateString()} - ${new Date(l.endDate).toLocaleDateString()}`,
-            status: 'pending',
-          }));
-        setLeaveRequests(pendingLeaves);
-      }
-    } catch (err) {
-      console.error('Failed to fetch pending leaves on teacher dashboard', err);
-    }
+  // Local leave requests are seeded from the dashboard payload
+  type LeaveRequest = {
+    id: string;
+    studentName: string;
+    class: string;
+    reason: string;
+    date: string;
+    status: string;
   };
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(data.leaveRequests || []);
 
-  useEffect(() => {
-    fetchLeaves();
-  }, []);
+  React.useEffect(() => {
+    if (data.leaveRequests) {
+      setTimeout(() => setLeaveRequests(data.leaveRequests || []), 0);
+    }
+  }, [data.leaveRequests]);
 
   const handleApproveLeave = async (id: string) => {
     try {
       await api.patch(`/leave-requests/${id}/status`, { status: 'APPROVED' });
-      fetchLeaves();
+      setLeaveRequests((prev) => prev.filter((req) => req.id !== id));
     } catch (err) {
       console.error('Failed to approve leave', err);
     }
@@ -199,7 +102,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
   const handleRejectLeave = async (id: string) => {
     try {
       await api.patch(`/leave-requests/${id}/status`, { status: 'REJECTED' });
-      fetchLeaves();
+      setLeaveRequests((prev) => prev.filter((req) => req.id !== id));
     } catch (err) {
       console.error('Failed to reject leave', err);
     }
@@ -402,62 +305,72 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
                 }
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {(data.scheduleToday || MOCK_TODAY_CLASSES).map((cls: any) => {
-                  const isCurrent = cls.status === 'current';
-                  const isCompleted = cls.status === 'completed';
-                  return (
-                    <Box
-                      key={cls.id}
-                      sx={{
-                        p: 2,
-                        borderRadius: 3,
-                        border: '1px solid',
-                        borderColor: isCurrent ? 'primary.main' : 'divider',
-                        bgcolor: isCurrent ? 'primary.main' + '08' : isCompleted ? 'action.hover' : 'background.paper',
-                        opacity: isCompleted ? 0.7 : 1,
-                        display: 'flex',
-                        flexDirection: { xs: 'column', sm: 'row' },
-                        alignItems: { xs: 'flex-start', sm: 'center' },
-                        justifyContent: 'space-between',
-                        gap: 2,
-                      }}
-                    >
-                      <Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body1" sx={{ fontWeight: 700 }}>{cls.subject}</Typography>
-                          <Chip label={cls.gradeClass} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
-                          {isCurrent && <Chip label="CURRENT CLASS" color="primary" size="small" sx={{ fontWeight: 700, height: 18, fontSize: '0.6rem' }} />}
+                {Array.isArray(data.scheduleToday) && data.scheduleToday.length > 0 ? (
+                  (data.scheduleToday as Array<{ id: string; subject: string; time: string; location?: string; room?: string; status: string; gradeClass?: string; link?: string; }>).map((cls) => {
+                    const isCurrent = cls.status === 'current';
+                    const isCompleted = cls.status === 'completed';
+                    return (
+                      <Box
+                        key={cls.id}
+                        sx={{
+                          p: 2,
+                          borderRadius: 3,
+                          border: '1px solid',
+                          borderColor: isCurrent ? 'primary.main' : 'divider',
+                          bgcolor: isCurrent ? 'primary.main' + '08' : isCompleted ? 'action.hover' : 'background.paper',
+                          opacity: isCompleted ? 0.7 : 1,
+                          display: 'flex',
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          alignItems: { xs: 'flex-start', sm: 'center' },
+                          justifyContent: 'space-between',
+                          gap: 2,
+                        }}
+                      >
+                        <Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                            <Typography variant="body1" sx={{ fontWeight: 700 }}>{cls.subject}</Typography>
+                            {cls.gradeClass && (
+                              <Chip label={cls.gradeClass} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
+                            )}
+                            {isCurrent && <Chip label="CURRENT CLASS" color="primary" size="small" sx={{ fontWeight: 700, height: 18, fontSize: '0.6rem' }} />}
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">
+                            {cls.time} · {cls.location || cls.room || 'TBD'}
+                          </Typography>
                         </Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {cls.time} · {cls.location}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: 'flex-end' }}>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="success"
-                          disableElevation
-                          onClick={() => handleOpenAttendance(cls.gradeClass)}
-                          sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
-                        >
-                          Mark Attendance
-                        </Button>
-                        {cls.link !== '#' && (
+                        <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: 'flex-end' }}>
                           <Button
                             size="small"
-                            variant="outlined"
-                            href={cls.link}
-                            target="_blank"
-                            sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
+                            variant="contained"
+                            color="success"
+                            disableElevation
+                            onClick={() => handleOpenAttendance(cls.gradeClass || 'Class')}
+                            sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
                           >
-                            Online Link
+                            Mark Attendance
                           </Button>
-                        )}
+                          {cls.link && cls.link !== '#' && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              href={cls.link}
+                              target="_blank"
+                              sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
+                            >
+                              Online Link
+                            </Button>
+                          )}
+                        </Box>
                       </Box>
-                    </Box>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <Box sx={{ p: 3, borderRadius: 3, border: '1px dashed', borderColor: 'divider', bgcolor: 'background.paper' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No scheduled classes were found for today. Please check the timetable or contact administration.
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             </CardContent>
           </Card>
@@ -510,57 +423,59 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
                 onChange={(_, val) => setActiveTab(val)}
                 sx={{ mb: 2, '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, minHeight: 36, fontSize: '0.8rem' } }}
               >
-                <Tab label="Evaluating (2)" />
-                <Tab label="Active (1)" />
-                <Tab label="Drafts (1)" />
+                <Tab label={`Evaluating (${(data.assignments || []).filter((a) => ['evaluating', 'completed'].includes(a.status)).length})`} />
+                <Tab label={`Active (${(data.assignments || []).filter((a) => a.status === 'active').length})`} />
+                <Tab label={`Drafts (${(data.assignments || []).filter((a) => a.status === 'draft').length})`} />
               </Tabs>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {(data.assignments || MOCK_ASSIGNMENTS)
-                  .filter((a: any) => {
-                    if (activeTab === 0) return a.status === 'evaluating' || a.status === 'completed';
-                    if (activeTab === 1) return a.status === 'active';
-                    return a.status === 'draft';
-                  })
-                  .map((a: any) => (
-                    <Box
-                      key={a.id}
-                      sx={{
-                        p: 2,
-                        borderRadius: 2.5,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{a.title}</Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {a.subject} · {a.class} {a.daysLeft ? `· Due in ${a.daysLeft}d` : ''}
-                        </Typography>
-                        <Box sx={{ width: '100%', mt: 1 }}>
+                {Array.isArray(data.assignments) && data.assignments.length > 0 && (
+                  (data.assignments as Array<{ id: string; title: string; subject: string; class?: string; status: string; daysLeft?: number; submitted?: number; total?: number; }>)
+                    .filter((a) => {
+                      if (activeTab === 0) return ['evaluating', 'completed'].includes(a.status);
+                      if (activeTab === 1) return a.status === 'active';
+                      return a.status === 'draft';
+                    })
+                    .map((a) => (
+                      <Box
+                        key={a.id}
+                        sx={{
+                          p: 2,
+                          borderRadius: 2.5,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }}>{a.title}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Submissions: {a.submitted} / {a.total}
+                            {a.subject} · {a.class} {a.daysLeft ? `· Due in ${a.daysLeft}d` : ''}
                           </Typography>
-                          <LinearProgress
-                            variant="determinate"
-                            value={(a.submitted / a.total) * 100 || 0}
-                            sx={{ height: 4, borderRadius: 2, mt: 0.5 }}
-                          />
+                          <Box sx={{ width: '100%', mt: 1 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Submissions: {a.submitted} / {a.total}
+                            </Typography>
+                            <LinearProgress
+                              variant="determinate"
+                              value={(a.submitted / a.total) * 100 || 0}
+                              sx={{ height: 4, borderRadius: 2, mt: 0.5 }}
+                            />
+                          </Box>
+                        </Box>
+                        <Box>
+                          {a.status === 'evaluating' ? (
+                            <Button size="small" variant="contained" disableElevation onClick={() => navigate('/marks')} sx={{ textTransform: 'none', borderRadius: 1.5 }}>
+                              Grade
+                            </Button>
+                          ) : (
+                            <Chip label={a.status.toUpperCase()} size="small" variant="outlined" />
+                          )}
                         </Box>
                       </Box>
-                      <Box>
-                        {a.status === 'evaluating' ? (
-                          <Button size="small" variant="contained" disableElevation onClick={() => navigate('/marks')} sx={{ textTransform: 'none', borderRadius: 1.5 }}>
-                            Grade
-                          </Button>
-                        ) : (
-                          <Chip label={a.status.toUpperCase()} size="small" variant="outlined" />
-                        )}
-                      </Box>
-                    </Box>
-                  ))}
+                    ))
+                )}
               </Box>
             </CardContent>
           </Card>
@@ -576,33 +491,41 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
                 subtitle="Recent updates from parents & admin"
               />
               <List disablePadding>
-                {(data.communications || MOCK_COMMUNICATIONS).map((c: any, idx: number) => (
-                  <React.Fragment key={c.name}>
-                    <ListItem sx={{ px: 0, py: 1.5, alignItems: 'flex-start' }}>
-                      <Avatar sx={{ bgcolor: c.unread ? 'primary.main' : 'text.disabled', mr: 2, width: 36, height: 36, fontSize: '0.85rem' }}>
-                        {c.name[0]}
-                      </Avatar>
-                      <ListItemText
-                        disableTypography
-                        primary={
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="body2" sx={{ fontWeight: 700 }}>{c.name}</Typography>
-                            <Typography variant="caption" color="text.secondary">{c.time}</Typography>
-                          </Box>
-                        }
-                        secondary={
-                          <>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>{c.role}</Typography>
-                            <Typography variant="body2" sx={{ color: 'text.primary', mt: 0.5, fontSize: '0.8rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                              {c.msg}
-                            </Typography>
-                          </>
-                        }
-                      />
-                    </ListItem>
-                    {idx < MOCK_COMMUNICATIONS.length - 1 && <Divider />}
-                  </React.Fragment>
-                ))}
+                {Array.isArray(data.communications) && data.communications.length > 0 ? (
+                  (data.communications as Array<{ name: string; time: string; role?: string; msg: string; unread?: number; }>).map((c, idx: number) => (
+                    <React.Fragment key={`${c.name}-${idx}`}>
+                      <ListItem sx={{ px: 0, py: 1.5, alignItems: 'flex-start' }}>
+                        <Avatar sx={{ bgcolor: c.unread ? 'primary.main' : 'text.disabled', mr: 2, width: 36, height: 36, fontSize: '0.85rem' }}>
+                          {c.name?.[0] ?? 'S'}
+                        </Avatar>
+                        <ListItemText
+                          disableTypography
+                          primary={
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" sx={{ fontWeight: 700 }}>{c.name}</Typography>
+                              <Typography variant="caption" color="text.secondary">{c.time}</Typography>
+                            </Box>
+                          }
+                          secondary={
+                            <>
+                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>{c.role}</Typography>
+                              <Typography variant="body2" sx={{ color: 'text.primary', mt: 0.5, fontSize: '0.8rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                {c.msg}
+                              </Typography>
+                            </>
+                          }
+                        />
+                      </ListItem>
+                      {idx < (data.communications.length - 1) && <Divider />}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <ListItem sx={{ px: 0, py: 2 }}>
+                    <ListItemText
+                      primary={<Typography variant="body2" color="text.secondary">No communications yet. Recent messages will appear here.</Typography>}
+                    />
+                  </ListItem>
+                )}
               </List>
             </CardContent>
           </Card>
@@ -747,31 +670,39 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ data, firstName }) 
                 action={<Button size="small" endIcon={<DownloadIcon />} sx={{ textTransform: 'none', fontWeight: 600 }}>Add Resource</Button>}
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {(data.resources || MOCK_RESOURCES).map((res: any) => (
-                  <Box
-                    key={res.id}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2,
-                    }}
-                  >
-                    <Box sx={{ width: 36, height: 36, borderRadius: 1.5, bgcolor: 'primary.main' + '08', color: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.75rem' }}>
-                      {res.type}
+                {Array.isArray(data.resources) && data.resources.length > 0 ? (
+                  (data.resources as Array<{ id: string; title: string; class?: string; size?: string; type?: string; }>).map((res) => (
+                    <Box
+                      key={res.id}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                      }}
+                    >
+                      <Box sx={{ width: 36, height: 36, borderRadius: 1.5, bgcolor: 'primary.main' + '08', color: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.75rem' }}>
+                        {res.type}
+                      </Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{res.title}</Typography>
+                        <Typography variant="caption" color="text.secondary">{res.class} · {res.size}</Typography>
+                      </Box>
+                      <IconButton size="small" aria-label="Download resource">
+                        <DownloadIcon fontSize="small" />
+                      </IconButton>
                     </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{res.title}</Typography>
-                      <Typography variant="caption" color="text.secondary">{res.class} · {res.size}</Typography>
-                    </Box>
-                    <IconButton size="small">
-                      <DownloadIcon fontSize="small" />
-                    </IconButton>
+                  ))
+                ) : (
+                  <Box sx={{ p: 3, borderRadius: 2, border: '1px dashed', borderColor: 'divider', bgcolor: 'background.paper' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No resources are available for your classes yet. Upload a resource to help students prepare.
+                    </Typography>
                   </Box>
-                ))}
+                )}
               </Box>
             </CardContent>
           </Card>

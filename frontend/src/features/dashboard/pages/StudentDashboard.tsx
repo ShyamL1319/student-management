@@ -58,9 +58,9 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { SectionTitle } from '../../../components/common/SectionTitle';
 
 // Quick Action buttons configuration
-
 
 const QUICK_ACTIONS = [
   { label: 'Join Class', icon: <VideoIcon />, color: '#0d9488', path: '/timetables' },
@@ -72,6 +72,86 @@ const QUICK_ACTIONS = [
   { label: 'Resources', icon: <MenuBookIcon />, color: '#8b5cf6', path: '/notifications' },
   { label: 'Message', icon: <ChatIcon />, color: '#ec4899', path: '/notifications' },
 ];
+
+type StudentChartPoint = {
+  name: string;
+  score?: number;
+  gpa?: number;
+  color?: string;
+};
+
+type StudentExam = {
+  id: string;
+  subject: string;
+  date: string;
+  time: string;
+  venue: string;
+  countdown: number;
+};
+
+type AttendanceBreakdownItem = {
+  subject: string;
+  pct: number;
+  attended: number;
+  total: number;
+};
+
+type FeeHistoryItem = {
+  desc: string;
+  date: string;
+  amount?: number;
+  status: 'paid' | 'pending' | 'overdue' | string;
+};
+
+type ResourceItem = {
+  id: string;
+  title: string;
+  subject: string;
+  type: string;
+  size: string;
+};
+
+type AnnouncementItem = {
+  id: string;
+  title: string;
+  time: string;
+  type: string;
+  urgent?: boolean;
+};
+
+type AchievementItem = {
+  id: string;
+  icon?: string;
+  title: string;
+  subtitle?: string;
+};
+
+type CommunicationItem = {
+  name: string;
+  time: string;
+  msg: string;
+  unread: number;
+  color?: string;
+};
+
+type RecentActivityItem = {
+  icon?: string;
+  description: string;
+  time: string;
+};
+
+type StudentAssignmentItem = {
+  id: string;
+  title: string;
+  subject: string;
+  class?: string;
+  status: string;
+  priority?: 'high' | 'medium' | 'low' | string;
+  due?: string;
+  grade?: string;
+  submitted?: number;
+  total?: number;
+};
 
 // ── Helper Components ──────────────────────────────────
 const StatusChip: React.FC<{ status: string }> = ({ status }) => {
@@ -87,24 +167,6 @@ const StatusChip: React.FC<{ status: string }> = ({ status }) => {
   return <Chip label={cfg.label} color={cfg.color} size="small" sx={{ fontWeight: 700, fontSize: '0.65rem' }} />;
 };
 
-const SectionTitle: React.FC<{
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
-}> = ({ icon, title, subtitle, action }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-      <Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>{icon}</Box>
-      <Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{title}</Typography>
-        {subtitle && <Typography variant="caption" color="text.secondary">{subtitle}</Typography>}
-      </Box>
-    </Box>
-    {action}
-  </Box>
-);
-
 // ── Main Component ─────────────────────────────────────
 interface StudentDashboardProps {
   data: DashboardResponse;
@@ -114,6 +176,17 @@ interface StudentDashboardProps {
 const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = 'Priya' }) => {
   const navigate = useNavigate();
   const [assignmentTab, setAssignmentTab] = useState(0);
+
+  const scheduleToday = (data.scheduleToday ?? []) as Array<StudentChartPoint & { id: string; subject: string; teacher?: string; room?: string; time: string; status: string; color?: string; }>;
+  const subjectScores = (data.charts?.subjectsScores ?? []) as StudentChartPoint[];
+  const assignments = (data.assignments ?? []) as StudentAssignmentItem[];
+  const exams = (data.exams ?? []) as StudentExam[];
+  const attendanceBreakdown = (data.attendanceBreakdown ?? []) as AttendanceBreakdownItem[];
+  const resources = (data.resources ?? []) as ResourceItem[];
+  const announcements = (data.announcements ?? []) as AnnouncementItem[];
+  const achievements = (data.achievements ?? []) as AchievementItem[];
+  const communications = (data.communications ?? []) as CommunicationItem[];
+  const recentActivity = (data.recentActivity ?? []) as RecentActivityItem[];
 
   const student = {
     name: data.student?.name || firstName || 'N/A',
@@ -283,12 +356,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                 }
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {!data.scheduleToday || data.scheduleToday.length === 0 ? (
+                {scheduleToday.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
                     No classes scheduled for today.
                   </Typography>
                 ) : (
-                  data.scheduleToday.map((cls: any) => (
+                  scheduleToday.map((cls) => (
                     <Box
                       key={cls.id}
                       sx={{
@@ -367,12 +440,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                 </ResponsiveContainer>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {!data.charts?.subjectsScores || data.charts.subjectsScores.length === 0 ? (
+                {subjectScores.length === 0 ? (
                   <Typography variant="caption" color="text.secondary" align="center" sx={{ display: 'block', py: 2 }}>
                     No subject scores available.
                   </Typography>
                 ) : (
-                  data.charts.subjectsScores.map((s: any) => (
+                  subjectScores.map((s) => (
                     <Box key={s.name}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.25 }}>
                         <Typography variant="caption" sx={{ fontWeight: 600 }}>{s.name}</Typography>
@@ -412,12 +485,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                 onChange={(_, v) => setAssignmentTab(v)}
                 sx={{ mb: 2, '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, minHeight: 36, fontSize: '0.8rem' } }}
               >
-                <Tab label={`Pending (${(data.assignments || []).filter((a: any) => a.status === 'pending').length})`} />
-                <Tab label={`Submitted (${(data.assignments || []).filter((a: any) => a.status === 'submitted').length})`} />
-                <Tab label={`Graded (${(data.assignments || []).filter((a: any) => a.status === 'graded').length})`} />
+                <Tab label={`Pending (${assignments.filter((a) => a.status === 'pending').length})`} />
+                <Tab label={`Submitted (${assignments.filter((a) => a.status === 'submitted').length})`} />
+                <Tab label={`Graded (${assignments.filter((a) => a.status === 'graded').length})`} />
               </Tabs>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {!(data.assignments) || data.assignments.filter((a: any) => {
+                {assignments.filter((a) => {
                   if (assignmentTab === 0) return a.status === 'pending';
                   if (assignmentTab === 1) return a.status === 'submitted';
                   return a.status === 'graded';
@@ -426,13 +499,13 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                     No assignments found in this category.
                   </Typography>
                 ) : (
-                  data.assignments
-                    .filter((a: any) => {
+                  assignments
+                    .filter((a) => {
                       if (assignmentTab === 0) return a.status === 'pending';
                       if (assignmentTab === 1) return a.status === 'submitted';
                       return a.status === 'graded';
                     })
-                    .map((a: any) => {
+                    .map((a) => {
                       const priorityColor = a.priority === 'high' ? '#ef4444' : a.priority === 'medium' ? '#f59e0b' : '#22c55e';
                       return (
                         <Box
@@ -482,12 +555,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                 }
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {!data.exams || data.exams.length === 0 ? (
+                {exams.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
                     No upcoming exams scheduled.
                   </Typography>
                 ) : (
-                  data.exams.map((exam: any) => (
+                  exams.map((exam) => (
                     <Box
                       key={exam.id}
                       sx={{ p: 2, borderRadius: 2.5, background: 'linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%)', border: '1px solid #fca5a5' }}
@@ -537,14 +610,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             }
           />
           <Grid container spacing={2}>
-            {!data.attendanceBreakdown || data.attendanceBreakdown.length === 0 ? (
+            {attendanceBreakdown.length === 0 ? (
               <Grid size={{ xs: 12 }}>
                 <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
                   No subject attendance breakdown records found.
                 </Typography>
               </Grid>
-            ) : (
-              data.attendanceBreakdown.map((att: any) => {
+              ) : (
+              attendanceBreakdown.map((att) => {
                 const warn = att.pct < 75;
                 const caution = att.pct < 85 && att.pct >= 75;
                 const barColor = warn ? '#ef4444' : caution ? '#f59e0b' : '#22c55e';
@@ -602,7 +675,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                       </Typography>
                     ) : (
                       <List disablePadding dense>
-                        {feesObj.history.map((h: any, i: number) => (
+                        {feesObj.history.map((h: FeeHistoryItem, i: number) => (
                           <React.Fragment key={i}>
                             <ListItem sx={{ px: 0, py: 1 }}>
                               <ListItemIcon sx={{ minWidth: 28 }}>
@@ -643,14 +716,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
                 action={<Button size="small" endIcon={<ArrowIcon />} sx={{ textTransform: 'none', fontWeight: 600 }}>View All</Button>}
               />
               <Grid container spacing={2}>
-                {!data.resources || data.resources.length === 0 ? (
+                {resources.length === 0 ? (
                   <Grid size={{ xs: 12 }}>
                     <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
                       No learning resources available.
                     </Typography>
                   </Grid>
                 ) : (
-                  data.resources.map((r: any) => {
+                  resources.map((r) => {
                     const isVideo = r.type === 'Video';
                     return (
                       <Grid size={{ xs: 12, sm: 6 }} key={r.id}>
@@ -693,12 +766,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             <CardContent>
               <SectionTitle icon={<NotificationsIcon />} title="Announcements & Notices" subtitle="School-wide alerts and department notices" />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {!data.announcements || data.announcements.length === 0 ? (
+                {announcements.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
                     No announcements or notices.
                   </Typography>
                 ) : (
-                  data.announcements.map((a: any) => {
+                  announcements.map((a) => {
                     const typeColor = a.type === 'exam' ? '#ef4444' : a.type === 'event' ? '#8b5cf6' : '#0d9488';
                     const typeBg = a.type === 'exam' ? '#fef2f2' : a.type === 'event' ? '#faf5ff' : '#f0fdfa';
                     return (
@@ -731,14 +804,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             <CardContent>
               <SectionTitle icon={<TrophyIcon />} title="Achievements & Rewards" subtitle="Badges, certifications and awards" />
               <Grid container spacing={2} sx={{ mb: 2 }}>
-                {!data.achievements || data.achievements.length === 0 ? (
+                {achievements.length === 0 ? (
                   <Grid size={{ xs: 12 }}>
                     <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
                       No achievements unlocked yet.
                     </Typography>
                   </Grid>
                 ) : (
-                  data.achievements.map((ach: any) => (
+                  achievements.map((ach) => (
                     <Grid size={{ xs: 6 }} key={ach.id}>
                       <Box sx={{ p: 2, borderRadius: 2.5, textAlign: 'center', border: '1px solid', borderColor: 'divider', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' } }}>
                         <Typography sx={{ fontSize: 32 }}>{ach.icon || '🏅'}</Typography>
@@ -827,12 +900,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
             <CardContent>
               <SectionTitle icon={<ChatIcon />} title="Communication" subtitle="Message teachers and classmates" />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {!data.communications || data.communications.length === 0 ? (
+                {communications.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
                     No recent messages.
                   </Typography>
                 ) : (
-                  data.communications.map((m: any) => (
+                  communications.map((m) => (
                     <Box
                       key={m.name}
                       sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
@@ -871,9 +944,9 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ data, firstName = '
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
             <CardContent>
               <SectionTitle icon={<NotificationsIcon />} title="Recent Activity" subtitle="Your latest updates and interactions" />
-              {data.recentActivity && data.recentActivity.length > 0 ? (
+              {recentActivity.length > 0 ? (
                 <List disablePadding>
-                  {data.recentActivity.map((activity: any, i: number) => (
+                  {recentActivity.map((activity, i: number) => (
                     <ListItem key={i} sx={{ px: 0, py: 1.5, alignItems: 'flex-start' }} divider={i !== data.recentActivity!.length - 1}>
                       <ListItemIcon sx={{ minWidth: 40, mt: 0.5 }}>
                         <Typography sx={{ fontSize: 20 }}>{activity.icon || '📌'}</Typography>

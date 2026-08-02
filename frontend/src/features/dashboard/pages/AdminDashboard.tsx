@@ -9,15 +9,12 @@ import {
   Card,
   CardContent,
   Button,
-  Avatar,
   Chip,
-  Divider,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
   IconButton,
-  Tooltip,
   Alert,
   Tab,
   Tabs,
@@ -34,7 +31,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  ListItemSecondaryAction,
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -43,20 +39,14 @@ import {
   Event as EventIcon,
   AccountBalance as AccountBalanceIcon,
   CheckCircleOutlined as CheckCircleIcon,
-  AssignmentTurnedIn as AssignmentIcon,
-  Warning as WarningIcon,
   Close as CloseIcon,
   Check as CheckIcon,
   Send as SendIcon,
   Download as DownloadIcon,
-  Mail as MailIcon,
   Info as InfoIcon,
-  Refresh as RefreshIcon,
   TrendingUp as TrendingUpIcon,
   Settings as SettingsIcon,
-  ArrowForward as ArrowIcon,
   Bolt as BoltIcon,
-  Search as SearchIcon,
   ReceiptLong as InvoiceIcon,
   AutoAwesome as AIIcon,
   NotificationsActive as AlertIcon,
@@ -64,8 +54,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -76,14 +64,59 @@ import {
   Area,
 } from 'recharts';
 import type { DashboardResponse } from '../api/dashboardApi';
+import { SectionTitle } from '../../../components/common/SectionTitle';
 
 export interface AdminDashboardProps {
   data: DashboardResponse;
   firstName: string;
 }
 
+type ApiLeaveRequest = {
+  _id?: string;
+  id?: string;
+  requesterId?: { firstName?: string; lastName?: string };
+  requesterType?: string;
+  type?: string;
+  startDate?: string;
+  endDate?: string;
+  reason?: string;
+};
+
+type ApiAdmissionApplication = {
+  _id?: string;
+  id?: string;
+  applicantName?: string;
+  gradeLevel?: string;
+  entranceScore?: number;
+  status?: string;
+};
+
+type AdminLeaveRequest = {
+  id: string;
+  name: string;
+  role: string;
+  type: string;
+  duration: string;
+  reason: string;
+  docAttached: boolean;
+};
+
+type AdminAdmissionApplication = {
+  id: string;
+  name: string;
+  grade: string;
+  score: string;
+  status: string;
+};
+
+type AcademicStat = {
+  subject: string;
+  average: number;
+  passRate: number;
+};
+
 // ── Mock Datasets for Dashboard Features ───────────────────────────────────
-const MOCK_FINANCIAL_TRENDS = [
+const MOCK_FINANCIAL_TRENDS = [ 
   { month: 'Jan', collected: 125000, projected: 140000 },
   { month: 'Feb', collected: 138000, projected: 140000 },
   { month: 'Mar', collected: 155000, projected: 150000 },
@@ -100,21 +133,9 @@ const MOCK_ACADEMIC_STATS = [
   { subject: 'Computer Science', average: 88, passRate: 100 },
 ];
 
-const MOCK_LEAVE_REQUESTS = [
-  { id: 'LV-101', name: 'Robert Vance', role: 'Teacher (Math)', type: 'Sick Leave', duration: '2 Days (Jun 8-9)', reason: 'Dental surgery appointment', docAttached: true },
-  { id: 'LV-102', name: 'Janice Geller', role: 'Staff (Admins)', type: 'Casual Leave', duration: '1 Day (Jun 12)', reason: 'Family engagement ceremony', docAttached: false },
-  { id: 'LV-103', name: 'Dr. Sarah Jenkins', role: 'Teacher (Biology)', type: 'Sick Leave', duration: '3 Days (Jun 15-17)', reason: 'Severe throat inflammation', docAttached: true },
-];
-
 const MOCK_WAIVER_REQUESTS = [
   { id: 'WV-501', student: 'Ryan Cook', grade: 'Grade 9-A', request: '50% Waiver', type: 'Need-based Scholarship', annualIncome: '$32,000', rationale: 'Single-parent household with medical expenses' },
   { id: 'WV-502', student: 'Emma Watson', grade: 'Grade 10-C', request: '100% Waiver', type: 'Merit-based Excellence', annualIncome: '$75,000', rationale: 'National Mathematical Olympiad Gold Medalist' },
-];
-
-const MOCK_ADMISSION_APPLICATIONS = [
-  { id: 'AD-901', name: 'Tyler Durden', grade: 'Grade 11-B', score: '92%', status: 'Document Verified' },
-  { id: 'AD-902', name: 'Marla Singer', grade: 'Grade 9-A', score: '88%', status: 'Interview Scheduled' },
-  { id: 'AD-903', name: 'Robert Paulson', grade: 'Grade 12-A', score: '74%', status: 'Under Review' },
 ];
 
 const MOCK_CORRECTIONS = [
@@ -122,45 +143,26 @@ const MOCK_CORRECTIONS = [
   { id: 'CR-302', name: 'David Miller', class: 'Grade 8-A', field: 'Mark correction (Quiz 2)', original: '14/20', correction: '18/20', reason: 'Recount error in laboratory report marks' },
 ];
 
-// Helper layout component
-const SectionTitle: React.FC<{
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
-}> = ({ icon, title, subtitle, action }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-      <Box sx={{ color: 'primary.main', display: 'flex', alignItems: 'center' }}>{icon}</Box>
-      <Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontFamily: "'Outfit', sans-serif" }}>{title}</Typography>
-        {subtitle && <Typography variant="caption" color="text.secondary" sx={{ fontFamily: "'Inter', sans-serif" }}>{subtitle}</Typography>}
-      </Box>
-    </Box>
-    {action}
-  </Box>
-);
-
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
   const navigate = useNavigate();
 
   // ── States for interactive checklists/workflow items ───────────────────
-  const [leaves, setLeaves] = useState<any[]>([]);
+  const [leaves, setLeaves] = useState<AdminLeaveRequest[]>([]);
   const [waivers, setWaivers] = useState(MOCK_WAIVER_REQUESTS);
-  const [admissions, setAdmissions] = useState<any[]>([]);
+  const [admissions, setAdmissions] = useState<AdminAdmissionApplication[]>([]);
   const [corrections, setCorrections] = useState(MOCK_CORRECTIONS);
 
   const fetchLeavesAndAdmissions = async () => {
     try {
       const leavesRes = await api.get('/leave-requests');
       if (leavesRes && leavesRes.data) {
-        const mappedLeaves = leavesRes.data.data.map((l: any) => ({
-          id: l._id || l.id,
-          name: l.requesterId ? `${l.requesterId.firstName} ${l.requesterId.lastName}` : 'Unknown Requester',
+        const mappedLeaves = (leavesRes.data.data as ApiLeaveRequest[]).map((l) => ({
+          id: l._id || l.id || 'unknown',
+          name: l.requesterId ? `${l.requesterId.firstName || ''} ${l.requesterId.lastName || ''}`.trim() || 'Unknown Requester' : 'Unknown Requester',
           role: l.requesterType ? (l.requesterType === 'TEACHER' ? 'Teacher' : l.requesterType === 'STUDENT' ? 'Student' : 'Staff') : 'Teacher',
           type: l.type || 'Sick Leave',
-          duration: `${Math.round((new Date(l.endDate).getTime() - new Date(l.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1} Days (${new Date(l.startDate).toLocaleDateString()} - ${new Date(l.endDate).toLocaleDateString()})`,
-          reason: l.reason,
+          duration: `${Math.round((new Date(l.endDate || '').getTime() - new Date(l.startDate || '').getTime()) / (1000 * 60 * 60 * 24)) + 1} Days (${l.startDate ? new Date(l.startDate).toLocaleDateString() : 'N/A'} - ${l.endDate ? new Date(l.endDate).toLocaleDateString() : 'N/A'})`,
+          reason: l.reason || 'No reason provided',
           docAttached: false,
         }));
         setLeaves(mappedLeaves);
@@ -168,11 +170,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
       
       const admissionsRes = await api.get('/admissions');
       if (admissionsRes && admissionsRes.data) {
-        const mappedAdmissions = admissionsRes.data.data.map((a: any) => ({
-          id: a._id || a.id,
-          name: a.applicantName,
-          grade: a.gradeLevel,
-          score: a.entranceScore ? `${a.entranceScore}%` : 'N/A',
+        const mappedAdmissions = (admissionsRes.data.data as ApiAdmissionApplication[]).map((a) => ({
+          id: a._id || a.id || 'unknown',
+          name: a.applicantName || 'Applicant',
+          grade: a.gradeLevel || 'Unknown Grade',
+          score: a.entranceScore != null ? `${a.entranceScore}%` : 'N/A',
           status: a.status || 'Applied',
         }));
         setAdmissions(mappedAdmissions);
@@ -183,7 +185,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
   };
 
   useEffect(() => {
-    fetchLeavesAndAdmissions();
+    const loadInitialData = async () => {
+      await fetchLeavesAndAdmissions();
+    };
+
+    void loadInitialData();
   }, []);
 
   const [activeWorkflowTab, setActiveWorkflowTab] = useState(0);
@@ -232,6 +238,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
       showNotification(`Leave request approved successfully. Substitute notification dispatched.`, 'success');
       fetchLeavesAndAdmissions();
     } catch (err) {
+      console.error('Leave approval failed', err);
       showNotification('Failed to approve leave request.', 'warning');
     }
   };
@@ -242,6 +249,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
       showNotification(`Leave request rejected. Faculty notified.`, 'warning');
       fetchLeavesAndAdmissions();
     } catch (err) {
+      console.error('Leave rejection failed', err);
       showNotification('Failed to reject leave request.', 'warning');
     }
   };
@@ -262,6 +270,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
       showNotification(`Admission application approved. Welcome packet and registration ID dispatched.`, 'success');
       fetchLeavesAndAdmissions();
     } catch (err) {
+      console.error('Admission approval failed', err);
       showNotification('Failed to approve admission.', 'warning');
     }
   };
@@ -272,6 +281,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
       showNotification(`Admission application cataloged as deferred.`, 'info');
       fetchLeavesAndAdmissions();
     } catch (err) {
+      console.error('Admission rejection failed', err);
       showNotification('Failed to defer admission.', 'warning');
     }
   };
@@ -304,6 +314,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
       setNewStudent({ name: '', class: '', email: '', parentPhone: '' });
       fetchLeavesAndAdmissions();
     } catch (err) {
+      console.error('Student enrollment failed', err);
       showNotification('Failed to enroll student.', 'warning');
     }
   };
@@ -327,6 +338,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
       setNewTeacher({ name: '', department: '', email: '', classAssigned: '' });
       fetchLeavesAndAdmissions();
     } catch (err) {
+      console.error('Teacher creation failed', err);
       showNotification('Failed to add teacher.', 'warning');
     }
   };
@@ -349,6 +361,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
       setFeeCollection({ studentId: '', amount: '', paymentMethod: 'Card' });
       fetchLeavesAndAdmissions();
     } catch (err) {
+      console.error('Fee collection failed', err);
       showNotification('Failed to record fee collection.', 'warning');
     }
   };
@@ -360,6 +373,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
       return;
     }
     setNoticeDialogOpen(false);
+    console.info('Notice published', notice);
     showNotification(`Notice "${notice.title}" published to audience: "${notice.target}".`, 'success');
     setNotice({ title: '', target: 'All', content: '', emailBroadcast: false });
   };
@@ -380,7 +394,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
     setScheduleEmail('');
   };
 
-  const { widgets, recentActivity } = data;
+  const { recentActivity } = data;
 
   // Render dashboard layout
   return (
@@ -394,6 +408,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
               Quick Admin Shortcuts
             </Typography>
           </Box>
+          {firstName && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Welcome back, {firstName}. Manage school operations at a glance.
+            </Typography>
+          )}
           <Grid container spacing={2}>
             {[
               { label: 'Add Student', icon: <SchoolIcon />, color: '#0d9488', action: () => setStudentDialogOpen(true) },
@@ -462,7 +481,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
                       tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
                     />
                     <RechartsTooltip
-                      formatter={(value: any) => [`$${value.toLocaleString()}`, '']}
+                      formatter={(value: number | string) => {
+                        const numericValue = typeof value === 'number' ? value : Number(value);
+                        return [`$${numericValue.toLocaleString()}`, ''];
+                      }}
                       contentStyle={{
                         borderRadius: '8px',
                         border: '1px solid #e2e8f0',
@@ -501,7 +523,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
 
               {activeAnalyticsTab === 0 ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {(data.charts?.academicStats || MOCK_ACADEMIC_STATS).map((stat: any) => (
+                  {((data.charts?.academicStats || MOCK_ACADEMIC_STATS) as AcademicStat[]).map((stat) => (
                     <Box key={stat.subject}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>{stat.subject}</Typography>
@@ -1308,7 +1330,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, firstName }) => {
 };
 
 // ── Custom Dot Icon to avoid import mismatches ────────────────────────────
-const FiberManualRecordIcon: React.FC<{ sx?: any }> = ({ sx }) => {
+type FiberManualRecordIconProps = {
+  sx?: React.CSSProperties;
+};
+
+const FiberManualRecordIcon: React.FC<FiberManualRecordIconProps> = ({ sx }) => {
   return (
     <svg width="10" height="10" viewBox="0 0 10 10" style={sx}>
       <circle cx="5" cy="5" r="4" fill="currentColor" />

@@ -167,7 +167,14 @@ export const ParentDashboard: React.FC = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
-  const [initiatedPaymentData, setInitiatedPaymentData] = useState<any>(null);
+  type PaymentInitiationData = {
+    amount: number;
+    currency: string;
+    orderId: string;
+    paymentId: string;
+    redirectUrl?: string;
+  };
+  const [initiatedPaymentData, setInitiatedPaymentData] = useState<PaymentInitiationData | null>(null);
 
   // Stripe Mock Credit Card details
   const [cardName, setCardName] = useState('');
@@ -246,7 +253,7 @@ export const ParentDashboard: React.FC = () => {
 
   const loadRazorpayScript = (): Promise<boolean> => {
     return new Promise((resolve) => {
-      if ((window as any).Razorpay) {
+      if (((window as unknown) as { Razorpay?: unknown }).Razorpay) {
         resolve(true);
         return;
       }
@@ -304,15 +311,15 @@ export const ParentDashboard: React.FC = () => {
           name: 'School Fees Payment',
           description: `Invoice: ${selectedInvoice.invoiceNumber}`,
           order_id: initData.orderId,
-          handler: async function (response: any) {
+          handler: async function () {
             try {
               setCheckoutLoading(true);
               await parentsApi.simulatePaymentSuccess({ paymentId: initData.paymentId });
               setCheckoutSuccess(true);
               const feeRes = await parentsApi.getChildFees(activeChild._id);
               setFees(feeRes || []);
-            } catch (err: any) {
-              setCheckoutError(err?.response?.data?.message || 'Fulfillment verification failed.');
+            } catch (err: unknown) {
+              setCheckoutError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Fulfillment verification failed.');
             } finally {
               setCheckoutLoading(false);
             }
@@ -325,11 +332,17 @@ export const ParentDashboard: React.FC = () => {
             color: '#1e1b4b',
           },
         };
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
+        // Create Razorpay instance in a type-safe way
+        const win = window as unknown as { Razorpay?: new (opts: unknown) => { open: () => void } };
+        if (win.Razorpay) {
+          const rzp = new win.Razorpay(options);
+          rzp.open();
+        } else {
+          setCheckoutError('Razorpay SDK unavailable.');
+        }
       }
-    } catch (err: any) {
-      setCheckoutError(err?.response?.data?.message || 'Failed to initiate payment.');
+    } catch (err: unknown) {
+      setCheckoutError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to initiate payment.');
     } finally {
       setCheckoutLoading(false);
     }
@@ -361,8 +374,8 @@ export const ParentDashboard: React.FC = () => {
         const feeRes = await parentsApi.getChildFees(activeChild._id);
         setFees(feeRes || []);
       }
-    } catch (err: any) {
-      setCheckoutError(err.message || 'Payment simulation failed.');
+    } catch (err: unknown) {
+      setCheckoutError((err as Error).message || 'Payment simulation failed.');
     } finally {
       setIsSubmittingCard(false);
     }
@@ -379,8 +392,8 @@ export const ParentDashboard: React.FC = () => {
         const feeRes = await parentsApi.getChildFees(activeChild._id);
         setFees(feeRes || []);
       }
-    } catch (err: any) {
-      setCheckoutError(err?.response?.data?.message || 'Simulated PhonePe callback failed.');
+    } catch (err: unknown) {
+      setCheckoutError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Simulated PhonePe callback failed.');
     } finally {
       setCheckoutLoading(false);
     }
@@ -915,9 +928,9 @@ export const ParentDashboard: React.FC = () => {
                 ].map((gatewayOption) => {
                   const isSelected = selectedGateway === gatewayOption.id;
                   return (
-                    <Grid size={{ xs: 12 }} key={gatewayOption.id}>
+                      <Grid size={{ xs: 12 }} key={gatewayOption.id}>
                       <Box
-                        onClick={() => setSelectedGateway(gatewayOption.id as any)}
+                        onClick={() => setSelectedGateway(gatewayOption.id as 'STRIPE' | 'RAZORPAY' | 'PHONEPE')}
                         sx={{
                           p: 2,
                           borderRadius: 3,
@@ -1088,8 +1101,8 @@ export const ParentDashboard: React.FC = () => {
                           const feeRes = await parentsApi.getChildFees(activeChild._id);
                           setFees(feeRes || []);
                         }
-                      } catch (err: any) {
-                        setCheckoutError(err?.response?.data?.message || 'Verification of simulated order failed.');
+                      } catch (err: unknown) {
+                        setCheckoutError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Verification of simulated order failed.');
                       } finally {
                         setCheckoutLoading(false);
                       }
