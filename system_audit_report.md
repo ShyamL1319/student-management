@@ -316,3 +316,4 @@ The database updates and triggers required to support automated operational loop
 5. **Assignments & Submissions module:** Build classroom core functionalities.
 6. **Billing Gateway Webhooks & Real notifications:** Implement payment verification and communications channels.
 7. **Reports Scheduling & System configurations save:** Connect general settings and export cron templates.
+8. **End2End details**
